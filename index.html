@@ -149,6 +149,7 @@
             margin-bottom: 8px;
             font-size: 14px;
             line-height: 1.4;
+            white-space: pre-wrap;
         }
 
         .chat-message.user {
@@ -310,18 +311,28 @@
             userMsg.className = 'chat-message user';
             userMsg.textContent = text;
             chatMessages.appendChild(userMsg);
-
             chatInput.value = '';
 
-            setTimeout(() => {
-                const botMsg = document.createElement('div');
-                botMsg.className = 'chat-message bot';
-                botMsg.textContent = 'Пока я не умею искать олимпиады, но скоро научусь! А пока загляни в каталог.';
-                chatMessages.appendChild(botMsg);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 600);
-
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'chat-message bot';
+            typingMsg.textContent = 'Думаю...';
+            chatMessages.appendChild(typingMsg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: text})
+            })
+            .then(res => res.json())
+            .then(data => {
+                typingMsg.textContent = data.reply;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch(err => {
+                typingMsg.textContent = 'Ошибка соединения. Попробуй позже.';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
         }
 
         chatSend.addEventListener('click', sendMessage);
