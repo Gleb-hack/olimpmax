@@ -130,7 +130,6 @@
             opacity: 0.5;
         }
 
-        /* Стили для чата */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -207,7 +206,21 @@
 <body>
     <div class="app-container">
 
-        <div id="content-catalog" class="tab-content active">
+        <div id="content-chat" class="tab-content active">
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-message bot">
+                        Привет! Расскажи, какие предметы тебе интересны и в каком ты классе — я подберу подходящие олимпиады.
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="chat-input" placeholder="Например: математика, 9 класс...">
+                    <button id="chat-send">→</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-catalog" class="tab-content">
             <h2>Каталог олимпиад</h2>
             <div id="olympiad-list">
                 <div class="olympiad-card">
@@ -250,22 +263,12 @@
             </div>
         </div>
 
-        <div id="content-chat" class="tab-content">
-            <div class="chat-container">
-                <div class="chat-messages" id="chat-messages">
-                    <div class="chat-message bot">
-                        Привет! Расскажи, какие предметы тебе интересны и в каком ты классе — я подберу подходящие олимпиады.
-                    </div>
-                </div>
-                <div class="chat-input-row">
-                    <input type="text" id="chat-input" placeholder="Например: математика, 9 класс...">
-                    <button id="chat-send">→</button>
-                </div>
-            </div>
-        </div>
-
         <nav class="tabbar">
-            <button class="tab-btn active" data-tab="catalog">
+            <button class="tab-btn active" data-tab="chat">
+                <span class="icon">💬</span>
+                <span>Чат</span>
+            </button>
+            <button class="tab-btn" data-tab="catalog">
                 <span class="icon">📚</span>
                 <span>Каталог</span>
             </button>
@@ -276,10 +279,6 @@
             <button class="tab-btn" data-tab="profile">
                 <span class="icon">👤</span>
                 <span>Профиль</span>
-            </button>
-            <button class="tab-btn" data-tab="chat">
-                <span class="icon">💬</span>
-                <span>Чат</span>
             </button>
         </nav>
     </div>
@@ -299,7 +298,6 @@
             });
         });
 
-        // Заглушка для чата
         const chatInput = document.getElementById('chat-input');
         const chatSend = document.getElementById('chat-send');
         const chatMessages = document.getElementById('chat-messages');
@@ -308,7 +306,6 @@
             const text = chatInput.value.trim();
             if (!text) return;
 
-            // Сообщение пользователя
             const userMsg = document.createElement('div');
             userMsg.className = 'chat-message user';
             userMsg.textContent = text;
@@ -316,7 +313,6 @@
 
             chatInput.value = '';
 
-            // Заглушка ответа бота
             setTimeout(() => {
                 const botMsg = document.createElement('div');
                 botMsg.className = 'chat-message bot';
