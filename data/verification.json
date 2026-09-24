@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-09-22T09:20:24.111Z",
+  "unitTests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "postgresIntegrationTests": {
+    "passed": 4,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "productionBuild": "passed",
+  "httpSmoke": "passed",
+  "sqlRestore": {
+    "status": "passed",
+    "olympiads": 771,
+    "subjects": 35,
+    "stages": 501,
+    "users": 0,
+    "plans": 0,
+    "verifiedStages": 0
+  },
+  "liveMaxLogin": "not_tested_no_bot_token",
+  "datePolicy": "No years inferred from CSV"
+}

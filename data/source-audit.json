@@ -1,0 +1,17 @@
+{
+  "sourceSha256": "3af3180d48e2fae902db828de2b7e37477ef08dcaea4ae9222e4154b5fc78dad",
+  "rows": 771,
+  "subjects": 35,
+  "missingDescription": 296,
+  "missingGrades": 9,
+  "unknownFormat": 20,
+  "unknownParticipation": 57,
+  "schedulePublished": 210,
+  "scheduleUnknown": 430,
+  "notHeld": 131,
+  "rawStages": 501,
+  "unnamedStages": 8,
+  "verifiedDatesFromCsv": 0,
+  "datePolicy": "CSV calendars are preserved without assigning a year. Dates require a separate verified import.",
+  "documentsPolicy": "Document labels and truncated contact links are preserved as text; missing URLs are not reconstructed."
+}
