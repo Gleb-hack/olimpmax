@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { z } from 'zod';
 import { ProfilePatch, ProfilePreferences } from '@olimp/contracts';
-import { api, isMock } from './api';
+import { api } from './api';
+import { localKeys } from './local-data';
 import { useSession } from './session';
 
 const Avatar = z.string().max(1500000).regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).nullable();
@@ -12,14 +13,13 @@ const Context = createContext<{ profile: LocalProfile; update: (patch: Partial<L
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user, setUser } = useSession();
   if (!user) throw new Error('Profile requires a signed-in user');
-  const avatarKey = `olimp.avatar.v1.${isMock ? 'mock' : user.id}`;
-  const migrationKey = `olimp.preferences.imported.v1.${isMock ? 'mock' : user.id}`;
+  const avatarKey = localKeys.avatar(user);
+  const migrationKey = localKeys.preferencesImported(user);
   const [legacy, setLegacy] = useState<LocalProfile | null>(() => {
     try {
       if (localStorage.getItem(migrationKey)) return null;
       // Use the server-verified identity to find this account's old local preferences.
-      const scope = isMock ? 'mock' : user.maxUserId === 'local-demo' ? 'browser' : user.maxUserId;
-      return LegacyProfile.parse(JSON.parse(localStorage.getItem(`olimp.preferences.v1.${scope}`) ?? 'null'));
+      return LegacyProfile.parse(JSON.parse(localStorage.getItem(localKeys.legacyPreferences(user)) ?? 'null'));
     } catch { return null; }
   });
   const [avatar, setAvatar] = useState<string | null>(() => {

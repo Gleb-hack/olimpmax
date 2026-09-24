@@ -38,3 +38,9 @@ export async function saveProfile(db: Database, id: string, patch: ProfilePatch,
     return readProfile(tx, id);
   });
 }
+
+// user_subjects and plan_items are removed by ON DELETE CASCADE in the same statement.
+export async function deleteAccount(db: Pick<Database, 'delete'>, id: string) {
+  const removed = await db.delete(users).where(eq(users.id, id)).returning({ id: users.id });
+  if (!removed.length) throw new ProfileError('UNAUTHORIZED', 'Войдите в аккаунт заново.', 401);
+}

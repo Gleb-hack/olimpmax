@@ -12,7 +12,7 @@ import * as c from '../../../packages/contracts/src/index.js';
 import { catalog, detail, filters } from './features/catalog.js';
 import { readPlan, planEvents, planKey } from './features/plan.js';
 import { validateMaxInitData } from './features/auth.js';
-import { readProfile, saveProfile, ProfileError } from './features/profile.js';
+import { readProfile, saveProfile, deleteAccount, ProfileError } from './features/profile.js';
 import { moscowToday } from './features/calendar.js';
 import { answerAssistant, databaseAssistantData } from './features/assistant/assistant.js';
 import { AssistantError, deepseekCompletion, type CompleteJson } from './features/assistant/deepseek.js';
@@ -102,6 +102,10 @@ export async function buildApp(options: AppOptions) {
       saveProfile(db, request.user.sub, request.body, true, now()));
     routes.patch('/me/profile', { schema: { body: c.ProfilePatch, response: { 200: c.UserProfile, 400: c.ErrorResponse, 409: c.ErrorResponse } } }, request =>
       saveProfile(db, request.user.sub, request.body, false, now()));
+    routes.delete('/me', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
+      await deleteAccount(db, request.user.sub);
+      return reply.code(204).send();
+    });
     routes.post('/assistant/chat', {
       bodyLimit: 65536,
       config: { rateLimit: { max: 10, timeWindow: '1 minute', hook: 'preHandler', keyGenerator: request => request.user.sub } },

@@ -359,6 +359,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .prose { font-size: 12px; line-height: 1.75; color: #717b8d; }
 .prose h3 { color: #272f3e; margin-top: 16px; font-size: 13px; }
 .prose p { margin: 8px 0 15px; }
+.prose ul { margin: -8px 0 15px; padding-left: 18px; }
 .olympiad-detail__navigation { margin-bottom: 18px; }
 .olympiad-detail__heading { padding-bottom: 16px; border-bottom: 1px solid var(--olimp-border); }
 .olympiad-detail__heading > .badge { margin-bottom: 16px; }

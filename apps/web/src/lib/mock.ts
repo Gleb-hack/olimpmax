@@ -22,6 +22,11 @@ const normalize = (value: string) => value.toLocaleLowerCase('ru').replace(/ё/g
 
 export async function mockRequest(path: string, options: RequestInit = {}): Promise<unknown> {
   const url = new URL(path, 'http://demo.local');
+  if (url.pathname === '/me' && options.method === 'DELETE') {
+    try { localStorage.removeItem(profileKey); localStorage.removeItem(key); }
+    catch { throw new Error('Не удалось удалить демонстрационные данные из браузера.'); }
+    return undefined;
+  }
   if (url.pathname === '/me') return readProfile();
   if (url.pathname === '/me/registration' || url.pathname === '/me/profile') {
     const current = readProfile();

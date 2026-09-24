@@ -90,6 +90,7 @@ export type PlanPatch = z.infer<typeof c.PlanPatch>;
 export const api = {
   async startSession() { sessionAllowed = true; return c.UserProfile.parse(await request('/me', {}, true)); },
   async register(profile: c.ProfilePreferences) { return c.UserProfile.parse(await request('/me/registration', { method: 'POST', body: JSON.stringify(c.ProfilePreferences.parse(profile)) }, true)); },
+  async deleteAccount() { await request('/me', { method: 'DELETE' }, true); },
   async profile(patch: c.ProfilePatch) { return c.UserProfile.parse(await request('/me/profile', { method: 'PATCH', body: JSON.stringify(c.ProfilePatch.parse(patch)) }, true)); },
   async research(token: string, signal: AbortSignal) {
     if (isMock) throw new ApiError('Поиск на сайтах доступен при подключении к серверу.', 503);

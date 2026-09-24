@@ -7,6 +7,7 @@ const storage = new Map<string, string>();
 Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
   getItem: (key: string) => storage.get(key) ?? null,
   setItem: (key: string, value: string) => { storage.set(key, value); },
+  removeItem: (key: string) => { storage.delete(key); },
 } });
 
 test('demo records satisfy the real API contracts without inventing deadlines', async () => {
@@ -56,4 +57,15 @@ test('corrupt demo storage can recover and unknown records fail explicitly', asy
   storage.set('olimp.demo.plan.v1', '{invalid');
   assert.equal(c.PlanResponse.parse(await mockRequest('/me/plan')).total, 0);
   await assert.rejects(() => mockRequest('/olympiads/999999999'), /не найдена/);
+});
+
+test('deleting the demo account removes its profile and plan from the browser', async () => {
+  await mockRequest('/me/registration', { method: 'POST', body: JSON.stringify({ name: 'Анна', grade: 9, region: '', subjects: [], online: true, onsite: true }) }).catch(() => undefined);
+  const { items: [first] } = c.CatalogResponse.parse(await mockRequest('/olympiads?pageSize=1'));
+  await mockRequest(`/me/plan/${first!.id}`, { method: 'PUT' });
+  assert.ok(c.UserProfile.parse(await mockRequest('/me')).registeredAt);
+  assert.equal(await mockRequest('/me', { method: 'DELETE' }), undefined);
+  assert.equal(c.UserProfile.parse(await mockRequest('/me')).registeredAt, null);
+  assert.equal(c.PlanResponse.parse(await mockRequest('/me/plan')).total, 0);
+  assert.equal([...storage.keys()].filter(key => key.startsWith('olimp.demo.')).length, 0);
 });
