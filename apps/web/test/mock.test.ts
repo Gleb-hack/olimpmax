@@ -69,3 +69,17 @@ test('deleting the demo account removes its profile and plan from the browser', 
   assert.equal(c.PlanResponse.parse(await mockRequest('/me/plan')).total, 0);
   assert.equal([...storage.keys()].filter(key => key.startsWith('olimp.demo.')).length, 0);
 });
+
+test('demo export contains the profile, plan and device data, and serves it by the prepared link', async () => {
+  await mockRequest('/me/registration', { method: 'POST', body: JSON.stringify({ name: 'Борис', grade: 10, region: 'Казань', subjects: [], online: true, onsite: false }) });
+  const { items: [first] } = c.CatalogResponse.parse(await mockRequest('/olympiads?pageSize=1'));
+  await mockRequest(`/me/plan/${first!.id}`, { method: 'PUT' });
+  await mockRequest(`/me/plan/${first!.id}`, { method: 'PATCH', body: JSON.stringify({ note: 'Заметка' }) });
+  const ticket = c.ExportTicket.parse(await mockRequest('/me/export', { method: 'POST', body: JSON.stringify({ device: { avatar: null, searchHistory: ['физика'] } }) }));
+  assert.match(ticket.fileName, /^olimpmax-data-\d{4}-\d{2}-\d{2}\.json$/);
+  const file = c.AccountExport.parse(await mockRequest(ticket.path));
+  assert.equal(file.profile.name, 'Борис'); assert.equal(file.profile.region, 'Казань');
+  assert.deepEqual(file.plan.map(item => [item.olympiadId, item.note]), [[first!.id, 'Заметка']]);
+  assert.deepEqual(file.device.searchHistory, ['физика']);
+  await assert.rejects(mockRequest('/me/export/unknown'));
+});
