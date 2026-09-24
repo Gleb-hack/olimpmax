@@ -1,0 +1,14 @@
+{$APP_DOMAIN} {
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+	}
+	handle_path /api/* {
+		reverse_proxy api:3001
+	}
+	handle {
+		root * /srv/olimp
+		try_files {path} /index.html
+		file_server
+	}
+}

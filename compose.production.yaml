@@ -1,0 +1,84 @@
+name: olimp-production
+
+x-api: &api-image
+  image: olimp-api:local
+  build:
+    context: .
+    target: api
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: olimp
+      POSTGRES_DB: olimp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U olimp -d olimp']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    <<: *api-image
+    command: [pnpm, db:migrate]
+    environment:
+      DATABASE_URL: postgresql://olimp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/olimp
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    <<: *api-image
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://olimp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/olimp
+      HOST: 0.0.0.0
+      PORT: '3001'
+      NODE_ENV: production
+      CORS_ORIGIN: https://${APP_DOMAIN:?Set APP_DOMAIN}
+      TRUST_PROXY_HOPS: '1'
+      ALLOW_DEV_AUTH: 'false'
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:?Set MAX_BOT_TOKEN}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
+      SERPER_API_KEY: ${SERPER_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+
+  web:
+    image: olimp-web:local
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

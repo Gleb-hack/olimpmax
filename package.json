@@ -1,0 +1,23 @@
+{
+  "name": "olimp", "private": true, "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:api": "node --watch --import tsx --env-file-if-exists=.env apps/api/src/server.ts",
+    "dev:web": "pnpm --filter @olimp/web dev",
+    "build": "pnpm build:api && pnpm --filter @olimp/web build",
+    "build:api": "tsc --noEmit && esbuild apps/api/src/server.ts --bundle --platform=node --target=node22 --format=esm --packages=external --outfile=apps/api/dist/server.js",
+    "start": "node --env-file-if-exists=.env apps/api/dist/server.js",
+    "typecheck": "tsc --noEmit && pnpm --filter @olimp/web typecheck",
+    "test": "node --import tsx --test tests/*.test.ts && pnpm --filter @olimp/web test",
+    "test:integration": "node --import tsx --env-file-if-exists=.env --test tests/*.integration.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/migrate.ts",
+    "db:import": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/import.ts",
+    "db:audit": "node --import tsx apps/api/src/scripts/audit.ts",
+    "db:stages": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/stages.ts",
+    "db:local": "node --env-file-if-exists=.env scripts/local-db.mjs"
+  },
+  "devDependencies": { "@types/node": "^24.0.0", "@types/pg": "^8.15.0", "drizzle-kit": "0.31.11", "esbuild": "0.28.2", "tsx": "^4.20.0", "typescript": "^5.9.0" }
+}

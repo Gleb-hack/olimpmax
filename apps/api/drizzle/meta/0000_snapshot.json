@@ -1,0 +1,835 @@
+{
+  "id": "0b7da923-de7b-4ecb-983b-af8e8dd3fe9f",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.import_runs": {
+      "name": "import_runs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "source_file": {
+          "name": "source_file",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "row_count": {
+          "name": "row_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "report": {
+          "name": "report",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.olympiad_subjects": {
+      "name": "olympiad_subjects",
+      "schema": "",
+      "columns": {
+        "olympiad_id": {
+          "name": "olympiad_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subject_id": {
+          "name": "subject_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "olympiad_subjects_subject_idx": {
+          "name": "olympiad_subjects_subject_idx",
+          "columns": [
+            {
+              "expression": "subject_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "olympiad_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "olympiad_subjects_olympiad_id_olympiads_id_fk": {
+          "name": "olympiad_subjects_olympiad_id_olympiads_id_fk",
+          "tableFrom": "olympiad_subjects",
+          "tableTo": "olympiads",
+          "columnsFrom": [
+            "olympiad_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "olympiad_subjects_subject_id_subjects_id_fk": {
+          "name": "olympiad_subjects_subject_id_subjects_id_fk",
+          "tableFrom": "olympiad_subjects",
+          "tableTo": "subjects",
+          "columnsFrom": [
+            "subject_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "olympiad_subjects_olympiad_id_subject_id_pk": {
+          "name": "olympiad_subjects_olympiad_id_subject_id_pk",
+          "columns": [
+            "olympiad_id",
+            "subject_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.olympiads": {
+      "name": "olympiads",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "grade_from": {
+          "name": "grade_from",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "grade_to": {
+          "name": "grade_to",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "classes_raw": {
+          "name": "classes_raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "format": {
+          "name": "format",
+          "type": "olympiad_format",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "participation": {
+          "name": "participation",
+          "type": "participation_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rating": {
+          "name": "rating",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "schedule_status": {
+          "name": "schedule_status",
+          "type": "schedule_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_raw": {
+          "name": "status_raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "calendar_raw": {
+          "name": "calendar_raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "calendar_hash": {
+          "name": "calendar_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "schedule_updated_raw": {
+          "name": "schedule_updated_raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "organizers": {
+          "name": "organizers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contacts": {
+          "name": "contacts",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "documents": {
+          "name": "documents",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "features_raw": {
+          "name": "features_raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_group": {
+          "name": "source_group",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw_source": {
+          "name": "raw_source",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "search_text": {
+          "name": "search_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_imported_at": {
+          "name": "first_imported_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "imported_at": {
+          "name": "imported_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "olympiads_source_url_unique": {
+          "name": "olympiads_source_url_unique",
+          "columns": [
+            {
+              "expression": "source_url",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "olympiads_grades_idx": {
+          "name": "olympiads_grades_idx",
+          "columns": [
+            {
+              "expression": "grade_from",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "grade_to",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "olympiads_filters_idx": {
+          "name": "olympiads_filters_idx",
+          "columns": [
+            {
+              "expression": "format",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "participation",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "schedule_status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "olympiads_rating_idx": {
+          "name": "olympiads_rating_idx",
+          "columns": [
+            {
+              "expression": "rating",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "olympiads_id_positive": {
+          "name": "olympiads_id_positive",
+          "value": "\"olympiads\".\"id\" > 0"
+        },
+        "olympiads_grades_valid": {
+          "name": "olympiads_grades_valid",
+          "value": "(\"olympiads\".\"grade_from\" is null and \"olympiads\".\"grade_to\" is null) or (\"olympiads\".\"grade_from\" is not null and \"olympiads\".\"grade_to\" is not null and \"olympiads\".\"grade_from\" between 1 and 11 and \"olympiads\".\"grade_to\" between \"olympiads\".\"grade_from\" and 11)"
+        },
+        "olympiads_rating_valid": {
+          "name": "olympiads_rating_valid",
+          "value": "\"olympiads\".\"rating\" is null or \"olympiads\".\"rating\" between 0 and 10"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.plan_items": {
+      "name": "plan_items",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "olympiad_id": {
+          "name": "olympiad_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tracking": {
+          "name": "tracking",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "saved_at": {
+          "name": "saved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "plan_items_user_id_user_profiles_id_fk": {
+          "name": "plan_items_user_id_user_profiles_id_fk",
+          "tableFrom": "plan_items",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "plan_items_olympiad_id_olympiads_id_fk": {
+          "name": "plan_items_olympiad_id_olympiads_id_fk",
+          "tableFrom": "plan_items",
+          "tableTo": "olympiads",
+          "columnsFrom": [
+            "olympiad_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "plan_items_user_id_olympiad_id_pk": {
+          "name": "plan_items_user_id_olympiad_id_pk",
+          "columns": [
+            "user_id",
+            "olympiad_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "plan_note_length": {
+          "name": "plan_note_length",
+          "value": "\"plan_items\".\"note\" is null or length(\"plan_items\".\"note\") <= 2000"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.olympiad_stages": {
+      "name": "olympiad_stages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "olympiad_id": {
+          "name": "olympiad_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_key": {
+          "name": "source_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origin": {
+          "name": "origin",
+          "type": "stage_origin",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "stage_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_dates": {
+          "name": "raw_dates",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "begins_on": {
+          "name": "begins_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ends_on": {
+          "name": "ends_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Europe/Moscow'"
+        },
+        "verification": {
+          "name": "verification",
+          "type": "date_verification",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'unverified'"
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_by": {
+          "name": "verified_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "calendar_hash": {
+          "name": "calendar_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "stages_source_key_unique": {
+          "name": "stages_source_key_unique",
+          "columns": [
+            {
+              "expression": "olympiad_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "origin",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "source_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "stages_next_event_idx": {
+          "name": "stages_next_event_idx",
+          "columns": [
+            {
+              "expression": "verification",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "begins_on",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ends_on",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "olympiad_stages_olympiad_id_olympiads_id_fk": {
+          "name": "olympiad_stages_olympiad_id_olympiads_id_fk",
+          "tableFrom": "olympiad_stages",
+          "tableTo": "olympiads",
+          "columnsFrom": [
+            "olympiad_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "stages_dates_ordered": {
+          "name": "stages_dates_ordered",
+          "value": "\"olympiad_stages\".\"begins_on\" is null or \"olympiad_stages\".\"ends_on\" is null or \"olympiad_stages\".\"begins_on\" <= \"olympiad_stages\".\"ends_on\""
+        },
+        "stages_timezone_valid": {
+          "name": "stages_timezone_valid",
+          "value": "\"olympiad_stages\".\"timezone\" = 'Europe/Moscow'"
+        },
+        "stages_verified_evidence": {
+          "name": "stages_verified_evidence",
+          "value": "\"olympiad_stages\".\"verification\" <> 'verified' or (\"olympiad_stages\".\"origin\" = 'verified_import' and \"olympiad_stages\".\"source_url\" is not null and \"olympiad_stages\".\"verified_at\" is not null and \"olympiad_stages\".\"verified_by\" is not null and (\"olympiad_stages\".\"begins_on\" is not null or \"olympiad_stages\".\"ends_on\" is not null))"
+        },
+        "stages_csv_no_dates": {
+          "name": "stages_csv_no_dates",
+          "value": "\"olympiad_stages\".\"origin\" <> 'csv' or (\"olympiad_stages\".\"begins_on\" is null and \"olympiad_stages\".\"ends_on\" is null and \"olympiad_stages\".\"verification\" = 'unverified')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.subjects": {
+      "name": "subjects",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "subjects_name_unique": {
+          "name": "subjects_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_profiles": {
+      "name": "user_profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "max_user_id": {
+          "name": "max_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_profiles_max_user_id_unique": {
+          "name": "user_profiles_max_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "max_user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.olympiad_format": {
+      "name": "olympiad_format",
+      "schema": "public",
+      "values": [
+        "onsite",
+        "online",
+        "hybrid",
+        "unknown"
+      ]
+    },
+    "public.participation_type": {
+      "name": "participation_type",
+      "schema": "public",
+      "values": [
+        "individual",
+        "team",
+        "mixed",
+        "unknown"
+      ]
+    },
+    "public.schedule_status": {
+      "name": "schedule_status",
+      "schema": "public",
+      "values": [
+        "published",
+        "unknown",
+        "not_held"
+      ]
+    },
+    "public.stage_kind": {
+      "name": "stage_kind",
+      "schema": "public",
+      "values": [
+        "registration",
+        "competition",
+        "other"
+      ]
+    },
+    "public.stage_origin": {
+      "name": "stage_origin",
+      "schema": "public",
+      "values": [
+        "csv",
+        "verified_import"
+      ]
+    },
+    "public.date_verification": {
+      "name": "date_verification",
+      "schema": "public",
+      "values": [
+        "unverified",
+        "verified",
+        "needs_review"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

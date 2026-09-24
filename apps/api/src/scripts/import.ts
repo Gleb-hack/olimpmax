@@ -1,0 +1,10 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { withDatabase } from './shared.js';
+import { importCsv } from '../import/importer.js';
+const file = process.argv[2] ? resolve(process.argv[2]) : fileURLToPath(new URL('../../../../olimpiady.csv', import.meta.url));
+const buffer = await readFile(file);
+const report = await withDatabase(db => importCsv(db, buffer, file));
+await writeFile(new URL('../../../../data/import-report.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify(report, null, 2));
