@@ -16,6 +16,10 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 0; font-size: 14px; line-height: 1.45; }
+/* The mini-app has a fixed mobile layout: no pinch or double-tap zoom (JS in lib/zoom.ts covers iOS). */
+html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* iOS zooms into focused fields smaller than 16px; enlarge them only on iOS. */
+@supports (-webkit-touch-callout: none) { input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: 16px !important; } }
 button, input, textarea, select { font: inherit; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; color: inherit; }
@@ -311,6 +315,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .faq-item.is-open h2 button { color: var(--olimp-blue); }
 .faq-item p { font-size: 12px; line-height: 1.7; color: #77808e; padding: 0 14px 16px; }
 .support-button { margin-top: 20px; }
+.support-email { margin: 14px 0 16px; padding: 12px 14px; border-radius: 12px; background: #f2f4f8; color: #30394c; font-weight: 600; text-align: center; overflow-wrap: anywhere; -webkit-user-select: all; user-select: all; }
 .version-label { text-align: center; color: #acb1bc; font-size: 10px; margin-top: 28px; }
 .notice { font-size: 12px; line-height: 1.6; padding: 12px 14px; border-radius: 12px; background: #f0f2f7; color: #727d92; margin: 12px 0; }
 .notice--info { background: #edf1ff; color: #536ca6; }
@@ -354,6 +359,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .prose { font-size: 12px; line-height: 1.75; color: #717b8d; }
 .prose h3 { color: #272f3e; margin-top: 16px; font-size: 13px; }
 .prose p { margin: 8px 0 15px; }
+.prose ul { margin: -8px 0 15px; padding-left: 18px; }
 .olympiad-detail__navigation { margin-bottom: 18px; }
 .olympiad-detail__heading { padding-bottom: 16px; border-bottom: 1px solid var(--olimp-border); }
 .olympiad-detail__heading > .badge { margin-bottom: 16px; }

@@ -9,7 +9,9 @@ import App, { ErrorBoundary } from './App';
 import { SessionProvider } from './lib/session';
 import { ApiError } from './lib/api';
 import { max } from './lib/max';
+import { preventZoom } from './lib/zoom';
 
 const client = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false, retry: (count, error) => count < 1 && !(error instanceof ApiError && error.status >= 400 && error.status < 500) }, mutations: { retry: false } } });
 max.ready();
+preventZoom();
 createRoot(document.getElementById('root')!).render(<StrictMode><MaxUI colorScheme="light"><ErrorBoundary><QueryClientProvider client={client}><SessionProvider><BrowserRouter><App /></BrowserRouter></SessionProvider></QueryClientProvider></ErrorBoundary></MaxUI></StrictMode>);

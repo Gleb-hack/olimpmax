@@ -3,26 +3,21 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowUpLeft, History, Search, X } from 'lucide-react';
 import { Button, EmptyState, Loading, Notice } from '@olimp/ui';
-import { api, isMock } from '../../lib/api';
+import { api } from '../../lib/api';
 import { usePlan } from '../../lib/queries';
-import { max } from '../../lib/max';
+import { localKeys, readSearchHistory } from '../../lib/local-data';
 import { useUI } from '../../lib/ui-store';
 import { OlympiadCard } from './OlympiadCard';
 import { Comparison } from './CatalogPage';
 
 const popular = [{ label: 'Информатика', query: 'Информатика' }, { label: 'Математика', query: 'Математика' }, { label: 'ВсОШ', query: 'Всероссийская олимпиада' }, { label: 'Физика', query: 'Физика' }];
-const historyKey = () => `olimp.search-history.v1.${isMock ? 'mock' : max.preferenceScope}`;
-function readHistory(): string[] {
-  try { const value: unknown = JSON.parse(localStorage.getItem(historyKey()) || '[]'); return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0 && item.length <= 200).slice(0, 8) : []; }
-  catch { return []; }
-}
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
   const location = useLocation();
   const backTo = typeof location.state?.backTo === 'string' && /^\/catalog(?:\?|$)/.test(location.state.backTo) ? location.state.backTo : '/catalog';
   const urlQuery = (params.get('q') || '').slice(0, 200);
   const [input, setInput] = useState(urlQuery);
-  const [history, setHistory] = useState(readHistory);
+  const [history, setHistory] = useState(readSearchHistory);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const plan = usePlan();
@@ -43,9 +38,9 @@ export function SearchPage() {
   useEffect(() => {
     if (!urlQuery || !results.isSuccess) return;
     const timer = setTimeout(() => {
-      const next = [urlQuery, ...readHistory().filter(value => value.toLocaleLowerCase('ru') !== urlQuery.toLocaleLowerCase('ru'))].slice(0, 8);
+      const next = [urlQuery, ...readSearchHistory().filter(value => value.toLocaleLowerCase('ru') !== urlQuery.toLocaleLowerCase('ru'))].slice(0, 8);
       setHistory(next);
-      try { localStorage.setItem(historyKey(), JSON.stringify(next)); } catch { /* Search remains usable when storage is unavailable. */ }
+      try { localStorage.setItem(localKeys.searchHistory(), JSON.stringify(next)); } catch { /* Search remains usable when storage is unavailable. */ }
     }, 1000);
     return () => clearTimeout(timer);
   }, [urlQuery, results.isSuccess]);

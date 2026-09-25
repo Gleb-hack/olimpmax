@@ -4,6 +4,7 @@ import type { ProfilePreferences, UserProfile } from '@olimp/contracts';
 import { api, canUseLocalAuth, clearSession, isMock, ApiError } from './api';
 import { max } from './max';
 import { useUI } from './ui-store';
+import { clearLocalData } from './local-data';
 
 const resumeKey = 'olimp.session.resume.v1';
 const readResume = () => { try { return sessionStorage.getItem(resumeKey); } catch { return null; } };
@@ -11,7 +12,7 @@ const remember = (value: string) => { try { sessionStorage.setItem(resumeKey, va
 type Session = {
   user: UserProfile | null; starting: boolean; error: string | null;
   login: () => Promise<void>; register: (profile: ProfilePreferences) => Promise<void>;
-  logout: () => void; setUser: (user: UserProfile) => void;
+  logout: () => void; deleteAccount: () => Promise<void>; setUser: (user: UserProfile) => void;
 };
 const Context = createContext<Session | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -52,7 +53,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const profile = await api.register(preferences);
     if (attempt === version.current) enter(profile);
   }
+  async function deleteAccount() {
+    if (!user) return;
+    // Stop background refetches first: a request after deletion would sign in again and recreate an empty account.
+    await client.cancelQueries();
+    await api.deleteAccount();
+    clearLocalData(user);
+    logout();
+  }
   const updateUser = (profile: UserProfile) => setUser(current => current?.id === profile.id ? profile : current);
-  return <Context.Provider value={{ user, starting, error, login, register, logout, setUser: updateUser }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ user, starting, error, login, register, logout, deleteAccount, setUser: updateUser }}>{children}</Context.Provider>;
 }
 export function useSession() { const value = useContext(Context); if (!value) throw new Error('SessionProvider is missing'); return value; }
