@@ -45,7 +45,7 @@ test('model receives validated catalog filters and only real database cards reac
   assert.equal(result.olympiads[0]!.title, item.title);
   assert.equal(result.olympiads[0]!.sourceUrl, item.sourceUrl);
 });
-test('unverified, invalidated, and not-held dates are excluded from model evidence', () => {
+test('unverified and invalidated dates stay out of verified events while schedule text remains available', () => {
   const stage = { id: '123e4567-e89b-42d3-a456-426614174000', name: 'Регистрация', kind: 'registration' as const,
     rawDates: 'До 1 ноя', beginsOn: null, endsOn: '2026-11-01', timezone: 'Europe/Moscow' as const,
     sourceUrl: 'https://example.org', verifiedAt: '2026-09-23T00:00:00Z', origin: 'verified_import' as const, verification: 'verified' as const };
@@ -53,7 +53,7 @@ test('unverified, invalidated, and not-held dates are excluded from model eviden
     { ...stage, origin: 'csv' as const, verification: 'unverified' as const }] };
   assert.equal(evidenceFor(enriched).verifiedStages.length, 1);
   assert.equal(evidenceFor({ ...enriched, scheduleStatus: 'not_held' }).verifiedStages.length, 0);
-  assert.equal(JSON.stringify(evidenceFor(enriched)).includes('До 1 ноя'), false);
+  assert.equal(evidenceFor(enriched).calendarText, enriched.calendarRaw);
 });
 test('invented source IDs and invalid model structures are rejected', async () => {
   await assert.rejects(answerAssistant(request(), data, completeWith({ intent: 'search' },

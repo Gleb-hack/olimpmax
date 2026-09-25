@@ -1,0 +1,1 @@
+ALTER TABLE "olympiads" ADD COLUMN "in_catalog" boolean DEFAULT true NOT NULL;

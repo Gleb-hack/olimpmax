@@ -35,7 +35,7 @@ before(async () => {
     await connection.pool.query(readFileSync(new URL(filename, folder), 'utf8'));
   }
   const first = await importCsv(connection.db, source, 'olimpiady.csv');
-  assert.equal(first.inserted, 771);
+  assert.equal(first.inserted, 640);
   app = await buildApp({ db: connection.db, botToken: testBotToken, jwtSecret: 'test'.repeat(16), now: () => now });
   for (const id of [111, 222]) {
     const response = await app.inject({ method: 'POST', url: '/auth/max', payload: { initData: signedInitData(id, now) } });
@@ -52,10 +52,10 @@ test('catalog pagination, counts, combined filters, Russian search and detail co
   const response = await app.inject('/olympiads');
   assert.equal(response.statusCode, 200, response.body);
   const catalog = contracts.CatalogResponse.parse(response.json());
-  assert.equal(catalog.total, 771); assert.equal(catalog.items.length, 20);
+  assert.equal(catalog.total, 640); assert.equal(catalog.items.length, 20);
   assert(catalog.items.every(item => item.nextEvent === null));
   const filters = contracts.FiltersResponse.parse((await app.inject('/olympiads/filters')).json());
-  assert.equal(filters.subjects.length, 35);
+  assert.equal(filters.subjects.length, 34);
   const math = filters.subjects.find(s => s.name === 'Математика')!;
   const expected = rows.filter(r => r.subjectNames.includes('Математика') && r.olympiad.gradeFrom !== null && r.olympiad.gradeFrom <= 9 && r.olympiad.gradeTo! >= 9 && r.olympiad.format === 'hybrid');
   const filtered = contracts.CatalogResponse.parse((await app.inject(`/olympiads?subjectIds=${math.id}&grades=9&formats=hybrid&pageSize=100`)).json());
@@ -66,6 +66,14 @@ test('catalog pagination, counts, combined filters, Russian search and detail co
   const detailed = contracts.OlympiadDetail.parse((await app.inject('/olympiads/88')).json());
   assert.equal(detailed.rawSource['Описание'], rows.find(r => r.olympiad.id === 88)!.olympiad.rawSource['Описание']);
   assert.equal(detailed.calendarState, 'unverified');
+  assert.equal(detailed.level, 'ВсОШ');
+  const enriched = contracts.OlympiadDetail.parse((await app.inject('/olympiads/5758')).json());
+  assert.equal(enriched.level, 'III');
+  assert.match(enriched.levelStatus!, /Проект РСОШ/);
+  assert.equal(enriched.stages.find(stage => stage.kind === 'registration')?.rawDates, 'До 30 ноя');
+  const card = contracts.CatalogResponse.parse((await app.inject('/olympiads?q=' + encodeURIComponent('Миссия выполнима'))).json()).items.find(item => item.id === 5758)!;
+  assert.equal(card.calendarRaw, enriched.calendarRaw);
+  assert.equal(card.level, 'III');
   assert(detailed.stages.every(s => s.beginsOn === null && s.endsOn === null));
   assert.equal((await app.inject('/olympiads/2147483647')).statusCode, 404);
   assert.equal((await app.inject('/olympiads?grades=12')).statusCode, 400);
@@ -73,6 +81,34 @@ test('catalog pagination, counts, combined filters, Russian search and detail co
   assert.equal((await app.inject('/olympiads?q=' + encodeURIComponent("'; DROP TABLE olympiads; --"))).statusCode, 200);
   const second = contracts.CatalogResponse.parse((await app.inject('/olympiads?page=2')).json());
   assert(second.items.every(s => !catalog.items.some(first => first.id === s.id)));
+});
+
+test('replacing a catalog hides missing entries but preserves saved plans and allows reactivation', async () => {
+  const original = rows.find(row => row.olympiad.id === 88)!;
+  const fake = { ...original.olympiad, id: 2000000000, title: 'Тестовая архивная олимпиада', sourceUrl: 'https://olimpiada.ru/activity/2000000000' };
+  const { olympiads } = await import('../apps/api/src/db/schema.js');
+  await connection.db.insert(olympiads).values(fake);
+  await app.inject({ method: 'PUT', url: '/me/plan/2000000000', headers: auth(tokenB) });
+  await app.inject({ method: 'PATCH', url: '/me/plan/2000000000', headers: auth(tokenB), payload: { note: 'Сохранить после обновления', tracking: false } });
+  const partial = await importCsv(connection.db, source, 'partial.csv');
+  assert.equal(partial.hiddenFromCatalog, 0);
+  assert.equal((await app.inject('/olympiads')).json().total, 641);
+  const replacement = await importCsv(connection.db, source, 'complete.csv', { replaceCatalog: true });
+  assert.equal(replacement.hiddenFromCatalog, 1);
+  assert.equal((await app.inject('/olympiads')).json().total, 640);
+  assert.equal((await app.inject('/olympiads?q=' + encodeURIComponent('Тестовая архивная'))).json().total, 0);
+  const filters = contracts.FiltersResponse.parse((await app.inject('/olympiads/filters')).json());
+  assert.equal(filters.formats.reduce((sum, item) => sum + item.count, 0), 640);
+  const plan = contracts.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: auth(tokenB) })).json());
+  assert.equal(plan.items[0]!.olympiad.id, fake.id);
+  assert.equal(plan.items[0]!.tracking, false);
+  assert.equal(plan.items[0]!.note, 'Сохранить после обновления');
+  assert.equal((await app.inject('/olympiads/2000000000')).statusCode, 200);
+  await connection.pool.query('update olympiads set in_catalog = false where id = 88');
+  await importCsv(connection.db, source, 'repeat.csv', { replaceCatalog: true });
+  assert.equal((await app.inject('/olympiads')).json().total, 640);
+  await app.inject({ method: 'DELETE', url: '/me/plan/2000000000', headers: auth(tokenB) });
+  await connection.pool.query('delete from olympiads where id = 2000000000');
 });
 test('personal plans require verified identity, are isolated and idempotent', async () => {
   assert.equal((await app.inject('/me/plan')).statusCode, 401);
@@ -86,11 +122,11 @@ test('personal plans require verified identity, are isolated and idempotent', as
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenA), payload: { note: 'Мой план' } })).statusCode, 204);
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenA), payload: { userId: tokenB } })).statusCode, 400);
   const secondImport = await importCsv(connection.db, source, 'repeat.csv');
-  assert.equal(secondImport.inserted, 0); assert.equal(secondImport.updated, 771);
+  assert.equal(secondImport.inserted, 0); assert.equal(secondImport.updated, 640);
   plan = contracts.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: auth(tokenA) })).json());
   assert.equal(plan.total, 1); assert.equal(plan.items[0]!.note, 'Мой план');
   const counts = await connection.pool.query('select (select count(*) from olympiads) as olympiads, (select count(*) from olympiad_stages) as stages');
-  assert.equal(Number(counts.rows[0].olympiads), 771);
+  assert.equal(Number(counts.rows[0].olympiads), 640);
   assert.equal(Number(counts.rows[0].stages), rows.reduce((n, row) => n + row.stages.length, 0));
 });
 test('verified stage events, tracking switch, re-import preservation and invalidation', async () => {
@@ -189,8 +225,11 @@ test('assistant deadline lookup applies subject, grade and verified-date filters
   assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({})), []);
   await importVerifiedStages(connection.db, [{ olympiadId: 4357, key: 'assistant-test-only', name: 'Регистрация', kind: 'registration',
     beginsOn: '2026-09-23', endsOn: '2026-10-10', sourceUrl: 'https://example.org/test-only', verifiedAt: now.toISOString(), verifiedBy: 'Integration test' }], now);
-  assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ subjectIds: [8], grades: [9] })), [4357]);
-  assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ subjectIds: [18] })), []);
+  const filters = contracts.FiltersResponse.parse((await app.inject('/olympiads/filters')).json());
+  const informaticsId = filters.subjects.find(subject => subject.name === 'Информатика')!.id;
+  const chemistryId = filters.subjects.find(subject => subject.name === 'Химия')!.id;
+  assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ subjectIds: [informaticsId], grades: [9] })), [4357]);
+  assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ subjectIds: [chemistryId] })), []);
   assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ grades: [4] })), []);
   assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ formats: ['online'] })), []);
 });

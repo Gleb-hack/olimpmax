@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, like, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, like, or, sql, type SQL } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db/client.js';
 import { olympiads, olympiadSubjects, subjects, stages } from '../db/schema.js';
@@ -35,13 +35,18 @@ export async function enrich(db: Database, rows: Olympiad[], today = moscowToday
       gradeFrom: row.gradeFrom, gradeTo: row.gradeTo, classesRaw: row.classesRaw,
       format: row.format, participation: row.participation, rating: row.rating,
       scheduleStatus: row.scheduleStatus, statusRaw: row.statusRaw, sourceUrl: row.sourceUrl, sourceGroup: row.sourceGroup,
+      calendarRaw: row.calendarRaw,
+      level: row.rawSource['Уровень олимпиады']?.trim() || null,
+      levelProfile: row.rawSource['Профиль уровня']?.trim() || null,
+      levelStatus: row.rawSource['Статус уровня']?.trim() || null,
+      levelSourceUrl: row.rawSource['Источник уровня']?.trim() || null,
       ...calendarSummary(rowStages, row.scheduleStatus, today),
     };
     return { row, card, stages: rowStages };
   });
 }
 export async function catalog(db: Database, query: CatalogQuery, today = moscowToday(), options: { excludeNotHeld?: boolean } = {}) {
-  const conditions = [];
+  const conditions: (SQL | undefined)[] = [eq(olympiads.inCatalog, true)];
   if (options.excludeNotHeld) conditions.push(sql`${olympiads.scheduleStatus} <> 'not_held'`);
   // Every normalized word must occur; punctuation, case and е/ё do not affect lookup.
   if (query.q) for (const token of normalizeSearch(query.q).split(' ').filter(Boolean)) conditions.push(like(olympiads.searchText, `%${token}%`));
@@ -71,9 +76,11 @@ export async function detail(db: Database, id: number, today = moscowToday()) {
 export async function filters(db: Database) {
   const [subjectRows, rows] = await Promise.all([
     db.select({ id: subjects.id, name: subjects.name, count: count() }).from(subjects)
-      .innerJoin(olympiadSubjects, eq(subjects.id, olympiadSubjects.subjectId)).groupBy(subjects.id, subjects.name).orderBy(subjects.name),
+      .innerJoin(olympiadSubjects, eq(subjects.id, olympiadSubjects.subjectId))
+      .innerJoin(olympiads, eq(olympiads.id, olympiadSubjects.olympiadId)).where(eq(olympiads.inCatalog, true))
+      .groupBy(subjects.id, subjects.name).orderBy(subjects.name),
     db.select({ gradeFrom: olympiads.gradeFrom, gradeTo: olympiads.gradeTo, format: olympiads.format,
-      participation: olympiads.participation, scheduleStatus: olympiads.scheduleStatus }).from(olympiads),
+      participation: olympiads.participation, scheduleStatus: olympiads.scheduleStatus }).from(olympiads).where(eq(olympiads.inCatalog, true)),
   ]);
   const formatLabels = { onsite: 'Очная', online: 'Дистанционная', hybrid: 'Очно-заочная', unknown: 'Не указан' } as const;
   const participationLabels = { individual: 'Личная', team: 'Командная', mixed: 'Лично-командная', unknown: 'Не указан' } as const;

@@ -1,6 +1,6 @@
 import { Bell, CalendarDays, ChevronRight, MessageSquare, Pause } from 'lucide-react';
 import type { PlanEntry } from '../../lib/api';
-import { dateParts, formatDay, formats } from '../../lib/format';
+import { dateParts, formatDay, formats, scheduleLabel } from '../../lib/format';
 import { OlympiadTags } from '../catalog/OlympiadSummary';
 import { eventLabel, eventTiming, type PlanCardEvent } from './plan-card-format';
 
@@ -10,7 +10,7 @@ export function PlanCard({ entry, event, onOpen }: { entry: PlanEntry; event?: P
   const parts = next ? dateParts(next.date) : null;
   const timing = next ? eventTiming(next.date) : null;
   const subtitle = event?.name || item.organizers?.join(', ');
-  const noDate = item.calendarState === 'not_held' ? 'Не проводится по данным источника' : item.calendarState === 'no_upcoming' ? 'Нет ближайших событий' : 'Даты уточняются';
+  const noDate = scheduleLabel({ ...item, calendarRaw: entry.calendarRaw });
   return <article className={`plan-card ${entry.tracking ? '' : 'plan-card--paused'}`}>
     <div className="plan-card__header">
       <span className={`date-tile plan-card__date ${entry.tracking ? '' : 'plan-card__date--paused'}`} aria-hidden="true">{parts ? <><small>{parts.month}</small><strong>{parts.day}</strong></> : entry.tracking ? <CalendarDays size={22} strokeWidth={1.6} /> : <Pause size={20} strokeWidth={1.7} />}</span>

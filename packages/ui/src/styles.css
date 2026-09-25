@@ -223,7 +223,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .subject-tabs::-webkit-scrollbar { display: none; }
 .chip { display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; min-height: 34px; font-size: 12px; padding: 6px 13px; border-radius: 30px; background: white; border: 1px solid var(--olimp-border); }
 .chip--active { background: var(--olimp-blue); border-color: var(--olimp-blue); color: #fff; }
-.chip--selected { background: #f7f8ff; border-color: var(--olimp-blue); color: var(--olimp-blue); }
+.chip--selected { background: var(--olimp-blue-soft); border-color: var(--olimp-blue); color: var(--olimp-blue); font-weight: 550; }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; margin: 18px 0; }
 .stat { background: #fff; border: 1px solid var(--olimp-border); border-radius: 14px; text-align: center; padding: 14px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .stat-icon { width: 27px; height: 27px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
@@ -235,9 +235,8 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .tone-red { background: #fdecee; color: #d66772; }
 .tone-gray { background: #f0f1f4; color: #9298a3; }
 .section { margin-top: 21px; }
-.section > h2, .section-heading { margin-bottom: 10px; }
+.section > h2 { margin-bottom: 10px; }
 .section h2 { font-size: 14px; }
-.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .section-caption, h2.section-caption { font-size: 12px; font-weight: 450; color: #747c88; }
 .event-list { display: flex; flex-direction: column; gap: 10px; }
 .event-row { display: flex; align-items: center; width: 100%; text-align: left; padding: 12px; gap: 11px; background: #fff; border: 1px solid var(--olimp-border); border-radius: 14px; }
@@ -284,10 +283,14 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .profile-card h2 { font-size: 15px; }
 .profile-card p { color: var(--olimp-muted); font-size: 12px; margin: 2px 0 4px; }
 .avatar { width: 58px; height: 58px; flex-shrink: 0; background: var(--olimp-blue-soft); color: #6380f4; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.grade-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.grade-option { background: white; border: 1px solid var(--olimp-border); border-radius: 12px; min-height: 42px; font-size: 12px; }
-.grade-option.is-active { background: var(--olimp-blue); color: white; border-color: var(--olimp-blue); }
-.grade-other { margin: 7px 0 0; font-size: 11px; }
+/* Profile preferences: one card split into captioned blocks by hairlines. */
+.profile-details { margin-top: 16px; }
+.panel-section + .panel-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--olimp-border); }
+.panel-section > .section-caption { margin-bottom: 10px; }
+.panel-section__empty { color: var(--olimp-muted); font-size: 12px; }
+.panel-section .switch-row { padding-inline: 0; min-height: 40px; }
+.panel-section .switch-row + .switch-row { border-top: 0; }
+.profile-edit-button { margin-top: 16px; }
 .settings-list { background: #fff; border: 1px solid var(--olimp-border); border-radius: 16px; overflow: hidden; }
 .settings-row { display: flex; align-items: center; width: 100%; min-height: 66px; gap: 12px; padding: 12px 14px; text-align: left; }
 .settings-row + .settings-row { border-top: 1px solid var(--olimp-border); }
@@ -302,7 +305,6 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .switch-row > span:first-child { min-width: 0; }
 .switch-row small { display: block; font-size: 10px; }
 .switch-row > span > small { color: var(--olimp-muted); margin-top: 3px; }
-.switch-end { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
 .hint { font-size: 11px; line-height: 1.6; color: #9399a6; margin: 17px 0 0; }
 .page-intro { font-size: 12px; line-height: 1.6; color: #858b97; margin-bottom: 20px; }
 .delete-account { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 45px; padding: 12px 15px; border-radius: 13px; background: #fdeef0; color: #d55c65; margin-top: 18px; font-size: 12px; }
@@ -452,7 +454,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .subject-choice:has(input:focus-visible) { outline: 2px solid #819cff; outline-offset: -2px; }
 .subjects-dialog .button { flex-shrink: 0; }
 @media (min-width: 600px) { .app-shell { box-shadow: 0 0 0 1px #e5e8ee, 0 12px 80px #253a7010; } .page { padding-top: 32px; } }
-@media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } .switch-end { gap: 5px; } }
+@media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */

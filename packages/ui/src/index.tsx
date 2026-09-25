@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Button as MaxButton } from '@maxhub/max-ui';
 import { NavLink, Link } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, ChevronRight, LayoutGrid, Sparkles, UserRound, X, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Check, ChevronRight, LayoutGrid, Sparkles, UserRound, X, type LucideIcon } from 'lucide-react';
 
 export { Select } from './Select';
 
@@ -36,6 +36,11 @@ export function SettingsRow({ icon: Icon, title, subtitle, tone = 'blue', childr
     <span className="settings-row__copy"><strong>{title}</strong>{subtitle && <small>{subtitle}</small>}</span>
     {children ?? <ChevronRight className="muted" size={18} />}
   </button>;
+}
+
+// Read-only value tag; a selected chip uses the primary tint and shows a check mark.
+export function Chip({ children, selected = false }: { children: ReactNode; selected?: boolean }) {
+  return <span className={`chip ${selected ? 'chip--selected' : ''}`}>{children}{selected && <Check size={13} strokeWidth={2.5} aria-hidden="true" />}</span>;
 }
 
 export function Notice({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'info' | 'warning' | 'error' }) {
