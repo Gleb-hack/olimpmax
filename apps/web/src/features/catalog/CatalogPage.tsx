@@ -6,7 +6,7 @@ import { Button, Dialog, EmptyState, Header, Loading, Notice, Select } from '@ol
 import { api } from '../../lib/api';
 import { useFilters, usePlan } from '../../lib/queries';
 import { useUI } from '../../lib/ui-store';
-import { formats, gradeLabel, calendarLabels } from '../../lib/format';
+import { formats, gradeLabel, levelLabel, scheduleLabel } from '../../lib/format';
 import { OlympiadCard } from './OlympiadCard';
 
 export function Comparison({ onClose }: { onClose: () => void }) {
@@ -15,8 +15,8 @@ export function Comparison({ onClose }: { onClose: () => void }) {
   const items = queries.flatMap(query => query.data ? [query.data] : []);
   return <Dialog title="Сравнение олимпиад" onClose={onClose}><p className="muted dialog-intro">Выбрано: {ids.length}</p>
     {queries.some(query => query.isPending) ? <Loading /> : queries.some(query => query.isError) ? <Notice tone="error">Не удалось загрузить сравнение. Закройте окно и попробуйте ещё раз.</Notice> : <div className="comparison-wrap"><table className="comparison-table"><thead><tr><th>Параметр</th>{items.map(item => <th key={item.id}>{item.title}</th>)}</tr></thead><tbody>
-      {(['Предметы', 'Формат', 'Классы', 'Расписание'] as const).map((label, index) => <tr key={label}><th>{label}</th>{items.map(item => <td key={item.id}>{[item.subjects.map(s => s.name).join(', '), formats[item.format], gradeLabel(item), calendarLabels[item.calendarState]][index]}</td>)}</tr>)}
-    </tbody></table></div>}<p className="hint">Уровень РСОШ и льготы в исходных данных не указаны.</p><Button className="full-width" onClick={onClose}>Готово</Button>
+      {(['Предметы', 'Формат', 'Классы', 'Уровень олимпиады', 'Расписание'] as const).map((label, index) => <tr key={label}><th>{label}</th>{items.map(item => <td key={item.id}>{[item.subjects.map(s => s.name).join(', '), formats[item.format], gradeLabel(item), levelLabel(item), scheduleLabel(item)][index]}</td>)}</tr>)}
+    </tbody></table></div>}<Button className="full-width" onClick={onClose}>Готово</Button>
   </Dialog>;
 }
 

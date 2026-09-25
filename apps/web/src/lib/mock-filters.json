@@ -3,7 +3,7 @@
     {
       "id": 1,
       "name": "Английский язык",
-      "count": 44
+      "count": 39
     },
     {
       "id": 2,
@@ -13,165 +13,160 @@
     {
       "id": 3,
       "name": "Астрономия",
-      "count": 27
+      "count": 24
     },
     {
       "id": 4,
       "name": "Биология",
-      "count": 109
+      "count": 94
     },
     {
       "id": 5,
       "name": "География",
-      "count": 61
+      "count": 49
     },
     {
       "id": 6,
       "name": "ИЗО",
-      "count": 22
+      "count": 21
     },
     {
       "id": 7,
-      "name": "Иностранные языки",
-      "count": 1
+      "name": "Информатика",
+      "count": 124
     },
     {
       "id": 8,
-      "name": "Информатика",
-      "count": 133
+      "name": "Искусство",
+      "count": 33
     },
     {
       "id": 9,
-      "name": "Искусство",
-      "count": 38
+      "name": "Испанский язык",
+      "count": 12
     },
     {
       "id": 10,
-      "name": "Испанский язык",
-      "count": 13
+      "name": "История",
+      "count": 61
     },
     {
       "id": 11,
-      "name": "История",
-      "count": 69
-    },
-    {
-      "id": 12,
       "name": "Итальянский язык",
       "count": 4
     },
     {
-      "id": 13,
+      "id": 12,
       "name": "Китайский язык",
-      "count": 14
+      "count": 13
     },
     {
-      "id": 14,
+      "id": 13,
       "name": "Корейский язык",
       "count": 3
     },
     {
-      "id": 15,
+      "id": 14,
       "name": "Латинский язык",
-      "count": 2
+      "count": 1
     },
     {
-      "id": 16,
+      "id": 15,
       "name": "Лингвистика",
       "count": 16
     },
     {
-      "id": 17,
+      "id": 16,
       "name": "Литература",
-      "count": 53
+      "count": 45
+    },
+    {
+      "id": 17,
+      "name": "Математика",
+      "count": 146
     },
     {
       "id": 18,
-      "name": "Математика",
-      "count": 163
+      "name": "Немецкий язык",
+      "count": 21
     },
     {
       "id": 19,
-      "name": "Немецкий язык",
-      "count": 25
+      "name": "ОБЗР",
+      "count": 6
     },
     {
       "id": 20,
-      "name": "ОБЗР",
-      "count": 8
+      "name": "Обществознание",
+      "count": 69
     },
     {
       "id": 21,
-      "name": "Обществознание",
-      "count": 81
+      "name": "Право",
+      "count": 33
     },
     {
       "id": 22,
-      "name": "Право",
-      "count": 35
-    },
-    {
-      "id": 23,
       "name": "Предпринимательство",
       "count": 9
     },
     {
-      "id": 24,
+      "id": 23,
       "name": "Психология",
-      "count": 17
+      "count": 14
+    },
+    {
+      "id": 24,
+      "name": "Робототехника",
+      "count": 22
     },
     {
       "id": 25,
-      "name": "Робототехника",
-      "count": 23
+      "name": "Русский язык",
+      "count": 61
     },
     {
       "id": 26,
-      "name": "Русский язык",
-      "count": 70
+      "name": "Технология",
+      "count": 18
     },
     {
       "id": 27,
-      "name": "Технология",
-      "count": 19
+      "name": "Физика",
+      "count": 117
     },
     {
       "id": 28,
-      "name": "Физика",
-      "count": 141
+      "name": "Физическая культура",
+      "count": 5
     },
     {
       "id": 29,
-      "name": "Физическая культура",
-      "count": 7
+      "name": "Французский язык",
+      "count": 21
     },
     {
       "id": 30,
-      "name": "Французский язык",
-      "count": 23
+      "name": "Химия",
+      "count": 85
     },
     {
       "id": 31,
-      "name": "Химия",
-      "count": 95
-    },
-    {
-      "id": 32,
       "name": "Черчение",
       "count": 9
     },
     {
-      "id": 33,
+      "id": 32,
       "name": "Экология",
-      "count": 33
+      "count": 24
+    },
+    {
+      "id": 33,
+      "name": "Экономика",
+      "count": 50
     },
     {
       "id": 34,
-      "name": "Экономика",
-      "count": 59
-    },
-    {
-      "id": 35,
       "name": "Японский язык",
       "count": 4
     }
@@ -179,108 +174,108 @@
   "grades": [
     {
       "value": 1,
-      "count": 38
+      "count": 32
     },
     {
       "value": 2,
-      "count": 44
+      "count": 38
     },
     {
       "value": 3,
-      "count": 46
+      "count": 40
     },
     {
       "value": 4,
-      "count": 60
+      "count": 50
     },
     {
       "value": 5,
-      "count": 163
+      "count": 143
     },
     {
       "value": 6,
-      "count": 200
+      "count": 179
     },
     {
       "value": 7,
-      "count": 326
+      "count": 283
     },
     {
       "value": 8,
-      "count": 493
+      "count": 421
     },
     {
       "value": 9,
-      "count": 628
+      "count": 531
     },
     {
       "value": 10,
-      "count": 698
+      "count": 580
     },
     {
       "value": 11,
-      "count": 693
+      "count": 575
     }
   ],
   "formats": [
     {
       "value": "onsite",
       "label": "Очная",
-      "count": 190
+      "count": 167
     },
     {
       "value": "online",
       "label": "Дистанционная",
-      "count": 59
+      "count": 42
     },
     {
       "value": "hybrid",
       "label": "Очно-заочная",
-      "count": 502
+      "count": 412
     },
     {
       "value": "unknown",
       "label": "Не указан",
-      "count": 20
+      "count": 19
     }
   ],
   "participation": [
     {
       "value": "individual",
       "label": "Личная",
-      "count": 583
+      "count": 500
     },
     {
       "value": "team",
       "label": "Командная",
-      "count": 105
+      "count": 88
     },
     {
       "value": "mixed",
       "label": "Лично-командная",
-      "count": 26
+      "count": 24
     },
     {
       "value": "unknown",
       "label": "Не указан",
-      "count": 57
+      "count": 28
     }
   ],
   "scheduleStatuses": [
     {
       "value": "published",
       "label": "Есть расписание",
-      "count": 210
+      "count": 569
     },
     {
       "value": "unknown",
       "label": "Расписание неизвестно",
-      "count": 430
+      "count": 71
     },
     {
       "value": "not_held",
       "label": "Не проводится",
-      "count": 131
+      "count": 0
     }
   ]
 }

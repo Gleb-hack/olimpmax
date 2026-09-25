@@ -3,7 +3,7 @@ import * as c from '@olimp/contracts';
 import detailsData from './mock-details.json';
 import filtersData from './mock-filters.json';
 
-// Snapshot of six public API records, captured 2026-09-22. Never used as an API-error fallback.
+// Six records from the 2026-09-24 CSV, captured through the API on 2026-09-25. Never an API-error fallback.
 const details = z.array(c.OlympiadDetail).parse(detailsData);
 const cards = details.map(item => c.OlympiadCard.parse(item));
 const filters = c.FiltersResponse.parse(filtersData);
