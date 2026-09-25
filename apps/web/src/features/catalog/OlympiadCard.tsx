@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button, Notice } from '@olimp/ui';
 import type { Olympiad } from '../../lib/api';
 import { usePlanActions } from '../../lib/queries';
-import { formatDay } from '../../lib/format';
+import { scheduleLabel } from '../../lib/format';
 import { useUI } from '../../lib/ui-store';
 import { OlympiadMeta, OlympiadStatus, OlympiadTags } from './OlympiadSummary';
 
@@ -18,7 +18,7 @@ export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }:
     <h2><Link className="olympiad-card__link" to={`/olympiads/${item.id}`} state={backTo ? { backTo, returnTo } : undefined}>{item.title}</Link></h2>
     <OlympiadMeta item={item} /><OlympiadTags item={item} compact />
     <div className="card-schedule"><span className="muted">{item.nextEvent ? item.nextEvent.name || 'Ближайший этап' : 'Расписание'}</span>
-      <span className={`schedule-line ${item.nextEvent ? '' : 'schedule-line--unknown'}`}><Bell size={13} />{item.nextEvent ? `${item.nextEvent.kind === 'ends' ? 'До' : 'Начало'} ${formatDay(item.nextEvent.date)}` : item.calendarState === 'not_held' ? 'Проведение не запланировано' : item.calendarState === 'no_upcoming' ? 'Нет ближайших событий' : 'Даты уточняются'}</span>
+      <span className="schedule-line"><Bell size={13} />{scheduleLabel(item)}</span>
     </div>
     <div className="card-actions"><label className={`compare-check ${checked ? 'is-checked' : ''}`}><input type="checkbox" checked={checked} disabled={!checked && selected.length === 2} onChange={() => toggle(item.id)} /><span className="compare-check__box" aria-hidden="true">{checked && <Check size={11} strokeWidth={3} />}</span><span>{checked ? 'Выбрано' : 'Сравнить'}</span></label>
       <Button size="small" className={saved && tracking ? 'tracking-button--saved' : ''} variant={saved ? 'secondary' : 'primary'} disabled={mutation.isPending} onClick={() => saved ? navigate('/plan') : mutation.mutate({ id: item.id, action: 'save' })}>

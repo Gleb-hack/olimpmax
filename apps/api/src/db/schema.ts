@@ -10,6 +10,7 @@ export const stageOriginEnum = pgEnum('stage_origin', ['csv', 'verified_import']
 const timestampNow = (name: string) => timestamp(name, { withTimezone: true, mode: 'string' }).notNull().defaultNow();
 
 export const olympiads = pgTable('olympiads', {
+  inCatalog: boolean('in_catalog').notNull().default(true),
   id: integer('id').primaryKey(), title: text('title').notNull(), description: text('description'),
   gradeFrom: integer('grade_from'), gradeTo: integer('grade_to'), classesRaw: text('classes_raw'),
   format: formatEnum('format').notNull(), participation: participationEnum('participation').notNull(),

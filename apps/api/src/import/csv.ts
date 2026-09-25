@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { parse } from 'csv-parse/sync';
 
 export const headers = ['ID','Название','Предмет','Классы','Класс от','Класс до','Формат','Тип участия','Рейтинг','Статус','Календарь','Расписание обновлено','Организатор','Контакты','Документы','Описание','Особенности','Источник','URL'];
+export const enrichedHeaders = ['ID','Название','Предмет','Классы','Класс от','Класс до','Формат','Тип участия','Рейтинг','Статус','Статус исходный','Календарь','Календарь статус','Календарь исходный','Расписание обновлено','Источник календаря','Уровень олимпиады','Профиль уровня','Статус уровня','Источник уровня','Дата проверки','Организатор','Контакты','Документы','Описание','Особенности','Источник','URL'];
 export const hash = (s: string | Buffer) => createHash('sha256').update(s).digest('hex');
 export const normalizeSearch = (value: string) => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ');
 export const splitValues = (s: string) => [...new Set(s.split(';').map(v => v.trim()).filter(v => v && v !== '→'))];
@@ -10,7 +11,7 @@ const formats = { 'Очная': 'onsite', 'Дистанционная': 'online'
 const participation = { 'Личная': 'individual', 'Командная': 'team', 'Лично-командная': 'mixed', '': 'unknown' } as const;
 export function scheduleStatus(calendar: string, status: string): 'published' | 'unknown' | 'not_held' {
   if (/не проводится/i.test(calendar + ' ' + status)) return 'not_held';
-  if (!calendar.trim() || /пока не известно|пока неизвестно|появится позже/i.test(calendar)) return 'unknown';
+  if (!calendar.trim() || /пока не известно|пока неизвестно|появится позже/i.test(calendar) || /^(?:не опубликован[аоы]?|информация ожидается)$/i.test(calendar.trim())) return 'unknown';
   return 'published';
 }
 
@@ -24,6 +25,13 @@ export function parseCalendar(calendar: string) {
     result.push({ name, rawDates, kind, sourceKey: String(result.length) });
   }
   for (const line of lines) {
+    // The enriched export puts the stage and its date on the same line.
+    const separator = line.indexOf(':');
+    if (separator > 0) {
+      if (pending) { push(pending, null); pending = null; }
+      push(line.slice(0, separator).trim(), line.slice(separator + 1).trim() || null);
+      continue;
+    }
     // The entire line must look like a date. Numbers in stage titles are not dates.
     const isDate = /^(?:(?:до|с)\s+)?\d{1,2}(?:\s|\.{3}|…|[-–]\d).*(?:янв|фев|мар|апр|ма[йя]|июн|июл|авг|сен|окт|ноя|дек)[а-я]*(?:\s+\d{4})?$/i.test(line) || /^уточняется$/i.test(line);
     if (isDate) { push(pending, line); pending = null; }
@@ -37,7 +45,7 @@ export function parseCsv(buffer: Buffer) {
   const rows = parse(buffer, {
     bom: true, delimiter: ';', skip_empty_lines: true,
     columns: (actual: string[]) => {
-      if (actual.length !== headers.length || actual.some((h, i) => h !== headers[i])) throw new Error('Столбцы CSV не совпадают с ожидаемой схемой');
+      if (![headers, enrichedHeaders].some(expected => actual.length === expected.length && actual.every((h, i) => h === expected[i]))) throw new Error('Столбцы CSV не совпадают с ожидаемой схемой');
       return actual;
     },
   }) as Record<string, string>[];

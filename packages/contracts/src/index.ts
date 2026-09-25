@@ -37,6 +37,9 @@ export const CalendarState = z.enum(['unknown', 'unverified', 'verified', 'needs
 export const OlympiadCard = z.object({
   id: z.number().int(), title: z.string(), description: z.string().nullable(),
   organizers: z.array(z.string()).optional(),
+  calendarRaw: z.string().nullable().optional(),
+  level: z.string().nullable().optional(), levelProfile: z.string().nullable().optional(),
+  levelStatus: z.string().nullable().optional(), levelSourceUrl: z.string().url().nullable().optional(),
   subjects: z.array(Subject), gradeFrom: z.number().int().nullable(), gradeTo: z.number().int().nullable(),
   classesRaw: z.string().nullable(), format: Format, participation: Participation,
   rating: z.number().nullable(), scheduleStatus: ScheduleStatus,
