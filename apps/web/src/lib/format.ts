@@ -5,6 +5,8 @@ export const calendarLabels = {
   unknown: 'Расписание не опубликовано', unverified: 'Расписание опубликовано', verified: 'Есть ближайшее событие',
   needs_review: 'Расписание обновлено', no_upcoming: 'Нет ближайших событий', not_held: 'Не проводится по данным источника',
 };
+// One label for the user's own grade, shared by the profile card and the grade chip.
+export function profileGradeLabel(grade: number | null) { return grade ? `${grade} класс` : null; }
 export function levelLabel(item: Pick<Olympiad, 'level' | 'levelStatus'>) {
   const level = item.level?.trim();
   if (!level || level === '—' || level === '-') return 'Не указан';

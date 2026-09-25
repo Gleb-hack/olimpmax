@@ -4,7 +4,7 @@ import type { z } from 'zod';
 import { OlympiadCard, OlympiadDetail, type Stage } from '@olimp/contracts';
 import details from '../src/lib/mock-details.json';
 import { registrationDeadline, registrationLabel, stageSummary } from '../src/features/catalog/detail-format.ts';
-import { levelLabel, scheduleLabel } from '../src/lib/format.ts';
+import { levelLabel, profileGradeLabel, scheduleLabel } from '../src/lib/format.ts';
 
 const stage = (patch: Partial<z.infer<typeof Stage>> = {}): z.infer<typeof Stage> => ({
   id: '00000000-0000-4000-8000-000000000001', name: 'Регистрация', kind: 'registration', rawDates: 'До 1 ноя',
@@ -51,4 +51,9 @@ test('catalog carries actual organizers and accepts responses from the previous 
   assert.deepEqual(card.organizers, detail.organizers);
   const { organizers: _, ...previous } = card;
   assert.ok(OlympiadCard.safeParse(previous).success);
+});
+
+test('profile grade label is shared by the profile card and the grade chip', () => {
+  assert.equal(profileGradeLabel(9), '9 класс');
+  assert.equal(profileGradeLabel(null), null);
 });
