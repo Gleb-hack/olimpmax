@@ -45,7 +45,7 @@ export function CatalogPage() {
   const savedIds = new Set(plan.data?.items.map(entry => entry.olympiad.id));
   const hasFilters = ['q', 'subjectIds', 'grades', 'formats'].some(key => params.has(key));
   return <>
-    <Header title="Каталог" subtitle="Olimp — твой олимпиадный помощник" action={<button className="icon-button icon-button--blue" aria-label="Поиск олимпиад" onClick={() => navigate('/search', { state: { backTo: `/catalog${params.size ? `?${params}` : ''}` } })}><Search size={20} /></button>} />
+    <Header title="Каталог" action={<button className="icon-button icon-button--blue" aria-label="Поиск олимпиад" onClick={() => navigate('/search', { state: { backTo: `/catalog${params.size ? `?${params}` : ''}` } })}><Search size={20} /></button>} />
     <div className="filter-grid">
       <Select label="Предмет" placeholder="Предмет" icon={BookOpen} searchable searchPlaceholder="Найти предмет" value={params.get('subjectIds') || ''} onChange={value => updateParam('subjectIds', value)} options={[{ value: '', label: 'Все предметы' }, ...(filters.data?.subjects.map(subject => ({ value: String(subject.id), label: subject.name })) ?? [])]} />
       <Select label="Класс" placeholder="Класс" icon={GraduationCap} align="right" value={params.get('grades') || ''} onChange={value => updateParam('grades', value)} options={[{ value: '', label: 'Все классы' }, ...Array.from({ length: 11 }, (_, index) => ({ value: String(index + 1), label: `${index + 1} класс` }))]} />
