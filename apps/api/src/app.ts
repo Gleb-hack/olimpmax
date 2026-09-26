@@ -14,7 +14,6 @@ import { readPlan, planEvents, planKey } from './features/plan.js';
 import { validateMaxInitData } from './features/auth.js';
 import { readProfile, saveProfile, deleteAccount, ProfileError } from './features/profile.js';
 import { moscowToday } from './features/calendar.js';
-import { buildExport, exportFiles } from './features/export.js';
 import { answerAssistant, databaseAssistantData } from './features/assistant/assistant.js';
 import { AssistantError, deepseekCompletion, type CompleteJson } from './features/assistant/deepseek.js';
 import { webConsent, WebConsentError } from './features/assistant/web-consent.js';
@@ -61,7 +60,6 @@ export async function buildApp(options: AppOptions) {
   const search = options.searchWeb ?? serperSearch(options.serperApiKey);
   const activeChats = new Set<string>();
   const consent = webConsent(options.jwtSecret, () => now().getTime());
-  const exports = exportFiles(5 * 60 * 1000, () => now().getTime());
   api.get('/health', { schema: { response: { 200: z.object({ status: z.literal('ok') }) } } }, async () => {
     await db.execute(sql`select 1`); return { status: 'ok' as const };
   });
@@ -88,14 +86,6 @@ export async function buildApp(options: AppOptions) {
     if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не найдена' });
     return result;
   });
-  // Public on purpose: MAX WebApp.downloadFile cannot send the bearer token; the random link is the credential.
-  api.get('/me/export/:token', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } }, schema: { params: z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{43}$/) }) } }, async (request, reply) => {
-    reply.header('Cache-Control', 'no-store');
-    const file = exports.get(request.params.token);
-    if (!file) return reply.code(404).send({ error: 'EXPORT_EXPIRED', message: 'Ссылка на файл устарела. Подготовьте экспорт заново.' });
-    return reply.header('Content-Type', 'application/json; charset=utf-8')
-      .header('Content-Disposition', `attachment; filename="${file.fileName}"`).send(file.body);
-  });
   await api.register(async secured => {
     secured.addHook('onRequest', async (request, reply) => {
       try {
@@ -112,18 +102,8 @@ export async function buildApp(options: AppOptions) {
       saveProfile(db, request.user.sub, request.body, true, now()));
     routes.patch('/me/profile', { schema: { body: c.ProfilePatch, response: { 200: c.UserProfile, 400: c.ErrorResponse, 409: c.ErrorResponse } } }, request =>
       saveProfile(db, request.user.sub, request.body, false, now()));
-    routes.post('/me/export', {
-      bodyLimit: 2 * 1024 * 1024,
-      config: { rateLimit: { max: 5, timeWindow: '1 minute', hook: 'preHandler', keyGenerator: request => request.user.sub } },
-      schema: { body: c.ExportRequest, response: { 200: c.ExportTicket } },
-    }, async request => {
-      const file = await buildExport(db, request.user.sub, request.body.device, now());
-      const fileName = `olimpmax-data-${today()}.json`;
-      return { path: `/me/export/${exports.put(request.user.sub, JSON.stringify(file, null, 2), fileName)}`, fileName, expiresIn: 300 };
-    });
     routes.delete('/me', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
       await deleteAccount(db, request.user.sub);
-      exports.dropUser(request.user.sub);
       return reply.code(204).send();
     });
     routes.post('/assistant/chat', {

@@ -4,8 +4,6 @@ import { max } from './max';
 
 export const isMock = import.meta.env.VITE_DATA_MODE === 'mock';
 const baseUrl = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
-// Absolute address of an API path, for links opened outside fetch (e.g. MAX file downloads).
-export const apiUrl = (path: string) => new URL(`${baseUrl}${path}`, window.location.href).href;
 export class ApiError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }
@@ -93,8 +91,6 @@ export const api = {
   async startSession() { sessionAllowed = true; return c.UserProfile.parse(await request('/me', {}, true)); },
   async register(profile: c.ProfilePreferences) { return c.UserProfile.parse(await request('/me/registration', { method: 'POST', body: JSON.stringify(c.ProfilePreferences.parse(profile)) }, true)); },
   async deleteAccount() { await request('/me', { method: 'DELETE' }, true); },
-  async prepareExport(device: c.ExportDevice) { return c.ExportTicket.parse(await request('/me/export', { method: 'POST', body: JSON.stringify(c.ExportRequest.parse({ device })) }, true)); },
-  async exportFile(path: string) { return c.AccountExport.parse(await request(path)); },
   async profile(patch: c.ProfilePatch) { return c.UserProfile.parse(await request('/me/profile', { method: 'PATCH', body: JSON.stringify(c.ProfilePatch.parse(patch)) }, true)); },
   async research(token: string, signal: AbortSignal) {
     if (isMock) throw new ApiError('Поиск на сайтах доступен при подключении к серверу.', 503);

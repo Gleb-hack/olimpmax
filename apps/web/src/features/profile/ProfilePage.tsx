@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { CircleHelp, Pencil, Settings, Shield } from 'lucide-react';
+import { CircleHelp, Pencil, Shield } from 'lucide-react';
 import { Button, Chip, Header, Notice, SettingsRow } from '@olimp/ui';
 import { useFilters } from '../../lib/queries';
 import { useProfile } from '../../lib/profile';
@@ -22,7 +22,7 @@ export function ProfilePage() {
     : !selected.length ? empty
     : <div className="chips-wrap">{selected.map(subject => <Chip key={subject.id} selected>{subject.name}</Chip>)}</div>;
   const format = (label: string, enabled: boolean) => <div className="switch-row"><span>{label}</span><small className={enabled ? 'text-green' : 'muted'}>{enabled ? 'Включено' : 'Выключено'}</small></div>;
-  return <><Header title="Профиль" subtitle="Личные данные и настройки" action={<button className="icon-button" aria-label="Настройки профиля" onClick={() => navigate('/profile/edit')}><Settings size={21} /></button>} />
+  return <><Header title="Профиль" />
     <section className="profile-card panel"><ProfileAvatar image={profile.avatar} /><div><h2>{profile.name || max.displayName}</h2><p>{[grade ?? 'Класс не указан', profile.region].filter(Boolean).join(' · ')}</p></div></section>
     {legacy && <Notice tone="info">На этом устройстве остались настройки из предыдущей версии. <button className="text-button" disabled={saving} onClick={importLegacy}>Перенести их в аккаунт</button></Notice>}
     <div className="panel profile-details">

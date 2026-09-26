@@ -90,28 +90,6 @@ export type UserProfile = z.infer<typeof UserProfile>;
 export type ProfilePreferences = z.infer<typeof ProfilePreferences>;
 export type ProfilePatch = z.infer<typeof ProfilePatch>;
 export const AuthResponse = z.object({ accessToken: z.string(), expiresIn: z.literal(3600), user: UserProfile });
-// Data that exists only on the user's device; the client sends it so the export file is complete.
-export const ExportDevice = z.object({
-  avatar: z.string().max(1500000).regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).nullable(),
-  searchHistory: z.array(z.string().trim().min(1).max(200)).max(8),
-}).strict();
-export const ExportRequest = z.object({ device: ExportDevice }).strict();
-export const ExportTicket = z.object({ path: z.string(), fileName: z.string(), expiresIn: z.number().int().positive() });
-export const exportNotStored = [
-  'Переписка с Олимпом не сохраняется: она живёт только в открытом приложении и очищается при перезагрузке.',
-  'Запросы к поиску в интернете и их результаты не сохраняются.',
-];
-export const AccountExport = z.object({
-  format: z.literal('olimpmax-export'), version: z.literal(1), exportedAt: z.string(),
-  account: z.object({ id: z.uuid(), maxUserId: z.string(), maxDisplayName: z.string(), createdAt: z.string(), registeredAt: z.string().nullable(), updatedAt: z.string() }),
-  profile: z.object({ name: z.string(), grade: z.number().int().nullable(), region: z.string(),
-    subjects: z.array(z.object({ id: z.number().int(), name: z.string() })), online: z.boolean(), onsite: z.boolean() }),
-  plan: z.array(z.object({ olympiadId: z.number().int(), title: z.string(), sourceUrl: z.string(), tracking: z.boolean(), note: z.string().nullable(), savedAt: z.string() })),
-  device: ExportDevice,
-  notStored: z.array(z.string()),
-});
-export type ExportDevice = z.infer<typeof ExportDevice>;
-export type AccountExport = z.infer<typeof AccountExport>;
 export const VerifiedStageInput = z.object({
   olympiadId: z.number().int().positive(), key: z.string().min(1).max(200),
   name: z.string().trim().min(1).max(500), kind: z.enum(['registration', 'competition', 'other']),
