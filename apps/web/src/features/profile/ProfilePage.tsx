@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { CircleHelp, Pencil, Shield } from 'lucide-react';
-import { Button, Chip, Header, Notice, SettingsRow } from '@olimp/ui';
+import { Button, Chip, Header, Notice, SettingsRow, Icon } from '@olimp/ui';
 import { useFilters } from '../../lib/queries';
 import { useProfile } from '../../lib/profile';
 import { max } from '../../lib/max';
@@ -29,8 +28,8 @@ export function ProfilePage() {
       <section className="panel-section"><h2 className="section-caption">Интересующие предметы</h2>{subjects}</section>
       <section className="panel-section"><h2 className="section-caption">Желаемый формат</h2>{format('Онлайн-этапы', profile.online)}{format('Очные финалы', profile.onsite)}</section>
     </div>
-    <Button className="full-width profile-edit-button" onClick={() => navigate('/profile/edit')}><Pencil size={16} />Редактировать профиль</Button>
-    <div className="settings-list profile-links"><SettingsRow icon={Shield} tone="green" title="Данные и конфиденциальность" subtitle="Управление данными" onClick={() => navigate('/profile/privacy')} /><SettingsRow icon={CircleHelp} title="Помощь и FAQ" subtitle="Ответы на частые вопросы" onClick={() => navigate('/profile/help')} /></div>
+    <Button className="full-width profile-edit-button" onClick={() => navigate('/profile/edit')}><Icon name="edit" size={15} />Редактировать профиль</Button>
+    <div className="settings-list profile-links"><SettingsRow icon="shield" tone="green" title="Данные и конфиденциальность" subtitle="Управление данными" onClick={() => navigate('/profile/privacy')} /><SettingsRow icon="help-circle" title="Помощь и FAQ" subtitle="Ответы на частые вопросы" onClick={() => navigate('/profile/help')} /></div>
     <button className="profile-signout" onClick={() => { logout(); navigate('/welcome', { replace: true }); }}>Выйти из аккаунта</button>{storageError && <Notice tone="error">{storageError}</Notice>}
   </>;
 }

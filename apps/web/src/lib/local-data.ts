@@ -9,6 +9,7 @@ export const localKeys = {
   preferencesImported: (user: Owner) => `olimp.preferences.imported.v1.${isMock ? 'mock' : user.id}`,
   legacyPreferences: (user: Owner) => `olimp.preferences.v1.${isMock ? 'mock' : user.maxUserId === 'local-demo' ? 'browser' : user.maxUserId}`,
   searchHistory: () => `olimp.search-history.v1.${isMock ? 'mock' : max.preferenceScope}`,
+  comparison: () => `olimp.comparison.v1.${isMock ? 'mock' : max.preferenceScope}`,
 };
 
 export function readSearchHistory(): string[] {
@@ -19,7 +20,7 @@ export function readSearchHistory(): string[] {
 }
 
 export function clearLocalData(user: Owner) {
-  for (const key of [localKeys.avatar(user), localKeys.preferencesImported(user), localKeys.legacyPreferences(user), localKeys.searchHistory()]) {
+  for (const key of [localKeys.avatar(user), localKeys.preferencesImported(user), localKeys.legacyPreferences(user), localKeys.searchHistory(), localKeys.comparison()]) {
     try { localStorage.removeItem(key); } catch { /* Storage is unavailable, so nothing was kept there. */ }
   }
 }
