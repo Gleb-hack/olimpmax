@@ -10,7 +10,7 @@ export function profileGradeLabel(grade: number | null) { return grade ? `${grad
 export function levelLabel(item: Pick<Olympiad, 'level' | 'levelStatus'>) {
   const level = item.level?.trim();
   if (!level || level === '—' || level === '-') return 'Не указан';
-  const label = level === 'ВсОШ' ? 'ВсОШ' : `${level} уровень`;
+  const label = level === 'ВсОШ' ? 'ВсОШ' : level.includes('–') ? `${level} уровни` : `${level} уровень`;
   return /проект/i.test(item.levelStatus ?? '') ? `${label} · проект РСОШ 2026/27` : label;
 }
 export function scheduleLabel(item: Pick<Olympiad, 'calendarRaw' | 'calendarState' | 'statusRaw' | 'nextEvent'>) {

@@ -56,7 +56,7 @@ test('catalog filters every source level before pagination and rejects invalid l
     const result = contracts.CatalogResponse.parse(response.json());
     assert.equal(result.total, expected.length);
     assert.equal(result.items.length, expected.length > 1 ? 1 : 0);
-    assert.ok(result.items.every(item => (item.level === '—' ? 'unknown' : item.level) === level));
+    assert.ok(result.items.every(item => (item.level ?? 'unknown') === level));
   }
   const result = contracts.CatalogResponse.parse((await app.inject('/olympiads?levels=I,II&formats=hybrid&grades=9&pageSize=100')).json());
   const expected = rows.filter(row => ['I', 'II'].includes(row.olympiad.rawSource['Уровень олимпиады']!) && row.olympiad.format === 'hybrid' && row.olympiad.gradeFrom !== null && row.olympiad.gradeFrom <= 9 && row.olympiad.gradeTo! >= 9);

@@ -13,7 +13,10 @@
 | GET | `/health` | Проверяет подключение к PostgreSQL |
 | GET | `/olympiads/filters` | Значения фильтров, подписи и общие количества |
 | GET | `/olympiads` | Карточки, `total`, `page`, `pageSize` |
-| GET | `/olympiads/:id` | Полная информация, все исходные поля и этапы |
+| GET | `/olympiads/:id` | Полная информация, все исходные поля и этапы, серия, профили перечня и льготы вузов |
+| GET | `/series/:slug` | Олимпиада-серия: общий уровень, профили РСОШ, этапы из справочника, карточки каталога, льготы |
+| GET | `/universities` | Вузы из справочника льгот: сколько серий и карточек дают в них льготу |
+| GET | `/universities/:slug` | Льготы вуза по олимпиадам: БВИ / 100 баллов, порог ЕГЭ, ID подходящих карточек |
 | POST | `/auth/max` | Принимает `{ "initData": "..." }`, возвращает JWT |
 | POST | `/auth/dev` | Локальный демонстрационный вход, только если включён |
 | GET | `/me` | Профиль текущего пользователя |
@@ -38,7 +41,9 @@ PUT и DELETE идемпотентны: повторный вызов не со�
 | `subjectIds` | ID из `/olympiads/filters`, например `1,5`; несколько предметов означают «любой из них» |
 | `grades` | Классы `1..11`, например `8,9`; проверяется вхождение в диапазон участников |
 | `formats` | `onsite`, `online`, `hybrid`, `unknown` |
-| `levels` | `I`, `II`, `III`, `I–III`, `ВсОШ`, `unknown`; точное значение из источника, `unknown` для пустого уровня или прочерка |
+| `levels` | `I`, `II`, `III`, `I–II`, `II–III`, `I–III`, `ВсОШ`, `unknown`; уровень карточки (см. ниже), `unknown` — уровня нет |
+| `universities` | slug вузов из `/universities`, например `mipt,hse`: только карточки с уровнем, чья олимпиада даёт льготу в одном из вузов |
+| `series` | slug серий, например `ranepa`: все предметные карточки этих олимпиад |
 | `participation` | `individual`, `team`, `mixed`, `unknown` |
 | `scheduleStatus` | `published`, `unknown`, `not_held` |
 | `sort` | `rating` (по убыванию; по умолчанию) или `name` |
@@ -61,7 +66,19 @@ PUT и DELETE идемпотентны: повторный вызов не со�
 - `featuresRaw`, `calendarRaw`, `scheduleUpdatedRaw` — исходные тексты;
 - `rawSource` — все 19 оригинальных столбцов CSV с русскими ключами;
 - `stages` — выделенные из CSV этапы и отдельно проверенные этапы;
-- `importedAt` — когда запись импортировали в нашу базу, а не когда организатор проверил расписание.
+- `importedAt` — когда запись импортировали в нашу базу, а не когда организатор проверил расписание;
+- `seriesInfo` — серия: общий уровень, формат, признак качества расписания (`ok`, `placeholder`, `outdated`, `hidden`) и профили перечня РСОШ с уровнями и направлениями подготовки;
+- `benefits` — `{ applicable, note, items }`: льготы вузов (`university`, `kind`: `bvi` | `score_100`, `diploma`: `any` | `winner`, `minScore`, `maxScore`, `requirement`). `applicable=false` и пустой `items`, если профиль карточки не входит в перечень;
+- `catalogCalendarRaw` — исходный текст расписания olimpiada.ru, даже если `calendarRaw` показывает расписание справочника.
+
+## Справочник: уровень, серия и расписание
+
+Данные из `data/reference` (подробно — [data/reference/README.md](../data/reference/README.md)) добавляют к карточкам и деталям:
+
+- `series: { slug, name } | null` — к какой олимпиаде-серии относится предметная карточка;
+- `level`, `levelProfile`, `levelStatus`, `levelSourceUrl` — уровень хранится в столбцах базы. `levelSource`: `rsosh_list` — по профилю из файла перечня, `catalog` — из выгрузки olimpiada.ru, `series` — общий уровень серии. `level: null` — уровня нет, причина в `levelStatus`;
+- `scheduleSource`: `reference` — `calendarRaw` и основные этапы взяты из `olympiads_clean`; `catalog` — расписание olimpiada.ru (шаблонные или прошлогодние даты справочника либо расхождение с датами карточки);
+- `stages[].origin`: `csv` (olimpiada.ru), `reference` (справочник, с `mode`: `online` | `onsite` | `mixed`), `verified_import` (проверенные даты). Этапы справочника всегда `unverified` и не создают `nextEvent`.
 
 Неизвестные данные представлены `null`, пустыми списками или значением `unknown`. Во фронтенде выводите текстовые поля как текст, не как HTML. Названия документов не содержат адресов скачивания. Контакты могут включать неполные URL.
 

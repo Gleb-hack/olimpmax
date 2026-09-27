@@ -1,0 +1,19 @@
+{
+  "season": "2026/27",
+  "sources": {
+    "schedule": {
+      "file": "sources/olympiads_clean.csv",
+      "description": "Проверенный список олимпиад: общий уровень, формат, этапы и даты. Главный источник этапов и дат."
+    },
+    "rsosh": {
+      "file": "sources/olympiads_2026_2027.csv",
+      "description": "Перечень РСОШ 2026/27: уровень каждой олимпиады по профилям и направления подготовки.",
+      "status": "Проект РСОШ 2026/27",
+      "url": "https://www.garant.ru/products/ipo/prime/doc/56963051/"
+    },
+    "benefits": {
+      "file": "sources/vuzi_olympiad_benefits_cleaned.csv",
+      "description": "Льготы вузов при поступлении по олимпиадам: БВИ или 100 баллов и минимальный балл ЕГЭ для подтверждения."
+    }
+  }
+}
