@@ -15,9 +15,9 @@ const tabs = [
   { to: '/plan', label: 'План', icon: CalendarDays },
   { to: '/profile', label: 'Профиль', icon: UserRound },
 ];
-export function BottomNav() {
+export function BottomNav({ catalogTo = '/catalog' }: { catalogTo?: string }) {
   return <nav className="bottom-nav" aria-label="Основная навигация">{tabs.map(({ to, label, icon: Icon }) =>
-    <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
+    <NavLink key={to} to={to === '/catalog' ? catalogTo : to} className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
       <Icon size={21} strokeWidth={1.7} /><span>{label}</span>
     </NavLink>)}
   </nav>;

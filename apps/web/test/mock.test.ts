@@ -36,6 +36,19 @@ test('combined demo filters, pagination and empty results keep API semantics', a
   await assert.rejects(() => mockRequest('/olympiads?grades=12'));
 });
 
+test('level filters apply before pagination and combine with other filters', async () => {
+  const all = c.CatalogResponse.parse(await mockRequest('/olympiads?pageSize=100'));
+  const known = c.CatalogResponse.parse(await mockRequest('/olympiads?levels=I,III&pageSize=1&page=2'));
+  assert.equal(known.total, all.items.filter(item => ['I', 'III'].includes(item.level!)).length);
+  assert.equal(known.items.length, 1);
+  const unknown = c.CatalogResponse.parse(await mockRequest('/olympiads?levels=unknown'));
+  assert.equal(unknown.total, all.items.filter(item => item.level === '—').length);
+  const combined = c.CatalogResponse.parse(await mockRequest('/olympiads?levels=I&formats=hybrid&grades=9'));
+  assert.ok(combined.total > 0);
+  assert.ok(combined.items.every(item => item.level === 'I' && item.format === 'hybrid' && item.gradeFrom! <= 9 && item.gradeTo! >= 9));
+  await assert.rejects(() => mockRequest('/olympiads?levels=IV'));
+});
+
 test('demo plan preserves notes on repeat save, supports pause and idempotent removal', async () => {
   storage.clear();
   const catalog = c.CatalogResponse.parse(await mockRequest('/olympiads'));

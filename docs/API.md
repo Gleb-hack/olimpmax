@@ -38,6 +38,7 @@ PUT и DELETE идемпотентны: повторный вызов не со�
 | `subjectIds` | ID из `/olympiads/filters`, например `1,5`; несколько предметов означают «любой из них» |
 | `grades` | Классы `1..11`, например `8,9`; проверяется вхождение в диапазон участников |
 | `formats` | `onsite`, `online`, `hybrid`, `unknown` |
+| `levels` | `I`, `II`, `III`, `I–III`, `ВсОШ`, `unknown`; точное значение из источника, `unknown` для пустого уровня или прочерка |
 | `participation` | `individual`, `team`, `mixed`, `unknown` |
 | `scheduleStatus` | `published`, `unknown`, `not_held` |
 | `sort` | `rating` (по убыванию; по умолчанию) или `name` |
