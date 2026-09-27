@@ -8,6 +8,7 @@ import { AssistantError, deepseekCompletion, type CompleteJson } from '../apps/a
 const item = OlympiadDetail.parse(JSON.parse(readFileSync(new URL('../apps/web/src/lib/mock-details.json', import.meta.url), 'utf8'))[0]);
 const signal = AbortSignal.timeout(10000);
 const data: AssistantData = {
+  userContext: async () => ({ profile: { grade: null, subjects: [], online: true, onsite: true }, plan: { total: 0, truncated: false, items: [] } }),
   subjects: async () => [{ id: 8, name: 'Информатика' }],
   search: async () => ({ items: [{ id: item.id }], total: 1 }),
   detail: async id => id === item.id ? item : null,
@@ -168,4 +169,48 @@ test('normalized question avoids repeating long official titles already identifi
   const question = 'Какие условия участия у олимпиады «Российская школа фармацевтов»?';
   assert.equal(researchQuestion(question, [selected], 'web_search'), question);
   assert(!researchQuestion('поищи больше информации в интернете', [selected], 'web_search').includes('поищи'));
+});
+
+test('fresh server preferences and plan reach both model calls and supply missing search filters', async () => {
+  const userContext = { profile: { grade: 10, subjects: [{ id: 8, name: 'Информатика' }], online: true, onsite: false },
+    plan: { total: 1, truncated: false, items: [{ id: item.id, title: item.title, tracking: false, note: 'Подготовиться к финалу' }] } };
+  let calls = 0;
+  await answerAssistant(request(), { ...data, userContext: async () => userContext, search: async query => {
+    assert.deepEqual(query.grades, [10]); assert.deepEqual(query.subjectIds, [8]); assert.deepEqual(query.formats, ['online']);
+    return { items: [{ id: item.id }], total: 1 };
+  } }, async (_system, payload) => {
+    assert.deepEqual((payload as { userContext: unknown }).userContext, userContext);
+    return ++calls === 1 ? { intent: 'search' } : { message: 'Вариант уже есть в твоём плане.', olympiadIds: [item.id] };
+  }, '2026-09-27', signal);
+  assert.equal(calls, 2);
+});
+
+test('explicit criteria override preferences and an unrestricted request can disable profile defaults', async () => {
+  for (const unrestricted of [false, true]) {
+    await answerAssistant(request(), { ...data,
+      userContext: async () => ({ profile: { grade: 10, subjects: [{ id: 8, name: 'Информатика' }], online: true, onsite: false }, plan: { total: 0, truncated: false, items: [] } }),
+      search: async query => {
+        assert.deepEqual(query.grades, unrestricted ? undefined : [9]);
+        assert.deepEqual(query.formats, unrestricted ? undefined : ['onsite']);
+        assert.deepEqual(query.subjectIds, unrestricted ? undefined : [8]);
+        return { items: [], total: 0 };
+      },
+    }, completeWith(unrestricted ? { intent: 'search', useProfilePreferences: false } : { intent: 'search', grade: 9, format: 'onsite' }), '2026-09-27', signal);
+  }
+});
+
+test('profile questions need no catalog records and context is read again on each request', async () => {
+  let reads = 0;
+  for (const grade of [9, 10]) {
+    let calls = 0;
+    await answerAssistant(request('В каком я классе?'), { ...data,
+      userContext: async () => { reads++; return { profile: { grade, subjects: [], online: true, onsite: true }, plan: { total: 0, truncated: false, items: [] } }; },
+      search: async () => { throw Error('Profile question must not search catalog'); },
+    }, async (_system, payload) => {
+      assert.equal((payload as { userContext: { profile: { grade: number } } }).userContext.profile.grade, grade);
+      return ++calls === 1 ? { intent: 'profile' } : { message: `У тебя указан ${grade} класс.`, olympiadIds: [] };
+    }, '2026-09-27', signal);
+    assert.equal(calls, 2);
+  }
+  assert.equal(reads, 2);
 });
