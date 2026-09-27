@@ -14,7 +14,8 @@
   --olimp-green: #2e9867;
   --olimp-radius: 16px;
 }
-* { box-sizing: border-box; }
+* { box-sizing: border-box; scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
 body { margin: 0; min-width: 0; font-size: 14px; line-height: 1.45; }
 /* The mini-app has a fixed mobile layout: no pinch or double-tap zoom (JS in lib/zoom.ts covers iOS). */
 html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -80,7 +81,7 @@ h3 { font-size: 14px; line-height: 1.45; }
 .chat-status--away { background: #b49a6a; }
 .chat-reset { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: auto; color: #949ba9; border-radius: 50%; flex-shrink: 0; }
 .chat-reset:hover { background: #f2f4f8; color: var(--olimp-blue); }
-.chat-log { flex: 1; min-height: 0; padding: 16px 14px 22px; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: #dce1ed transparent; }
+.chat-log { flex: 1; min-height: 0; padding: 16px 14px 22px; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: none; scrollbar-color: #dce1ed transparent; }
 .chat-date { margin-bottom: 16px; text-align: center; font-size: 10px; color: #8c92a0; }
 .chat-turn { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
 .chat-turn--user { align-items: flex-end; }
@@ -110,7 +111,7 @@ h3 { font-size: 14px; line-height: 1.45; }
 .chat-intro-note { margin-top: 18px; font-size: 11px; line-height: 1.6; color: #949aa6; }
 .chat-footer { flex-shrink: 0; padding: 18px 14px 10px; border-top: 1px solid var(--olimp-border); background: #fff; }
 .chat-composer { display: flex; align-items: flex-end; gap: 10px; }
-.chat-composer textarea { display: block; width: 100%; min-width: 0; min-height: 42px; max-height: 112px; padding: 11px 14px; resize: none; border: 0; border-radius: 22px; background: #f2f3f5; color: #30333b; font-size: 14px; line-height: 20px; scrollbar-width: thin; }
+.chat-composer textarea { display: block; width: 100%; min-width: 0; min-height: 42px; max-height: 112px; padding: 11px 14px; resize: none; border: 0; border-radius: 22px; background: #f2f3f5; color: #30333b; font-size: 14px; line-height: 20px; scrollbar-width: none; }
 .chat-composer textarea::placeholder { color: #a0a6b1; }
 .chat-send { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; color: #fff; background: var(--olimp-blue); flex-shrink: 0; }
 .chat-send:disabled { opacity: .45; }
@@ -160,9 +161,7 @@ h3 { font-size: 14px; line-height: 1.45; }
 .select__search input { min-width: 0; width: 100%; padding: 10px 0; font: inherit; font-size: 12px; color: #30394c; border: 0; outline: none; background: transparent; }
 .select__search input::placeholder { color: #9aa3b6; }
 .select__search button { display: flex; align-items: center; justify-content: center; padding: 3px; border-radius: 6px; color: #8d97aa; }
-.select__options { position: relative; overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 1px 3px 3px; scrollbar-width: thin; scrollbar-color: #d9deeb transparent; outline: none; }
-.select__options::-webkit-scrollbar { width: 4px; }
-.select__options::-webkit-scrollbar-thumb { background: #d9deeb; border-radius: 8px; }
+.select__options { position: relative; overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 1px 3px 3px; scrollbar-width: none; scrollbar-color: #d9deeb transparent; outline: none; }
 .select__option { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; margin-bottom: 2px; padding: 10px 11px; border-radius: 10px; color: #343d50; font-size: 12px; line-height: 1.4; cursor: pointer; user-select: none; }
 .select__option.is-active { background: #f4f6fc; }
 .select__option.is-selected { color: var(--olimp-blue); background: #edf1ff; font-weight: 550; }
@@ -318,7 +317,6 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .faq-item p { font-size: 12px; line-height: 1.7; color: #77808e; padding: 0 14px 16px; }
 .support-button { margin-top: 20px; }
 .support-email { margin: 14px 0 16px; padding: 12px 14px; border-radius: 12px; background: #f2f4f8; color: #30394c; font-weight: 600; text-align: center; overflow-wrap: anywhere; -webkit-user-select: all; user-select: all; }
-.version-label { text-align: center; color: #acb1bc; font-size: 10px; margin-top: 28px; }
 .notice { font-size: 12px; line-height: 1.6; padding: 12px 14px; border-radius: 12px; background: #f0f2f7; color: #727d92; margin: 12px 0; }
 .notice--info { background: #edf1ff; color: #536ca6; }
 .notice--warning { background: #fff5e7; color: #967042; }
@@ -443,7 +441,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .subjects-dialog .dialog__header h2 { font-size: 15px; letter-spacing: -.25px; }
 .subjects-dialog .dialog__header .icon-button { background: transparent; width: 25px; height: 28px; }
 .subjects-dialog__hint { color: #969cab; font-size: 11px; margin-bottom: 14px; }
-.subjects-dialog__list { max-height: 276px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #dce1ed transparent; margin-bottom: 18px; border: 1px solid var(--olimp-border); border-radius: 11px; flex-shrink: 1; }
+.subjects-dialog__list { max-height: 276px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; scrollbar-color: #dce1ed transparent; margin-bottom: 18px; border: 1px solid var(--olimp-border); border-radius: 11px; flex-shrink: 1; }
 .subject-choice { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 45px; padding: 11px 12px; font-size: 12px; cursor: pointer; }
 .subject-choice + .subject-choice { border-top: 1px solid var(--olimp-border); }
 .subject-choice:hover { background: #f8f9fe; }

@@ -2,7 +2,7 @@ import type { UserProfile } from '@olimp/contracts';
 import { isMock } from './api';
 import { max } from './max';
 
-// Every piece of personal data the app keeps in this browser, so export and account deletion stay complete.
+// Every piece of personal data the app keeps in this browser, so account deletion stays complete.
 type Owner = Pick<UserProfile, 'id' | 'maxUserId'>;
 export const localKeys = {
   avatar: (user: Owner) => `olimp.avatar.v1.${isMock ? 'mock' : user.id}`,

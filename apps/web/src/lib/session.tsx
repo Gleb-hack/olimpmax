@@ -10,13 +10,14 @@ const resumeKey = 'olimp.session.resume.v1';
 const readResume = () => { try { return sessionStorage.getItem(resumeKey); } catch { return null; } };
 const remember = (value: string) => { try { sessionStorage.setItem(resumeKey, value); } catch { /* Session still works in memory. */ } };
 type Session = {
-  user: UserProfile | null; starting: boolean; error: string | null;
+  user: UserProfile | null; deletingAccount: boolean; starting: boolean; error: string | null;
   login: () => Promise<void>; register: (profile: ProfilePreferences) => Promise<void>;
   logout: () => void; deleteAccount: () => Promise<void>; setUser: (user: UserProfile) => void;
 };
 const Context = createContext<Session | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [starting, setStarting] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const version = useRef(0);
@@ -56,12 +57,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   async function deleteAccount() {
     if (!user) return;
     // Stop background refetches first: a request after deletion would sign in again and recreate an empty account.
-    await client.cancelQueries();
-    await api.deleteAccount();
-    clearLocalData(user);
-    logout();
+    setDeletingAccount(true);
+    try {
+      await client.cancelQueries();
+      await api.deleteAccount();
+      clearLocalData(user);
+      logout();
+    } finally { setDeletingAccount(false); }
   }
   const updateUser = (profile: UserProfile) => setUser(current => current?.id === profile.id ? profile : current);
-  return <Context.Provider value={{ user, starting, error, login, register, logout, deleteAccount, setUser: updateUser }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ user, deletingAccount, starting, error, login, register, logout, deleteAccount, setUser: updateUser }}>{children}</Context.Provider>;
 }
 export function useSession() { const value = useContext(Context); if (!value) throw new Error('SessionProvider is missing'); return value; }

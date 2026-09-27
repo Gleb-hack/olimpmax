@@ -82,36 +82,26 @@ export const ProfilePreferences = z.object({
   subjects: z.array(z.number().int().positive()).max(35).refine(ids => new Set(ids).size === ids.length, 'Предметы не должны повторяться'),
   online: z.boolean(), onsite: z.boolean(),
 }).strict();
-export const ProfilePatch = ProfilePreferences.partial().refine(value => Object.keys(value).length > 0, 'Укажите изменения профиля');
+export const Avatar = z.string().max(1400000).refine(value => {
+  const match = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+  if (!match) return false;
+  try {
+    const bytes = atob(match[2]!);
+    if (bytes.length > 1024 * 1024) return false;
+    if (match[1] === 'png') return bytes.startsWith('\x89PNG\r\n\x1a\n');
+    if (match[1] === 'jpeg') return bytes.startsWith('\xff\xd8\xff');
+    return bytes.startsWith('RIFF') && bytes.slice(8, 12) === 'WEBP';
+  } catch { return false; }
+}, 'Выберите фото JPG, PNG или WebP размером до 1 МБ.').nullable();
+export const ProfilePatch = ProfilePreferences.extend({ avatar: Avatar }).partial().refine(value => Object.keys(value).length > 0, 'Укажите изменения профиля');
 export const UserProfile = ProfilePreferences.extend({
+  avatar: Avatar.default(null),
   id: z.uuid(), maxUserId: z.string(), registeredAt: z.string().nullable(), createdAt: z.string(),
 });
 export type UserProfile = z.infer<typeof UserProfile>;
 export type ProfilePreferences = z.infer<typeof ProfilePreferences>;
 export type ProfilePatch = z.infer<typeof ProfilePatch>;
 export const AuthResponse = z.object({ accessToken: z.string(), expiresIn: z.literal(3600), user: UserProfile });
-// Data that exists only on the user's device; the client sends it so the export file is complete.
-export const ExportDevice = z.object({
-  avatar: z.string().max(1500000).regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/).nullable(),
-  searchHistory: z.array(z.string().trim().min(1).max(200)).max(8),
-}).strict();
-export const ExportRequest = z.object({ device: ExportDevice }).strict();
-export const ExportTicket = z.object({ path: z.string(), fileName: z.string(), expiresIn: z.number().int().positive() });
-export const exportNotStored = [
-  'Переписка с Олимпом не сохраняется: она живёт только в открытом приложении и очищается при перезагрузке.',
-  'Запросы к поиску в интернете и их результаты не сохраняются.',
-];
-export const AccountExport = z.object({
-  format: z.literal('olimpmax-export'), version: z.literal(1), exportedAt: z.string(),
-  account: z.object({ id: z.uuid(), maxUserId: z.string(), maxDisplayName: z.string(), createdAt: z.string(), registeredAt: z.string().nullable(), updatedAt: z.string() }),
-  profile: z.object({ name: z.string(), grade: z.number().int().nullable(), region: z.string(),
-    subjects: z.array(z.object({ id: z.number().int(), name: z.string() })), online: z.boolean(), onsite: z.boolean() }),
-  plan: z.array(z.object({ olympiadId: z.number().int(), title: z.string(), sourceUrl: z.string(), tracking: z.boolean(), note: z.string().nullable(), savedAt: z.string() })),
-  device: ExportDevice,
-  notStored: z.array(z.string()),
-});
-export type ExportDevice = z.infer<typeof ExportDevice>;
-export type AccountExport = z.infer<typeof AccountExport>;
 export const VerifiedStageInput = z.object({
   olympiadId: z.number().int().positive(), key: z.string().min(1).max(200),
   name: z.string().trim().min(1).max(500), kind: z.enum(['registration', 'competition', 'other']),

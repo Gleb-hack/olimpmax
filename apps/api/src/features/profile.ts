@@ -12,7 +12,7 @@ export async function readProfile(db: Pick<Database, 'select'>, id: string) {
   if (!user) throw new ProfileError('UNAUTHORIZED', 'Войдите в аккаунт заново.', 401);
   const selected = await db.select({ id: userSubjects.subjectId }).from(userSubjects).where(eq(userSubjects.userId, id)).orderBy(userSubjects.subjectId);
   return UserProfile.parse({ id: user.id, maxUserId: user.maxUserId,
-    name: user.profileName ?? (user.displayName.trim().slice(0, 80) || 'Ученик'), grade: user.grade, region: user.region,
+    avatar: user.avatar, name: user.profileName ?? (user.displayName.trim().slice(0, 80) || 'Ученик'), grade: user.grade, region: user.region,
     subjects: selected.map(s => s.id), online: user.online, onsite: user.onsite,
     registeredAt: user.registeredAt, createdAt: user.createdAt });
 }

@@ -53,8 +53,6 @@ export function DetailPage() {
       </div></details>}
       {item.featuresRaw && <section className="olympiad-detail__about"><h2>Особенности участия</h2><p className="preserve-lines">{item.featuresRaw.split(' | ').join('\n')}</p></section>}
       {!!item.contacts.length && <section className="olympiad-detail__about"><h2>Контакты</h2><p className="preserve-lines">{item.contacts.join('\n')}</p></section>}
-      {!!item.documents.length && <section className="olympiad-detail__about"><h2>Документы</h2><p>{item.documents.join(' · ')}</p></section>}
-      {item.levelSourceUrl && <button className="olympiad-detail__source" onClick={() => max.openLink(item.levelSourceUrl!)}>Источник уровня олимпиады<ExternalLink size={14} /></button>}
       <button className="olympiad-detail__source" onClick={() => max.openLink(item.sourceUrl)}>Подробнее об олимпиаде<ExternalLink size={14} /></button>
     </>}
   </div>;

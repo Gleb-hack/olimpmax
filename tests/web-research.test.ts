@@ -10,7 +10,7 @@ import { AssistantError } from '../apps/api/src/features/assistant/deepseek.js';
 
 const item = OlympiadDetail.parse(JSON.parse(readFileSync(new URL('../apps/web/src/lib/mock-details.json', import.meta.url), 'utf8'))[0]);
 const data: AssistantData = { subjects: async () => [], search: async () => ({ items: [{ id: item.id }], total: 1 }),
-  detail: async id => id === item.id ? item : null, planIds: async () => [], deadlineIds: async () => [] };
+  detail: async id => id === item.id ? item : null, planIds: async () => [], deadlineIds: async () => [], scheduleIds: async () => [item.id] };
 const task = { question: 'Сколько стоит участие?', olympiadIds: [item.id] };
 const userA = '123e4567-e89b-42d3-a456-426614174000', userB = '123e4567-e89b-42d3-a456-426614174001';
 const signal = AbortSignal.timeout(10000);

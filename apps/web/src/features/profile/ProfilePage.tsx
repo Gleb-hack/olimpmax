@@ -1,11 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { CircleHelp, Pencil, Settings, Shield } from 'lucide-react';
+import { CircleHelp, Pencil, Shield } from 'lucide-react';
 import { Button, Chip, Header, Notice, SettingsRow } from '@olimp/ui';
 import { useFilters } from '../../lib/queries';
 import { useProfile } from '../../lib/profile';
 import { max } from '../../lib/max';
 import { useSession } from '../../lib/session';
-import { isMock } from '../../lib/api';
 import { profileGradeLabel } from '../../lib/format';
 import { ProfileAvatar } from './ProfileAvatar';
 
@@ -22,7 +21,7 @@ export function ProfilePage() {
     : !selected.length ? empty
     : <div className="chips-wrap">{selected.map(subject => <Chip key={subject.id} selected>{subject.name}</Chip>)}</div>;
   const format = (label: string, enabled: boolean) => <div className="switch-row"><span>{label}</span><small className={enabled ? 'text-green' : 'muted'}>{enabled ? 'Включено' : 'Выключено'}</small></div>;
-  return <><Header title="Профиль" subtitle="Личные данные и настройки" action={<button className="icon-button" aria-label="Настройки профиля" onClick={() => navigate('/profile/edit')}><Settings size={21} /></button>} />
+  return <><Header title="Профиль" />
     <section className="profile-card panel"><ProfileAvatar image={profile.avatar} /><div><h2>{profile.name || max.displayName}</h2><p>{[grade ?? 'Класс не указан', profile.region].filter(Boolean).join(' · ')}</p></div></section>
     {legacy && <Notice tone="info">На этом устройстве остались настройки из предыдущей версии. <button className="text-button" disabled={saving} onClick={importLegacy}>Перенести их в аккаунт</button></Notice>}
     <div className="panel profile-details">
@@ -32,6 +31,6 @@ export function ProfilePage() {
     </div>
     <Button className="full-width profile-edit-button" onClick={() => navigate('/profile/edit')}><Pencil size={16} />Редактировать профиль</Button>
     <div className="settings-list profile-links"><SettingsRow icon={Shield} tone="green" title="Данные и конфиденциальность" subtitle="Управление данными" onClick={() => navigate('/profile/privacy')} /><SettingsRow icon={CircleHelp} title="Помощь и FAQ" subtitle="Ответы на частые вопросы" onClick={() => navigate('/profile/help')} /></div>
-    <p className="hint centered-text">{isMock ? 'Демонстрационный профиль сохранён в браузере.' : saving ? 'Сохраняем настройки…' : 'Профиль и план сохранены в вашем аккаунте.'}<br />Автоматический подбор пока не подключён.</p><button className="profile-signout" onClick={() => { logout(); navigate('/welcome', { replace: true }); }}>Выйти из аккаунта</button>{storageError && <Notice tone="error">{storageError}</Notice>}
+    <button className="profile-signout" onClick={() => { logout(); navigate('/welcome', { replace: true }); }}>Выйти из аккаунта</button>{storageError && <Notice tone="error">{storageError}</Notice>}
   </>;
 }

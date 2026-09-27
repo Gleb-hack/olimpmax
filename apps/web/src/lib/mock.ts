@@ -18,8 +18,6 @@ const readPlan = () => {
   try { return c.PlanResponse.parse(JSON.parse(localStorage.getItem(key) ?? 'null')).items; }
   catch { return []; }
 };
-// Prepared demo export files, mirroring the API's short-lived download links.
-const exports = new Map<string, c.AccountExport>();
 const normalize = (value: string) => value.toLocaleLowerCase('ru').replace(/ё/g, 'е').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 
 export async function mockRequest(path: string, options: RequestInit = {}): Promise<unknown> {
@@ -41,23 +39,6 @@ export async function mockRequest(path: string, options: RequestInit = {}): Prom
     try { localStorage.setItem(profileKey, JSON.stringify(next)); }
     catch { throw new Error('Не удалось сохранить демонстрационный профиль в браузере.'); }
     return next;
-  }
-  if (url.pathname === '/me/export' && options.method === 'POST') {
-    const { device } = c.ExportRequest.parse(JSON.parse(String(options.body)));
-    const profile = readProfile();
-    const file = c.AccountExport.parse({ format: 'olimpmax-export', version: 1, exportedAt: new Date().toISOString(),
-      account: { id: profile.id, maxUserId: profile.maxUserId, maxDisplayName: 'Демо', createdAt: profile.createdAt, registeredAt: profile.registeredAt, updatedAt: profile.registeredAt ?? profile.createdAt },
-      profile: { name: profile.name, grade: profile.grade, region: profile.region, subjects: filters.subjects.filter(subject => profile.subjects.includes(subject.id)).map(({ id, name }) => ({ id, name })), online: profile.online, onsite: profile.onsite },
-      plan: readPlan().map(entry => ({ olympiadId: entry.olympiad.id, title: entry.olympiad.title, sourceUrl: entry.olympiad.sourceUrl, tracking: entry.tracking, note: entry.note, savedAt: entry.savedAt })),
-      device, notStored: c.exportNotStored });
-    const token = crypto.randomUUID();
-    exports.clear(); exports.set(token, file);
-    return { path: `/me/export/${token}`, fileName: `olimpmax-data-${new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' })}.json`, expiresIn: 300 };
-  }
-  if (url.pathname.startsWith('/me/export/')) {
-    const file = exports.get(url.pathname.split('/').pop()!);
-    if (!file) throw new Error('Ссылка на файл устарела. Подготовьте экспорт заново.');
-    return file;
   }
   if (url.pathname === '/olympiads/filters') return {
     ...filters,
