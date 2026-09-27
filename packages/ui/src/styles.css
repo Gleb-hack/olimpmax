@@ -12,6 +12,8 @@
   --olimp-muted: #7b8190;
   --olimp-border: #eceef2;
   --olimp-green: #2e9867;
+  --olimp-violet: #8250f2;
+  --olimp-violet-deep: #6534e0;
   /* Icon colors from the Figma icon set; blue and green icons use the theme colors above. */
   --olimp-icon: #14161a;
   --olimp-icon-muted: #6b7380;
@@ -220,12 +222,14 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .compare-check:has(input:focus-visible) .compare-check__box { outline: 3px solid #8ba2ff; outline-offset: 2px; }
 .compare-check:has(input:disabled) { opacity: .45; cursor: not-allowed; }
 .olympiad-card > .notice { position: relative; z-index: 1; }
-.compare-bar { background: var(--olimp-blue-soft); color: #3154c6; border-radius: 12px; display: flex; align-items: center; gap: 6px; padding: 8px; margin-bottom: 13px; font-size: 10px; }
-.compare-bar > svg { color: var(--olimp-blue); }
-.compare-bar > span { flex: 1; }
-.compare-bar b { font-size: 10px; border-radius: 50%; width: 18px; height: 18px; line-height: 18px; text-align: center; color: #fff; background: var(--olimp-blue); }
-.compare-bar > button { color: var(--olimp-blue); font-size: 10px; padding: 0; }
-.compare-bar .icon-button { width: 22px; height: 28px; background: transparent; }
+/* Floating "Compare (N)" button: sits above the bottom nav, or at the bottom where there is no nav. */
+.compare-fab { position: fixed; z-index: 6; left: 50%; bottom: calc(67px + max(16px, env(safe-area-inset-bottom))); transform: translate(-50%, 16px); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s; }
+.compare-fab.is-visible { transform: translate(-50%, 0); opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .2s ease, transform .2s ease, visibility 0s; }
+.page--detail ~ .compare-fab { bottom: max(20px, env(safe-area-inset-bottom)); }
+.button.button.compare-fab__button { min-height: 48px; padding: 12px 26px; border-radius: 999px; background: linear-gradient(90deg, var(--olimp-violet), var(--olimp-violet-deep)); color: #fff; font-size: 15px; font-weight: 600; white-space: nowrap; box-shadow: 0 10px 24px #6534e047; }
+.app-shell--compare .page { padding-bottom: calc(164px + env(safe-area-inset-bottom)); }
+.app-shell--compare .page--detail { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+@media (prefers-reduced-motion: reduce) { .compare-fab, .compare-fab.is-visible { transition: none; } }
 .pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; font-size: 12px; color: var(--olimp-muted); }
 .subject-tabs { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 3px; }
 .subject-tabs::-webkit-scrollbar { display: none; }
@@ -390,6 +394,11 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .olympiad-detail-row dd { margin: 0; font-size: 13px; line-height: 1.45; font-weight: 500; overflow-wrap: anywhere; }
 .olympiad-detail-row p { margin-top: 4px; color: #939aaa; font-size: 10px; }
 .button.button.olympiad-detail__track { min-height: 48px; border-radius: 15px; margin-top: 16px; font-size: 14px; }
+.olympiad-detail__compare { display: flex; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin-top: 4px; font-size: 13px; }
+.contact-list { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.contact-list__link { min-height: 36px; gap: 8px; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+.contact-list__link svg { flex-shrink: 0; }
+.contact-list__text { display: block; padding: 8px 0; color: var(--olimp-muted); font-size: 13px; }
 .olympiad-detail__source { color: #7f8ca7; display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 44px; padding: 12px 0; margin-top: 5px; font-size: 11px; }
 .olympiad-detail__source:hover { color: var(--olimp-blue); }
 .olympiad-schedule { border: 1px solid var(--olimp-border); border-radius: 14px; background: white; margin-top: 20px; }
@@ -406,12 +415,18 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .olympiad-schedule li strong { display: block; font-weight: 500; color: #4e5d77; margin-bottom: 4px; }
 .olympiad-schedule li span, .olympiad-schedule li small { display: block; white-space: pre-line; }
 .preserve-lines { white-space: pre-wrap; }
-.comparison-wrap { overflow-x: auto; }
-.comparison-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 11px; }
-.comparison-table th, .comparison-table td { text-align: left; vertical-align: top; padding: 10px 7px; border-bottom: 1px solid var(--olimp-border); overflow-wrap: anywhere; }
-.comparison-table thead th { background: var(--olimp-blue-soft); font-size: 10px; }
-.comparison-table th:first-child { width: 23%; color: #838c9f; font-size: 10px; font-weight: 400; }
-.comparison-table td { color: #5e6b84; }
+.comparison-dialog { width: min(calc(100% - 32px), 430px); }
+.comparison-wrap { overflow-x: auto; overscroll-behavior-x: contain; margin-bottom: 16px; border: 1px solid var(--olimp-border); border-radius: 14px; }
+.comparison-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.comparison-table th, .comparison-table td { width: 124px; min-width: 124px; max-width: 124px; padding: 12px 10px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--olimp-border); overflow-wrap: anywhere; font-weight: 450; }
+.comparison-table tr:last-child > * { border-bottom: 0; }
+.comparison-table td + td, .comparison-table thead th + th { border-left: 1px solid var(--olimp-border); }
+.comparison-table [scope=row] { position: sticky; left: 0; z-index: 1; width: 92px; min-width: 92px; max-width: 92px; text-align: left; color: var(--olimp-muted); font-size: 11px; font-weight: 600; background: #f2f4f7; border-right: 1px solid var(--olimp-border); }
+.comparison-table__head { display: flex; align-items: flex-start; gap: 4px; text-align: left; }
+.comparison-table__head > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.comparison-table__head strong { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; font-weight: 650; line-height: 1.35; }
+.comparison-table__head small { color: var(--olimp-blue); font-size: 11px; }
+.button.icon-button.comparison-table__remove, .icon-button.comparison-table__remove { width: 26px; height: 26px; border-radius: 8px; margin: -4px -4px 0 0; }
 .demo-banner { font-size: 10px; text-align: center; padding: 7px; background: #fff1d8; color: #8b734d; }
 .skip-link { position: absolute; left: -9999px; }
 .skip-link:focus { position: fixed; z-index: 20; top: 8px; left: 16px; padding: 8px; background: #fff; color: var(--olimp-blue); }
@@ -432,7 +447,6 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .search-count { margin-bottom: 12px; }
 .search-more { margin-top: 16px; }
 .search-end { text-align: center; font-size: 10px; margin: 18px 0; }
-.search-comparison { margin-top: 18px; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .avatar--large { width: 80px; height: 80px; }
 .profile-card > div { min-width: 0; overflow-wrap: anywhere; }

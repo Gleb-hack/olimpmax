@@ -61,6 +61,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       await client.cancelQueries();
       await api.deleteAccount();
+      useUI.getState().clearComparison();
       clearLocalData(user);
       logout();
     } finally { setDeletingAccount(false); }

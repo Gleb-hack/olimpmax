@@ -22,7 +22,7 @@ function ChatCard({ item }: { item: Olympiad }) {
       <button type="button" disabled={saved || action.isPending || plan.isPending} onClick={() => action.mutate({ id: item.id, action: 'save' })} aria-label={saved ? `${item.title} уже в плане` : `Добавить в план: ${item.title}`}>
         {saved ? <Icon name="check" size={14} /> : <Icon name="plus" size={14} />}{saved ? 'В плане' : action.isPending ? 'Сохраняем…' : 'В план'}
       </button></div>
-    <button type="button" className="chat-card__source" onClick={() => max.openLink(item.sourceUrl)}>Источник: {new URL(item.sourceUrl).hostname}</button>
+    <button type="button" className="chat-card__source" onClick={() => max.openExternal(item.sourceUrl)}>Источник: {new URL(item.sourceUrl).hostname}</button>
     {action.isError && <p className="chat-card__error" role="alert">{action.error.message}</p>}
   </article>;
 }
@@ -82,7 +82,7 @@ export function OlimpPage() {
             {message.webSearchState ? <small>{message.webSearchState === 'accepted' ? 'Поиск разрешён' : 'Поиск не запускался'}</small>
               : <div className="chat-web-offer__actions"><button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.research(message.id); }}>Да</button><button type="button" disabled={chat.pending} onClick={() => chat.decline(message.id)}>Нет</button></div>}
           </div>}
-          {!!message.webSources?.length && <div className="chat-web-sources"><strong><Icon name="globe" size={14} />Источники из интернета</strong><ol>{message.webSources.map((source, index) => <li key={source.url}><button type="button" onClick={() => max.openLink(source.url)}><span>{index + 1}. {source.title}</span><Icon name="external-link" size={13} /></button><small>{new URL(source.url).hostname} · {source.kind === 'search_result' ? 'выдержка из поиска' : 'страница прочитана'} · {new Date(source.checkedAt).toLocaleDateString('ru-RU')}</small></li>)}</ol></div>}
+          {!!message.webSources?.length && <div className="chat-web-sources"><strong><Icon name="globe" size={14} />Источники из интернета</strong><ol>{message.webSources.map((source, index) => <li key={source.url}><button type="button" onClick={() => max.openExternal(source.url)}><span>{index + 1}. {source.title}</span><Icon name="external-link" size={13} /></button><small>{new URL(source.url).hostname} · {source.kind === 'search_result' ? 'выдержка из поиска' : 'страница прочитана'} · {new Date(source.checkedAt).toLocaleDateString('ru-RU')}</small></li>)}</ol></div>}
           {message.webDisclaimer && <p className="chat-web-disclaimer">{message.webDisclaimer}</p>}
         </MessageReveal>
           : <div className="chat-bubble chat-bubble--user"><span className="sr-only">Вы: </span>{message.content}</div>}

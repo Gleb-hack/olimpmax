@@ -18,7 +18,7 @@ export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }:
     <div className="card-schedule"><span className="muted">{item.nextEvent ? item.nextEvent.name || 'Ближайший этап' : 'Расписание'}</span>
       <span className="schedule-line"><Icon name="bell" size={15} />{scheduleLabel(item)}</span>
     </div>
-    <div className="card-actions"><label className={`compare-check ${checked ? 'is-checked' : ''}`}><input type="checkbox" checked={checked} disabled={!checked && selected.length === 2} onChange={() => toggle(item.id)} /><span className="compare-check__box" aria-hidden="true">{checked && <Icon name="check" size={11} />}</span><span>{checked ? 'Выбрано' : 'Сравнить'}</span></label>
+    <div className="card-actions"><label className={`compare-check ${checked ? 'is-checked' : ''}`}><input type="checkbox" checked={checked} onChange={() => toggle(item.id)} /><span className="compare-check__box" aria-hidden="true">{checked && <Icon name="check" size={11} />}</span><span>{checked ? 'Выбрано' : 'Сравнить'}</span></label>
       <Button size="small" className={saved && tracking ? 'tracking-button--saved' : ''} variant={saved && tracking ? 'secondary' : 'primary'} aria-pressed={saved && tracking} disabled={mutation.isPending} onClick={() => mutation.mutate(saved ? { id: item.id, action: 'patch', patch: { tracking: !tracking } } : { id: item.id, action: 'save' })}>
         {saved && tracking && <Icon name="check" size={13} />}{mutation.isPending ? 'Сохраняем…' : saved && tracking ? 'Отслеживается' : 'Отслеживать'}
       </Button>

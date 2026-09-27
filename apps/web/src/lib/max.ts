@@ -14,17 +14,14 @@ export const max = {
   get displayName() { return window.WebApp?.initDataUnsafe?.user?.first_name || 'Ученик'; },
   get preferenceScope() { return this.isEmbedded ? String(window.WebApp?.initDataUnsafe?.user?.id ?? 'max') : 'browser'; },
   ready() { if (this.isEmbedded) window.WebApp?.ready?.(); },
-  openLink(url: string) {
+  // One way to leave the mini-app: web pages, mail and phone links. MAX documents openLink for web links only,
+  // so mail and phone callers also show the address as text for manual use.
+  openExternal(url: string) {
     const parsed = new URL(url);
-    if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error('Недопустимая ссылка');
+    if (!['https:', 'http:', 'mailto:', 'tel:'].includes(parsed.protocol)) throw new Error('Недопустимая ссылка');
     if (this.isEmbedded && window.WebApp?.openLink) window.WebApp.openLink(parsed.href);
-    else window.open(parsed.href, '_blank', 'noopener,noreferrer');
-  },
-  // MAX documents openLink for web links only, so callers must also show the address for manual use.
-  openMail(address: string, subject = '') {
-    const url = `mailto:${address}${subject ? `?subject=${encodeURIComponent(subject)}` : ''}`;
-    if (this.isEmbedded && window.WebApp?.openLink) window.WebApp.openLink(url);
-    else window.location.href = url;
+    else if (parsed.protocol.startsWith('http')) window.open(parsed.href, '_blank', 'noopener,noreferrer');
+    else window.location.href = parsed.href;
   },
   backButton(callback: (() => void) | null) {
     if (!this.isEmbedded) return () => {};

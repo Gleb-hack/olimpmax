@@ -3,6 +3,8 @@ import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 
 import { BottomNav, Button, EmptyState, Loading } from '@olimp/ui';
 import { CatalogPage } from './features/catalog/CatalogPage';
 import { SearchPage } from './features/catalog/SearchPage';
+import { CompareButton } from './features/catalog/Comparison';
+import { useUI } from './lib/ui-store';
 import { EditProfilePage } from './features/profile/EditProfilePage';
 import { DetailPage } from './features/catalog/DetailPage';
 import { PlanPage } from './features/plan/PlanPage';
@@ -29,6 +31,7 @@ function Layout() {
   const detail = pathname.startsWith('/olympiads/');
   const search = pathname === '/search';
   const chat = pathname === '/olimp';
+  const comparing = useUI(state => state.comparisonIds.length >= 2) && (detail || search || pathname === '/catalog');
   const backTo = typeof state?.backTo === 'string' && /^\/(?:catalog|search|olimp)(?:\?|$)/.test(state.backTo) ? state.backTo : '/catalog';
   const subpage = pathname.startsWith('/profile/');
   const returnTo = typeof state?.returnTo === 'string' && /^\/catalog(?:\?|$)/.test(state.returnTo) ? state.returnTo : '/catalog';
@@ -39,7 +42,7 @@ function Layout() {
     heading?.focus({ preventScroll: true });
     return max.backButton(subpage ? () => navigate('/profile') : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null);
   }, [pathname, navigate, subpage, detail, search, backTo, returnTo]);
-  return <div className={`app-shell ${chat ? 'app-shell--chat' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main>{!subpage && !detail && !search && <BottomNav />}</div>;
+  return <div className={`app-shell ${chat ? 'app-shell--chat' : ''} ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />{!subpage && !detail && !search && <BottomNav />}</div>;
 }
 function ProtectedApp() {
   const { user } = useSession();

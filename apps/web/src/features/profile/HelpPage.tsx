@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Dialog, Header, Notice, Icon } from '@olimp/ui';
+import { mailtoUrl } from '../../lib/contacts';
 import { max } from '../../lib/max';
 import { copyText } from '../../lib/clipboard';
 
@@ -20,7 +21,7 @@ export function HelpPage() {
   const [mailError, setMailError] = useState(false);
   function openMail() {
     setMailError(false);
-    try { max.openMail(supportEmail, 'Olimp: вопрос в поддержку'); } catch { setMailError(true); }
+    try { max.openExternal(mailtoUrl(supportEmail, 'Olimp: вопрос в поддержку')); } catch { setMailError(true); }
   }
   function close() { setSupport(false); setCopied(null); setMailError(false); }
   return <><Header title="Помощь и FAQ" back="/profile" /><p className="section-caption faq-caption">Часто задаваемые вопросы</p><div className="faq-list">{questions.map((question, index) => <section className={`faq-item ${open === index ? 'is-open' : ''}`} key={question.title}><h2><button id={`faq-title-${index}`} aria-expanded={open === index} aria-controls={`faq-answer-${index}`} onClick={() => setOpen(open === index ? null : index)}>{question.title}<Icon name="chevron-right" size={18} /></button></h2><div id={`faq-answer-${index}`} role="region" aria-labelledby={`faq-title-${index}`} hidden={open !== index}><p>{question.answer}</p></div></section>)}</div><Button className="full-width support-button" onClick={() => setSupport(true)}><Icon name="mail" size={17} />Написать в поддержку</Button>

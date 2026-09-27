@@ -5,9 +5,7 @@ import { Button, EmptyState, Loading, Notice, Icon } from '@olimp/ui';
 import { api } from '../../lib/api';
 import { usePlan } from '../../lib/queries';
 import { localKeys, readSearchHistory } from '../../lib/local-data';
-import { useUI } from '../../lib/ui-store';
 import { OlympiadCard } from './OlympiadCard';
-import { Comparison } from './CatalogPage';
 
 const popular = [{ label: 'Информатика', query: 'Информатика' }, { label: 'Математика', query: 'Математика' }, { label: 'ВсОШ', query: 'Всероссийская олимпиада' }, { label: 'Физика', query: 'Физика' }];
 export function SearchPage() {
@@ -17,11 +15,8 @@ export function SearchPage() {
   const urlQuery = (params.get('q') || '').slice(0, 200);
   const [input, setInput] = useState(urlQuery);
   const [history, setHistory] = useState(readSearchHistory);
-  const [comparisonOpen, setComparisonOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const plan = usePlan();
-  const selected = useUI(state => state.comparisonIds);
-  const clearComparison = useUI(state => state.clearComparison);
   useEffect(() => { setInput(urlQuery); }, [urlQuery]);
   useEffect(() => {
     if (input.trim() === urlQuery) return;
@@ -54,7 +49,6 @@ export function SearchPage() {
     {!input.trim() ? <div className="search-start"><section><h2>Популярные запросы</h2><div className="subject-tabs">{popular.map(item => <button key={item.label} className="chip" onClick={() => chooseQuery(item.query)}>{item.label}</button>)}</div></section><section className="section"><h2>История поиска</h2>{history.length ? <div className="search-history">{history.map(query => <button key={query} className="search-history__row" onClick={() => chooseQuery(query)}><Icon name="history" size={16} /><span>{query}</span><Icon name="arrow-up-left" size={17} /></button>)}</div> : <p className="hint">Здесь появятся ваши последние запросы</p>}</section></div> : <>
       <p className="section-caption search-count" aria-live="polite">{waiting || results.isPending ? 'Ищем олимпиады…' : `Результаты · ${total}`}</p>
       {waiting || results.isPending ? <Loading label="Поиск…" /> : results.isError && !results.data ? <EmptyState icon="search" title="Не удалось выполнить поиск" action={<Button onClick={() => results.refetch()}>Попробовать снова</Button>}>{results.error.message}</EmptyState> : !items.length ? <EmptyState icon="search" title="Ничего не найдено">Попробуйте другое название олимпиады или предмет.</EmptyState> : <><div className="catalog-list">{items.map(item => <OlympiadCard key={item.id} item={item} saved={saved.has(item.id)} tracking={plan.data?.items.find(entry => entry.olympiad.id === item.id)?.tracking} returnTo={backTo} backTo={`/search?${new URLSearchParams({ q: urlQuery })}`} />)}</div>{results.hasNextPage ? <Button className="full-width search-more" variant="secondary" disabled={results.isFetchingNextPage} onClick={() => results.fetchNextPage()}>{results.isFetchingNextPage ? 'Загружаем…' : 'Показать ещё'}</Button> : <p className="hint search-end">Больше олимпиад по этому запросу не найдено</p>}{results.isFetchNextPageError && <Notice tone="error">Не удалось загрузить следующую страницу. Попробуйте ещё раз.</Notice>}</>}
-      {selected.length > 0 && <div className="compare-bar search-comparison"><span>Выбрано для сравнения</span><b>{selected.length}</b><button disabled={selected.length !== 2} onClick={() => setComparisonOpen(true)}>Сравнить →</button><button className="icon-button" aria-label="Сбросить сравнение" onClick={clearComparison}><Icon name="x" size={13} /></button></div>}
-    </>}{comparisonOpen && <Comparison onClose={() => setComparisonOpen(false)} />}
+    </>}
   </>;
 }
