@@ -169,3 +169,20 @@ test('normalized question avoids repeating long official titles already identifi
   assert.equal(researchQuestion(question, [selected], 'web_search'), question);
   assert(!researchQuestion('поищи больше информации в интернете', [selected], 'web_search').includes('поищи'));
 });
+
+test('assistant evidence carries the primary schedule and only applicable admission benefits', () => {
+  const base = { ...item, scheduleStatus: 'published' as const };
+  const stage = (origin: 'csv' | 'reference', rawDates: string) => ({ id: '123e4567-e89b-42d3-a456-42661417400' + (origin === 'csv' ? '1' : '2'),
+    name: 'Регистрация', kind: 'registration' as const, rawDates, beginsOn: null, endsOn: null, timezone: 'Europe/Moscow' as const,
+    sourceUrl: null, verifiedAt: null, origin, verification: 'unverified' as const });
+  const stages = [stage('csv', 'До 21 окт'), { ...stage('reference', 'до 22 сентября'), mode: 'online' as const }];
+  const benefit = { university: { slug: 'mipt', name: 'МФТИ', city: 'Долгопрудный' }, kind: 'bvi' as const, diploma: 'winner' as const,
+    minScore: 75, maxScore: 85, requirement: 'ЕГЭ по профильному предмету от 75 до 85 баллов' };
+  const withReference = evidenceFor({ ...base, stages, scheduleSource: 'reference', benefits: { applicable: true, note: null, items: [benefit] } });
+  assert.deepEqual(withReference.sourceStages, [{ name: 'Регистрация', kind: 'registration', rawDates: 'до 22 сентября', mode: 'online' }]);
+  assert.deepEqual(withReference.admissionBenefits, [{ university: 'МФТИ', city: 'Долгопрудный', benefit: 'БВИ — без вступительных испытаний, только победителям', requirement: benefit.requirement }]);
+  const catalogSchedule = evidenceFor({ ...base, stages, scheduleSource: 'catalog', benefits: { applicable: false, note: 'Профиль не входит в перечень', items: [] } });
+  assert.deepEqual(catalogSchedule.sourceStages.map(s => s.rawDates), ['До 21 окт']);
+  assert.deepEqual(catalogSchedule.admissionBenefits, []);
+  assert.equal(catalogSchedule.benefitsNote, 'Профиль не входит в перечень');
+});

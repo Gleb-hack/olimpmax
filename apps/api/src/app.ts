@@ -10,6 +10,7 @@ import type { Database } from './db/client.js';
 import { users, planItems, olympiads } from './db/schema.js';
 import * as c from '../../../packages/contracts/src/index.js';
 import { catalog, detail, filters } from './features/catalog.js';
+import { seriesDetail, universityDetail, universityList } from './features/reference.js';
 import { readPlan, planEvents, planKey } from './features/plan.js';
 import { validateMaxInitData } from './features/auth.js';
 import { readProfile, saveProfile, deleteAccount, ProfileError } from './features/profile.js';
@@ -83,6 +84,17 @@ export async function buildApp(options: AppOptions) {
   api.get('/olympiads', { schema: { querystring: c.CatalogQuery, response: { 200: c.CatalogResponse } } }, request => catalog(db, request.query, today()));
   api.get('/olympiads/:id', { schema: { params: c.OlympiadParams, response: { 200: c.OlympiadDetail, 404: c.ErrorResponse } } }, async (request, reply) => {
     const result = await detail(db, request.params.id, today());
+    if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не найдена' });
+    return result;
+  });
+  api.get('/universities', { schema: { response: { 200: c.UniversityListResponse } } }, () => universityList(db));
+  api.get('/universities/:slug', { schema: { params: c.SlugParams, response: { 200: c.UniversityResponse, 404: c.ErrorResponse } } }, async (request, reply) => {
+    const result = await universityDetail(db, request.params.slug);
+    if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Вуз не найден' });
+    return result;
+  });
+  api.get('/series/:slug', { schema: { params: c.SlugParams, response: { 200: c.SeriesResponse, 404: c.ErrorResponse } } }, async (request, reply) => {
+    const result = await seriesDetail(db, request.params.slug);
     if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не найдена' });
     return result;
   });

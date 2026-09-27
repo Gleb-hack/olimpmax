@@ -28,14 +28,16 @@ export function CatalogPage() {
   };
   const reset = () => { paramsRef.current = new URLSearchParams(); setParams({}); };
   const savedIds = new Set(plan.data?.items.map(entry => entry.olympiad.id));
-  const hasFilters = ['q', 'subjectIds', 'grades', 'formats', 'levels'].some(key => params.has(key));
+  const hasFilters = ['q', 'subjectIds', 'grades', 'formats', 'levels', 'universities'].some(key => params.has(key));
+  const universityOptions = filters.data?.universities ?? [];
   return <>
     <Header title="Каталог" action={<button className="icon-button icon-button--blue" aria-label="Поиск олимпиад" onClick={() => navigate('/search', { state: { backTo: `/catalog${params.size ? `?${params}` : ''}` } })}><Icon name="search" size={18} /></button>} />
     <div className="filter-grid">
       <Select label="Предмет" placeholder="Предмет" icon="book" searchable searchPlaceholder="Найти предмет" value={params.get('subjectIds') || ''} onChange={value => updateParam('subjectIds', value)} options={[{ value: '', label: 'Все предметы' }, ...(filters.data?.subjects.map(subject => ({ value: String(subject.id), label: subject.name })) ?? [])]} />
       <Select label="Класс" placeholder="Класс" icon="graduation-cap" align="right" value={params.get('grades') || ''} onChange={value => updateParam('grades', value)} options={[{ value: '', label: 'Все классы' }, ...Array.from({ length: 11 }, (_, index) => ({ value: String(index + 1), label: `${index + 1} класс` }))]} />
       <Select label="Формат" placeholder="Формат" icon="list" value={params.get('formats') || ''} onChange={value => updateParam('formats', value)} options={[{ value: '', label: 'Любой формат' }, ...Object.entries(formats).map(([value, label]) => ({ value, label }))]} />
-      <Select label="Уровень" placeholder="Уровень" icon="award" align="right" value={params.get('levels') || ''} onChange={value => updateParam('levels', value)} options={[{ value: '', label: 'Любой уровень' }, ...olympiadLevelOptions]} />
+      <Select label="Уровень" placeholder="Уровень" icon="bar-chart" align="right" value={params.get('levels') || ''} onChange={value => updateParam('levels', value)} options={[{ value: '', label: 'Любой уровень' }, ...olympiadLevelOptions]} />
+      {universityOptions.length > 0 && <div className="filter-grid__wide"><Select label="Льготы в вузе" placeholder="Льготы в вузе" icon="graduation-cap" searchable searchPlaceholder="Найти вуз" value={params.get('universities') || ''} onChange={value => updateParam('universities', value)} options={[{ value: '', label: 'Любой вуз' }, ...universityOptions.map(u => ({ value: u.slug, label: `${u.name} · ${u.city}` }))]} /></div>}
     </div>
     <button className="reset-filter full-width" onClick={reset}><Icon name="refresh" size={16} />Сбросить фильтры</button>
     {filters.isError && <Notice tone="warning">Список предметов не загрузился. <button className="text-button" onClick={() => filters.refetch()}>Повторить</button></Notice>}

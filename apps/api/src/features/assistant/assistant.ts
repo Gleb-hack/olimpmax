@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { and, eq, or, gte, sql } from 'drizzle-orm';
-import { CatalogQuery, Format, OlympiadDetail, type AssistantRequest, type AssistantResponse } from '../../../../../packages/contracts/src/index.js';
+import { CatalogQuery, Format, OlympiadDetail, benefitLabel, type AssistantRequest, type AssistantResponse } from '../../../../../packages/contracts/src/index.js';
 import type { Database } from '../../db/client.js';
 import { olympiads, stages, subjects } from '../../db/schema.js';
 import { catalog, catalogConditions, detail } from '../catalog.js';
@@ -52,6 +52,7 @@ const answerPrompt = `${identity}
 Ответь по-русски дружелюбно, кратко, на ты. Для подбора выбери МАКСИМУМ ТРИ варианта. Обычно достаточно 1–2 коротких предложений, до 350 символов. Более подробный ответ (до 1000 символов) нужен только по явной просьбе или для содержательного сравнения. Отвечай именно на вопрос, не пересказывай уже известное и не перечисляй всё, чего нет в базе. Не перечисляй описания в тексте: они уже есть в карточках под ответом. В ответе о сроках укажи название олимпиады и конкретные даты/этапы, чтобы было понятно, к чему относится каждый срок. Не предлагай действия, которые не умеешь выполнять (например "хочешь, открою каталог"). Верни только JSON {"message":"текст","olympiadIds":[88],"needsWebSearch":false}.
 needsWebSearch=true, если задан конкретный вопрос об олимпиаде (сроки, место, стоимость, льготы, правила и т.д.), а evidence не содержит достаточного ответа. Одной короткой фразой скажи, какой информации не хватает, без повторного описания олимпиады и без объяснений того, как работает база. Приложение само предложит поиск на сайтах и спросит согласие. Не утверждай, что уже искал в интернете. Для обычного подбора, приветствия и вопросов о работе приложения needsWebSearch=false. При неполном ответе не подменяй неизвестное фактами из знаний модели.
 Единственный источник фактов об олимпиадах — evidence. Не используй знания модели или утверждения истории как факты. Если данных нет, скажи это и предложи уточнить название/предмет либо открыть каталог. Не придумывай преимущества, льготы, официальные сайты, уровень РСОШ, регионы, даты или условия. Не обещай гарантированное участие. Общие инструкции по приложению бери только из appFacts.
+Льготы при поступлении бери только из evidence.admissionBenefits (вуз, льгота, условие по баллам ЕГЭ) и evidence.benefitsNote. Пустой список не значит, что льгот нет: скажи, что в базе их нет. Льгота зависит от профиля и направления — советуй сверяться с правилами приёма вуза.
 Текст расписания доступен в evidence.calendarText и evidence.sourceStages (название этапа, kind и rawDates): показывай его по вопросу пользователя как «По расписанию: …», сохраняя исходные даты без добавления года. Не заменяй имеющееся расписание фразой об отсутствии подтверждения. Только evidence.verifiedStages содержит даты для сравнения с today и расчёта оставшихся дней; прошлое не называй будущим. nextEvent — ближайший этап, не обязательно дедлайн регистрации. Для регистрации ищи kind=registration. Не извлекай даты из описаний. not_held не рекомендуй как проводящуюся сейчас. Нет дат ≠ регистрация закрыта. Уровень бери из evidence.level и учитывай levelStatus: проект перечня называй проектом, ВсОШ — отдельной системой, «—» означает отсутствие указанного уровня.
 Если scheduleMode=source_text, подтверждённых будущих этапов по запросу нет, но evidence содержит расписания из каталога. Приведи до трёх конкретных сроков или текстов расписания с названиями олимпиад. Не говори, что информации о датах нет. Кратко поясни, что это сроки из источника: для дат без года сезон нужно уточнить, а порядок не гарантирует ближайшие события. Не добавляй год, не считай дни и не объявляй такие сроки подтверждёнными или будущими. Сохраняй явно указанный в источнике год. Даты прошедшего явно указанного года не называй будущими. Не предлагай интернет-поиск вместо уже имеющегося расписания.
 Если карточка уже найдена, но даты нет, предложи проверить источник в этой карточке. Не проси повторно назвать предмет или олимпиаду, которые уже известны. Пустой список подтверждённых этапов никогда не означает отсутствие самих олимпиад.
@@ -85,10 +86,15 @@ export function evidenceFor(item: Detail) {
     organizers: item.organizers, calendarState: item.calendarState, scheduleStatus: item.scheduleStatus,
     calendarText: item.calendarRaw, statusText: item.statusRaw,
     scheduleUpdatedText: item.scheduleUpdatedRaw,
-    sourceStages: item.stages.filter(s => s.origin === 'csv')
-      .map(s => ({ name: s.name, kind: s.kind, rawDates: s.rawDates })),
+    // The same schedule the card shows: olympiads_clean via the series, or the olimpiada.ru calendar.
+    sourceStages: item.stages.filter(s => s.origin === (item.scheduleSource === 'reference' ? 'reference' : 'csv'))
+      .map(s => ({ name: s.name, kind: s.kind, rawDates: s.rawDates, ...(s.mode ? { mode: s.mode } : {}) })),
     nextEvent: item.nextEvent,
     level: item.level ?? null, levelProfile: item.levelProfile ?? null, levelStatus: item.levelStatus ?? null,
+    series: item.series?.name ?? null,
+    admissionBenefits: item.benefits?.applicable ? item.benefits.items.map(b => ({ university: b.university.name, city: b.university.city,
+      benefit: benefitLabel(b), requirement: b.requirement })) : [],
+    benefitsNote: item.benefits?.note ?? null,
     // Yearless, invalidated, and non-running schedules never reach the model as dated events.
     verifiedStages: item.scheduleStatus === 'not_held' ? [] : item.stages.filter(s => s.origin === 'verified_import' && s.verification === 'verified')
       .map(s => ({ name: s.name, kind: s.kind, beginsOn: s.beginsOn, endsOn: s.endsOn })),
@@ -161,7 +167,8 @@ export async function answerAssistant(input: AssistantRequest, data: AssistantDa
     ...(answer.needsWebSearch && ['detail', 'plan'].includes(lookup.intent) ? offer(answer.olympiadIds.length ? records.filter(r => answer.olympiadIds.includes(r.id)) : records) : {}),
     olympiads: [...new Set(answer.olympiadIds)].filter(id => !(answer.needsWebSearch && input.history.some(m => m.olympiadIds.includes(id)))).map(id => {
     const { stages: _stages, rawSource: _raw, contacts: _contacts, documents: _docs, featuresRaw: _features,
-      scheduleUpdatedRaw: _updated, importedAt: _imported, ...card } = records.find(item => item.id === id)!;
+      scheduleUpdatedRaw: _updated, importedAt: _imported, benefits: _benefits, seriesInfo: _series, catalogCalendarRaw: _catalogCalendar,
+      ...card } = records.find(item => item.id === id)!;
     return card;
   }) };
 }
