@@ -22,8 +22,8 @@ export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }:
     </div>
     <div className="card-actions"><label className={`compare-check ${checked ? 'is-checked' : ''}`}><input type="checkbox" checked={checked} disabled={!checked && selected.length === 2} onChange={() => toggle(item.id)} /><span className="compare-check__box" aria-hidden="true">{checked && <Check size={11} strokeWidth={3} />}</span><span>{checked ? 'Выбрано' : 'Сравнить'}</span></label>
       <Button size="small" className={saved && tracking ? 'tracking-button--saved' : ''} variant={saved ? 'secondary' : 'primary'} disabled={mutation.isPending} onClick={() => {
-        if (saved && !tracking) navigate(`/plan?olympiad=${item.id}`, { state: { backTo, returnTo } });
-        else mutation.mutate(saved ? { id: item.id, action: 'patch', patch: { tracking: false } } : { id: item.id, action: 'save' });
+        if (saved) navigate(`/plan?olympiad=${item.id}`, { state: { backTo, returnTo } });
+        else mutation.mutate({ id: item.id, action: 'save' });
       }}>
         {saved && tracking && <Check size={13} />}{mutation.isPending ? 'Сохраняем…' : saved ? tracking ? 'Отслеживается' : 'В плане' : 'Отслеживать'}
       </Button>
