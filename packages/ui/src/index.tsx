@@ -1,8 +1,9 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Button as MaxButton } from '@maxhub/max-ui';
 import { NavLink, Link } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Check, ChevronRight, LayoutGrid, Sparkles, UserRound, X, type LucideIcon } from 'lucide-react';
+import { Icon, type IconName } from './Icon';
 
+export { Icon, type IconName } from './Icon';
 export { Select } from './Select';
 
 export function Button({ children, variant = 'primary', className = '', ...props }: Omit<React.ComponentProps<typeof MaxButton>, 'variant'> & { variant?: 'primary' | 'secondary' | 'danger' }) {
@@ -10,45 +11,45 @@ export function Button({ children, variant = 'primary', className = '', ...props
 }
 
 const tabs = [
-  { to: '/olimp', label: 'Олимп', icon: Sparkles },
-  { to: '/catalog', label: 'Каталог', icon: LayoutGrid },
-  { to: '/plan', label: 'План', icon: CalendarDays },
-  { to: '/profile', label: 'Профиль', icon: UserRound },
-];
+  { to: '/olimp', label: 'Олимп', icon: 'sparkle' },
+  { to: '/catalog', label: 'Каталог', icon: 'grid' },
+  { to: '/plan', label: 'План', icon: 'calendar' },
+  { to: '/profile', label: 'Профиль', icon: 'user' },
+] satisfies { to: string; label: string; icon: IconName }[];
 export function BottomNav() {
-  return <nav className="bottom-nav" aria-label="Основная навигация">{tabs.map(({ to, label, icon: Icon }) =>
+  return <nav className="bottom-nav" aria-label="Основная навигация">{tabs.map(({ to, label, icon }) =>
     <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
-      <Icon size={21} strokeWidth={1.7} /><span>{label}</span>
+      <Icon name={icon} size={22} /><span>{label}</span>
     </NavLink>)}
   </nav>;
 }
 
 export function Header({ title, subtitle, action, back, backLabel, backState }: { title: string; subtitle?: string; action?: ReactNode; back?: string; backLabel?: string; backState?: { backTo: string } }) {
   return <header className={`page-header ${back ? 'page-header--back' : ''}`}>
-    {back && <Link to={back} state={backState} className="icon-button back-button" aria-label={backLabel || (back === '/catalog' ? 'Назад в каталог' : 'Назад в профиль')}><ArrowLeft size={20} /></Link>}
+    {back && <Link to={back} state={backState} className="icon-button back-button" aria-label={backLabel || (back === '/catalog' ? 'Назад в каталог' : 'Назад в профиль')}><Icon name="chevron-left" size={18} /></Link>}
     <div><h1 tabIndex={-1}>{title}</h1>{subtitle && <p>{subtitle}</p>}</div>{action}
   </header>;
 }
 
-export function SettingsRow({ icon: Icon, title, subtitle, tone = 'blue', children, ...props }: { icon: LucideIcon; title: string; subtitle?: string; tone?: 'blue' | 'green' | 'red' | 'amber'; children?: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+export function SettingsRow({ icon, title, subtitle, tone = 'blue', children, ...props }: { icon: IconName; title: string; subtitle?: string; tone?: 'blue' | 'green' | 'red' | 'amber'; children?: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button type="button" className="settings-row" {...props}>
-    <span className={`icon-tile tone-${tone}`}><Icon size={20} strokeWidth={1.7} /></span>
+    <span className={`icon-tile tone-${tone}`}><Icon name={icon} size={20} /></span>
     <span className="settings-row__copy"><strong>{title}</strong>{subtitle && <small>{subtitle}</small>}</span>
-    {children ?? <ChevronRight className="muted" size={18} />}
+    {children ?? <Icon name="chevron-right" className="settings-row__chevron" size={18} />}
   </button>;
 }
 
 // Read-only value tag; a selected chip uses the primary tint and shows a check mark.
 export function Chip({ children, selected = false }: { children: ReactNode; selected?: boolean }) {
-  return <span className={`chip ${selected ? 'chip--selected' : ''}`}>{children}{selected && <Check size={13} strokeWidth={2.5} aria-hidden="true" />}</span>;
+  return <span className={`chip ${selected ? 'chip--selected' : ''}`}>{children}{selected && <Icon name="check" size={12} />}</span>;
 }
 
 export function Notice({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'info' | 'warning' | 'error' }) {
   return <div className={`notice notice--${tone}`} role={tone === 'error' ? 'alert' : undefined}>{children}</div>;
 }
 
-export function EmptyState({ icon: Icon = LayoutGrid, title, children, action }: { icon?: LucideIcon; title: string; children: ReactNode; action?: ReactNode }) {
-  return <div className="empty-state"><span className="empty-state__icon"><Icon size={28} strokeWidth={1.5} /></span><h2>{title}</h2><p>{children}</p>{action}</div>;
+export function EmptyState({ icon = 'grid', title, children, action }: { icon?: IconName; title: string; children: ReactNode; action?: ReactNode }) {
+  return <div className="empty-state"><span className="empty-state__icon"><Icon name={icon} size={28} /></span><h2>{title}</h2><p>{children}</p>{action}</div>;
 }
 
 export function Loading({ label = 'Загружаем…' }: { label?: string }) {
@@ -67,6 +68,6 @@ export function Dialog({ title, children, onClose, className = '' }: { title: st
     return () => { dialog?.close(); document.body.style.overflow = oldOverflow; previous?.focus(); };
   }, []);
   return <dialog ref={ref} className={`dialog ${className}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <div className="dialog__inner"><div className="dialog__header"><h2 id={titleId}>{title}</h2><button type="button" className="icon-button" aria-label="Закрыть" onClick={onClose}><X size={19} /></button></div>{children}</div>
+    <div className="dialog__inner"><div className="dialog__header"><h2 id={titleId}>{title}</h2><button type="button" className="icon-button" aria-label="Закрыть" onClick={onClose}><Icon name="x" size={13} /></button></div>{children}</div>
   </dialog>;
 }

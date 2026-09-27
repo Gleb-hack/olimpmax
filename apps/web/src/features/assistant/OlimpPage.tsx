@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ChevronRight, ExternalLink, Globe, Plus, RotateCcw, Send, Sparkles } from 'lucide-react';
-import { Dialog, Button, Notice } from '@olimp/ui';
+import { Dialog, Button, Notice, Icon } from '@olimp/ui';
 import { isMock, type Olympiad } from '../../lib/api';
 import { scheduleLabel, gradeLabel, levelLabel } from '../../lib/format';
 import { usePlan, usePlanActions } from '../../lib/queries';
@@ -19,9 +18,9 @@ function ChatCard({ item }: { item: Olympiad }) {
     <p className="chat-card__meta">{[item.organizers?.[0], gradeLabel(item)].filter(Boolean).join(' · ')}</p>
     {levelLabel(item) !== 'Не указан' && <p className="chat-card__meta">{levelLabel(item)}</p>}
     <p className="chat-card__date">{scheduleLabel(item)}</p>
-    <div className="chat-card__actions"><Link to={`/olympiads/${item.id}`} state={{ backTo: '/olimp' }}>Подробнее<ChevronRight size={14} /></Link>
+    <div className="chat-card__actions"><Link to={`/olympiads/${item.id}`} state={{ backTo: '/olimp' }}>Подробнее<Icon name="chevron-right" size={14} /></Link>
       <button type="button" disabled={saved || action.isPending || plan.isPending} onClick={() => action.mutate({ id: item.id, action: 'save' })} aria-label={saved ? `${item.title} уже в плане` : `Добавить в план: ${item.title}`}>
-        {saved ? <Check size={14} /> : <Plus size={14} />}{saved ? 'В плане' : action.isPending ? 'Сохраняем…' : 'В план'}
+        {saved ? <Icon name="check" size={14} /> : <Icon name="plus" size={14} />}{saved ? 'В плане' : action.isPending ? 'Сохраняем…' : 'В план'}
       </button></div>
     <button type="button" className="chat-card__source" onClick={() => max.openLink(item.sourceUrl)}>Источник: {new URL(item.sourceUrl).hostname}</button>
     {action.isError && <p className="chat-card__error" role="alert">{action.error.message}</p>}
@@ -68,7 +67,7 @@ export function OlimpPage() {
   return <section className="olimp-chat" aria-label="Чат с Олимпом">
     <header className="chat-header"><span className="chat-avatar"><img src={olimpLogo} alt="" width={42} height={42} /></span>
       <div><h1 tabIndex={-1}>Олимп</h1><p><span className={chat.error || isMock ? 'chat-status chat-status--away' : 'chat-status'} />{chat.researching ? 'Проверяет сайты…' : chat.pending ? 'Подбирает ответ…' : isMock ? 'Чат недоступен в деморежиме' : chat.error ? 'Не удалось получить ответ' : 'ИИ-помощник по олимпиадам'}</p></div>
-      {hasConversation && <button type="button" className="chat-reset" aria-label="Новый диалог" title="Новый диалог" onClick={() => setConfirmReset(true)}><RotateCcw size={18} /></button>}
+      {hasConversation && <button type="button" className="chat-reset" aria-label="Новый диалог" title="Новый диалог" onClick={() => setConfirmReset(true)}><Icon name="rotate-ccw" size={18} /></button>}
     </header>
     <div className="chat-log" ref={log} role="log" aria-label="Переписка" aria-live="polite" aria-relevant="additions text" onScroll={event => {
       const element = event.currentTarget; followBottom.current = element.scrollHeight - element.scrollTop - element.clientHeight < 80;
@@ -78,22 +77,22 @@ export function OlimpPage() {
         {message.role === 'assistant' ? <MessageReveal message={message} active={last?.id === message.id} onProgress={scrollWithReply}
           renderCard={index => <ChatCard item={message.olympiads[index]!} />}>
           {message.webSearchOffer && <div className="chat-web-offer">
-            <div className="chat-web-offer__title"><Globe size={17} /><strong>Поискать в интернете?</strong></div>
+            <div className="chat-web-offer__title"><Icon name="globe" size={17} /><strong>Поискать в интернете?</strong></div>
             <p className="chat-web-offer__question">«{message.webSearchOffer.question}»</p>
             {message.webSearchState ? <small>{message.webSearchState === 'accepted' ? 'Поиск разрешён' : 'Поиск не запускался'}</small>
               : <div className="chat-web-offer__actions"><button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.research(message.id); }}>Да</button><button type="button" disabled={chat.pending} onClick={() => chat.decline(message.id)}>Нет</button></div>}
           </div>}
-          {!!message.webSources?.length && <div className="chat-web-sources"><strong><Globe size={14} />Источники из интернета</strong><ol>{message.webSources.map((source, index) => <li key={source.url}><button type="button" onClick={() => max.openLink(source.url)}><span>{index + 1}. {source.title}</span><ExternalLink size={13} /></button><small>{new URL(source.url).hostname} · {source.kind === 'search_result' ? 'выдержка из поиска' : 'страница прочитана'} · {new Date(source.checkedAt).toLocaleDateString('ru-RU')}</small></li>)}</ol></div>}
+          {!!message.webSources?.length && <div className="chat-web-sources"><strong><Icon name="globe" size={14} />Источники из интернета</strong><ol>{message.webSources.map((source, index) => <li key={source.url}><button type="button" onClick={() => max.openLink(source.url)}><span>{index + 1}. {source.title}</span><Icon name="external-link" size={13} /></button><small>{new URL(source.url).hostname} · {source.kind === 'search_result' ? 'выдержка из поиска' : 'страница прочитана'} · {new Date(source.checkedAt).toLocaleDateString('ru-RU')}</small></li>)}</ol></div>}
           {message.webDisclaimer && <p className="chat-web-disclaimer">{message.webDisclaimer}</p>}
         </MessageReveal>
           : <div className="chat-bubble chat-bubble--user"><span className="sr-only">Вы: </span>{message.content}</div>}
         {message.failed && <small className="chat-failed">Ответ не получен</small>}
       </div>)}
       {!hasConversation && <div className="chat-suggestions" aria-label="Подсказки для начала разговора">
-        {['Математика', 'Информатика', 'Ближайшие дедлайны'].map(text => <button type="button" key={text} onClick={() => send(text)} disabled={isMock}><Sparkles size={13} />{text}</button>)}
+        {['Математика', 'Информатика', 'Ближайшие дедлайны'].map(text => <button type="button" key={text} onClick={() => send(text)} disabled={isMock}><Icon name="sparkle" size={13} />{text}</button>)}
       </div>}
       {chat.pending && <div className="chat-pending" role="status" aria-label={chat.researching ? 'Олимп ищет информацию на сайтах' : 'Олимп готовит ответ'}><div className="chat-typing" aria-hidden="true"><span /><span /><span /></div>{chat.researching && <small>Ищу в интернете и проверяю источники…</small>}</div>}
-      {chat.error && <div className="chat-error" role="alert"><p>{chat.error}</p>{last?.failed && <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.send(last.content, last.id); }}><RotateCcw size={14} />Повторить</button>}</div>}
+      {chat.error && <div className="chat-error" role="alert"><p>{chat.error}</p>{last?.failed && <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.send(last.content, last.id); }}><Icon name="rotate-ccw" size={14} />Повторить</button>}</div>}
       {!hasConversation && <p className="chat-intro-note">Подберём варианты из каталога.<br />Расскажу об участии, уровнях и расписании.</p>}
     </div>
     <footer className="chat-footer">
@@ -103,7 +102,7 @@ export function OlimpPage() {
           onChange={event => chat.setDraft(event.target.value)} onKeyDown={event => {
             if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); }
           }} />
-        <button type="submit" className="chat-send" aria-label="Отправить сообщение" disabled={chat.pending || !chat.draft.trim() || isMock}><Send size={19} /></button>
+        <button type="submit" className="chat-send" aria-label="Отправить сообщение" disabled={chat.pending || !chat.draft.trim() || isMock}><Icon name="send" size={16} /></button>
       </form>
       <p className="chat-footer__hint">Сообщения обрабатывает ИИ. <Link to="/profile/privacy">О данных</Link>{chat.draft.length > 1800 && <span> · {chat.draft.length}/2000</span>}</p>
     </footer>

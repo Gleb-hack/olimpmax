@@ -1,5 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
-import { Check, ChevronDown, Search, X, type LucideIcon } from 'lucide-react';
+import { Icon, type IconName } from './Icon';
 
 type Option = { value: string; label: string };
 type SelectProps = {
@@ -8,14 +8,14 @@ type SelectProps = {
   options: Option[];
   value: string;
   onChange: (value: string) => void;
-  icon?: LucideIcon;
+  icon?: IconName;
   searchable?: boolean;
   searchPlaceholder?: string;
   align?: 'left' | 'right';
 };
 
 /** Single-select menu shared by catalogue filters and the profile editor. */
-export function Select({ label, placeholder, options, value, onChange, icon: Icon, searchable = false, searchPlaceholder = 'Найти в списке', align = 'left' }: SelectProps) {
+export function Select({ label, placeholder, options, value, onChange, icon, searchable = false, searchPlaceholder = 'Найти в списке', align = 'left' }: SelectProps) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
@@ -122,12 +122,12 @@ export function Select({ label, placeholder, options, value, onChange, icon: Ico
   return <div className="select">
     <button ref={trigger} type="button" role="combobox" className={`select__trigger ${value ? 'is-selected' : ''} ${open ? 'is-open' : ''}`} aria-label={label} aria-expanded={open} aria-haspopup="listbox" aria-controls={`${id}-list`} onClick={() => open ? close() : show()} onKeyDown={event => {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); show(); }
-    }}>{Icon && <Icon size={17} />}<span>{value ? selected?.label || placeholder : placeholder}</span><ChevronDown size={15} className="select__chevron" /></button>
+    }}>{icon && <Icon name={icon} size={17} />}<span>{value ? selected?.label || placeholder : placeholder}</span><Icon name="chevron-down" size={15} className="select__chevron" /></button>
     {open && <div ref={panel} className="select__menu" style={position} onKeyDown={onKeyDown}>
       <div className="select__heading"><span>{label}</span><span>{options.length - (options.some(option => option.value === '') ? 1 : 0)}</span></div>
-      {searchable && <div className="select__search"><Search size={16} /><input ref={input} role="combobox" aria-label={searchPlaceholder} aria-expanded="true" aria-autocomplete="list" aria-controls={`${id}-list`} aria-activedescendant={activeOption ? `${id}-option-${active}` : undefined} placeholder={searchPlaceholder} value={query} onChange={event => { setQuery(event.target.value); setActive(0); }} />{query && <button type="button" aria-label="Очистить поиск в списке" onClick={() => { setQuery(''); setActive(0); input.current?.focus(); }}><X size={14} /></button>}</div>}
+      {searchable && <div className="select__search"><Icon name="search" size={16} /><input ref={input} role="combobox" aria-label={searchPlaceholder} aria-expanded="true" aria-autocomplete="list" aria-controls={`${id}-list`} aria-activedescendant={activeOption ? `${id}-option-${active}` : undefined} placeholder={searchPlaceholder} value={query} onChange={event => { setQuery(event.target.value); setActive(0); }} />{query && <button type="button" aria-label="Очистить поиск в списке" onClick={() => { setQuery(''); setActive(0); input.current?.focus(); }}><Icon name="x" size={13} /></button>}</div>}
       <div ref={list} id={`${id}-list`} className="select__options" role="listbox" aria-label={label} tabIndex={-1} aria-activedescendant={activeOption ? `${id}-option-${active}` : undefined}>
-        {filtered.map((option, index) => <div key={option.value} id={`${id}-option-${index}`} role="option" aria-selected={option.value === value} data-index={index} className={`select__option ${option.value === value ? 'is-selected' : ''} ${index === active ? 'is-active' : ''} ${option.value === '' ? 'is-reset' : ''}`} onPointerMove={() => { if (active !== index) setActive(index); }} onMouseDown={event => event.preventDefault()} onClick={() => choose(option)}><span>{option.label}</span>{option.value === value && <Check size={16} strokeWidth={2} />}</div>)}
+        {filtered.map((option, index) => <div key={option.value} id={`${id}-option-${index}`} role="option" aria-selected={option.value === value} data-index={index} className={`select__option ${option.value === value ? 'is-selected' : ''} ${index === active ? 'is-active' : ''} ${option.value === '' ? 'is-reset' : ''}`} onPointerMove={() => { if (active !== index) setActive(index); }} onMouseDown={event => event.preventDefault()} onClick={() => choose(option)}><span>{option.label}</span>{option.value === value && <Icon name="check" size={14} />}</div>)}
         {!filtered.length && <div className="select__empty" role="status">Ничего не найдено<span>Попробуйте другое название</span></div>}
       </div>
     </div>}

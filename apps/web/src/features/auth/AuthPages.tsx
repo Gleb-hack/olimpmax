@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronLeft, ShieldCheck, UserRound } from 'lucide-react';
-import { Button, Dialog, Notice, Select } from '@olimp/ui';
+import { Button, Dialog, Notice, Select, Icon } from '@olimp/ui';
 import { ProfilePreferences } from '@olimp/contracts';
 import { canUseLocalAuth, isMock } from '../../lib/api';
 import { max } from '../../lib/max';
@@ -67,19 +66,19 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     finally { setPending(false); }
   }
   return <main className={`app-shell auth-page ${registering ? 'auth-page--register' : ''}`}>
-    <button className="icon-button auth-back" aria-label="Назад к приветствию" onClick={() => navigate('/welcome')} disabled={pending}><ChevronLeft size={22} /></button>
+    <button className="icon-button auth-back" aria-label="Назад к приветствию" onClick={() => navigate('/welcome')} disabled={pending}><Icon name="chevron-left" size={18} /></button>
     <header className="auth-heading"><h1>{registering ? 'Создать аккаунт' : 'С возвращением!'}</h1><p>{registering ? 'Заполните данные, чтобы начать подготовку к олимпиадам' : 'Войдите, чтобы продолжить подготовку к олимпиадам'}</p></header>
     <nav className="auth-tabs" aria-label="Вход или регистрация"><Link to="/login" state={location.state} aria-current={!registering ? 'page' : undefined} onClick={event => { if (pending) event.preventDefault(); }}>Вход</Link><Link to="/register" state={location.state} aria-current={registering ? 'page' : undefined} onClick={event => { if (pending) event.preventDefault(); }}>Регистрация</Link></nav>
     {(isMock || canUseLocalAuth) && <p className="auth-demo">{isMock ? 'Деморежим · данные только в этом браузере' : 'Локальная разработка · тестовый аккаунт'}</p>}
     <form className="auth-form" onSubmit={submit}>
       <fieldset disabled={pending}>
-        {registering && <label className="auth-field"><span>Имя</span><div className="auth-input"><UserRound size={19} /><input autoComplete="given-name" required maxLength={80} value={name} placeholder="Как вас зовут?" onChange={event => setName(event.target.value)} /></div></label>}
-        <label className="auth-field"><span>Аккаунт MAX</span><div className="auth-input"><UserRound size={19} /><input readOnly value={max.isEmbedded ? max.displayName : isMock || canUseLocalAuth ? 'Тестовый аккаунт' : 'Откройте приложение в MAX'} /></div></label>
-        {!registering && <label className="auth-field"><span>Способ входа</span><div className="auth-input auth-input--secure"><ShieldCheck size={20} /><input readOnly value="Без пароля · через MAX" /></div></label>}
-        <p className="auth-security"><ShieldCheck size={16} /><span>{registering ? 'Профиль будет привязан к вашему аккаунту MAX. Придумывать пароль не нужно.' : 'MAX подтверждает вашу личность. Ваш план и настройки появятся после входа.'}</span></p>
+        {registering && <label className="auth-field"><span>Имя</span><div className="auth-input"><Icon name="user" size={16} /><input autoComplete="given-name" required maxLength={80} value={name} placeholder="Как вас зовут?" onChange={event => setName(event.target.value)} /></div></label>}
+        <label className="auth-field"><span>Аккаунт MAX</span><div className="auth-input"><Icon name="user" size={16} /><input readOnly value={max.isEmbedded ? max.displayName : isMock || canUseLocalAuth ? 'Тестовый аккаунт' : 'Откройте приложение в MAX'} /></div></label>
+        {!registering && <label className="auth-field"><span>Способ входа</span><div className="auth-input auth-input--secure"><Icon name="shield" size={16} /><input readOnly value="Без пароля · через MAX" /></div></label>}
+        <p className="auth-security"><Icon name="shield" size={16} /><span>{registering ? 'Профиль будет привязан к вашему аккаунту MAX. Придумывать пароль не нужно.' : 'MAX подтверждает вашу личность. Ваш план и настройки появятся после входа.'}</span></p>
         {registering && <>
           <div className="auth-field auth-field--section"><span>Класс обучения</span><Select label="Класс обучения" placeholder="Выберите класс" value={grade === null ? '' : String(grade)} onChange={value => setGrade(value ? Number(value) : null)} options={[{ value: '', label: 'Укажу позже' }, ...Array.from({ length: 11 }, (_, i) => ({ value: String(i + 1), label: `${i + 1} класс` }))]} /></div>
-          <div className="auth-field auth-field--section"><span>Интересующие предметы</span><button type="button" className={`subjects-trigger ${subjects.length ? 'has-value' : ''}`} aria-haspopup="dialog" aria-label="Выбрать интересующие предметы" onClick={() => setSubjectsOpen(true)}><span>{selected || 'Выберите предметы'}</span><ChevronDown size={17} /></button></div>
+          <div className="auth-field auth-field--section"><span>Интересующие предметы</span><button type="button" className={`subjects-trigger ${subjects.length ? 'has-value' : ''}`} aria-haspopup="dialog" aria-label="Выбрать интересующие предметы" onClick={() => setSubjectsOpen(true)}><span>{selected || 'Выберите предметы'}</span><Icon name="chevron-down" size={16} /></button></div>
           <p className="auth-optional">Класс и предметы можно указать позже.</p>
         </>}
         {!available && <Notice tone="info">Откройте это мини-приложение из бота в MAX, чтобы {registering ? 'создать профиль' : 'войти в аккаунт'}.</Notice>}
