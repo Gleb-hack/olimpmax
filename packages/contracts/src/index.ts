@@ -1,6 +1,13 @@
 import { z } from 'zod';
 
 export const Format = z.enum(['onsite', 'online', 'hybrid', 'unknown']);
+export const OlympiadLevel = z.enum(['I', 'II', 'III', 'I–III', 'ВсОШ', 'unknown']);
+export const olympiadLevelOptions = [
+  { value: 'I', label: 'I уровень' }, { value: 'II', label: 'II уровень' },
+  { value: 'III', label: 'III уровень' }, { value: 'ВсОШ', label: 'ВсОШ' },
+  { value: 'I–III', label: 'I–III уровни' },
+  { value: 'unknown', label: 'Не указан' },
+] as const;
 export const Participation = z.enum(['individual', 'team', 'mixed', 'unknown']);
 export const ScheduleStatus = z.enum(['published', 'unknown', 'not_held']);
 export const DateVerification = z.enum(['unverified', 'verified', 'needs_review']);
@@ -13,6 +20,7 @@ export const CatalogQuery = z.object({
   subjectIds: list(z.coerce.number().int().positive()),
   grades: list(z.coerce.number().int().min(1).max(11)),
   formats: list(Format), participation: list(Participation),
+  levels: list(OlympiadLevel),
   scheduleStatus: ScheduleStatus.optional(),
   sort: z.enum(['rating', 'name']).default('rating'),
   page: z.coerce.number().int().min(1).max(10000).default(1),

@@ -54,6 +54,10 @@ export function catalogConditions(db: Database, query: CatalogQuery, options: { 
     db.select({ id: olympiadSubjects.olympiadId }).from(olympiadSubjects).where(inArray(olympiadSubjects.subjectId, query.subjectIds))));
   if (query.grades) conditions.push(or(...query.grades.map(g => sql`${olympiads.gradeFrom} <= ${g} and ${olympiads.gradeTo} >= ${g}`)));
   if (query.formats) conditions.push(inArray(olympiads.format, query.formats));
+  if (query.levels) {
+    const level = sql`coalesce(nullif(nullif(nullif(trim(${olympiads.rawSource}->>'Уровень олимпиады'), ''), '—'), '-'), 'unknown')`;
+    conditions.push(inArray(level, query.levels));
+  }
   if (query.participation) conditions.push(inArray(olympiads.participation, query.participation));
   if (query.scheduleStatus) conditions.push(eq(olympiads.scheduleStatus, query.scheduleStatus));
   if (options.requireSchedule) conditions.push(or(

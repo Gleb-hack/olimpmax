@@ -59,6 +59,7 @@ export async function mockRequest(path: string, options: RequestInit = {}): Prom
         && (!query.subjectIds || item.subjects.some(s => query.subjectIds!.includes(s.id)))
         && (!query.grades || query.grades.some(grade => item.gradeFrom !== null && item.gradeTo !== null && item.gradeFrom <= grade && grade <= item.gradeTo))
         && (!query.formats || query.formats.includes(item.format))
+        && (!query.levels || query.levels.some(level => level === (['', '—', '-'].includes(item.level?.trim() ?? '') ? 'unknown' : item.level?.trim())))
         && (!query.participation || query.participation.includes(item.participation))
         && (!query.scheduleStatus || query.scheduleStatus === item.scheduleStatus);
     }).sort((a, b) => (query.sort === 'name' ? a.title.localeCompare(b.title, 'ru') : (b.rating ?? -Infinity) - (a.rating ?? -Infinity)) || a.id - b.id);

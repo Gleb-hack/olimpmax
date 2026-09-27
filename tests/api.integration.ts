@@ -48,6 +48,22 @@ after(async () => {
   await app?.close(); await connection.pool.end();
   try { await admin.pool.query(`DROP DATABASE IF EXISTS "${databaseName}" WITH (FORCE)`); } finally { await admin.pool.end(); }
 });
+test('catalog filters every source level before pagination and rejects invalid levels', async () => {
+  for (const level of contracts.OlympiadLevel.options) {
+    const expected = rows.filter(row => (row.olympiad.rawSource['Уровень олимпиады'] === '—' ? 'unknown' : row.olympiad.rawSource['Уровень олимпиады']) === level);
+    const response = await app.inject(`/olympiads?levels=${encodeURIComponent(level)}&pageSize=1&page=2`);
+    assert.equal(response.statusCode, 200, response.body);
+    const result = contracts.CatalogResponse.parse(response.json());
+    assert.equal(result.total, expected.length);
+    assert.equal(result.items.length, expected.length > 1 ? 1 : 0);
+    assert.ok(result.items.every(item => (item.level === '—' ? 'unknown' : item.level) === level));
+  }
+  const result = contracts.CatalogResponse.parse((await app.inject('/olympiads?levels=I,II&formats=hybrid&grades=9&pageSize=100')).json());
+  const expected = rows.filter(row => ['I', 'II'].includes(row.olympiad.rawSource['Уровень олимпиады']!) && row.olympiad.format === 'hybrid' && row.olympiad.gradeFrom !== null && row.olympiad.gradeFrom <= 9 && row.olympiad.gradeTo! >= 9);
+  assert.equal(result.total, expected.length);
+  assert.equal((await app.inject('/olympiads?levels=IV')).statusCode, 400);
+});
+
 test('catalog pagination, counts, combined filters, Russian search and detail contract', async () => {
   const response = await app.inject('/olympiads');
   assert.equal(response.statusCode, 200, response.body);
