@@ -1,4 +1,4 @@
-import { ArrowUpLeft, ClipboardList, Copy, ExternalLink, Globe, History, MessageSquare, Pause, Phone, Plus, RotateCcw, type LucideIcon } from 'lucide-react';
+import { Award, ArrowUpLeft, ClipboardList, Copy, ExternalLink, Globe, History, MessageSquare, Pause, Phone, Plus, RotateCcw, type LucideIcon } from 'lucide-react';
 import barChart from './icons/bar-chart.svg?raw';
 import bell from './icons/bell.svg?raw';
 import book from './icons/book.svg?raw';
@@ -32,7 +32,7 @@ const figmaIcons = {
 };
 // Not in the Figma set yet: Lucide with the set's 1.8 px line.
 const lucideIcons = {
-  'arrow-up-left': ArrowUpLeft, 'clipboard-list': ClipboardList, copy: Copy, 'external-link': ExternalLink, globe: Globe,
+  award: Award, 'arrow-up-left': ArrowUpLeft, 'clipboard-list': ClipboardList, copy: Copy, 'external-link': ExternalLink, globe: Globe,
   history: History, 'message-square': MessageSquare, pause: Pause, phone: Phone, plus: Plus, 'rotate-ccw': RotateCcw,
 } satisfies Record<string, LucideIcon>;
 

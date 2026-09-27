@@ -252,7 +252,8 @@ test('assistant deadline lookup applies subject, grade and verified-date filters
 });
 
 test('assistant reads reimported source dates live and keeps yearless dates separate from verified events', async () => {
-  const reader = databaseAssistantData(connection.db, '', '2026-09-27');
+  const profile = contracts.AuthResponse.parse((await app.inject({ method: 'POST', url: '/auth/max', payload: { initData: signedInitData(98765, now) } })).json()).user;
+  const reader = databaseAssistantData(connection.db, profile.id, '2026-09-27');
   const original = rows.find(row => row.olympiad.id === 5031)!.olympiad;
   const calendar = 'Регистрация: До 15 окт\nЗаключительный этап: 2 ноя 2026';
   const raw = { ...original.rawSource, 'Календарь': calendar };

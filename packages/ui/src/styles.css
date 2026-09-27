@@ -230,7 +230,11 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .app-shell--compare .page { padding-bottom: calc(164px + env(safe-area-inset-bottom)); }
 .app-shell--compare .page--detail { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 @media (prefers-reduced-motion: reduce) { .compare-fab, .compare-fab.is-visible { transition: none; } }
-.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; font-size: 12px; color: var(--olimp-muted); }
+.pagination { display: grid; gap: 12px; margin-top: 20px; font-size: 12px; color: var(--olimp-muted); }
+.pagination__numbers { display: flex; justify-content: center; gap: 8px; }
+.pagination__numbers .button.button { min-width: 44px; padding: 10px; }
+.pagination__controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pagination__jump select { min-height: 44px; max-width: 100%; padding: 8px; border: 1px solid var(--olimp-blue-soft); border-radius: 12px; background: var(--olimp-bg); color: var(--olimp-blue); font: inherit; }
 .subject-tabs { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 3px; }
 .subject-tabs::-webkit-scrollbar { display: none; }
 .chip { display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; min-height: 34px; font-size: 12px; padding: 6px 13px; border-radius: 30px; background: white; border: 1px solid var(--olimp-border); }
