@@ -1,6 +1,6 @@
 type MaxWebApp = {
   initData?: string;
-  initDataUnsafe?: { user?: { id?: number; first_name?: string; last_name?: string } };
+  initDataUnsafe?: { user?: { id?: number; first_name?: string; last_name?: string; photo_url?: string | null } };
   ready?: () => void;
   openLink?: (url: string) => void;
   BackButton?: { show: () => void; hide: () => void; onClick: (callback: () => void) => void; offClick: (callback: () => void) => void };
@@ -12,6 +12,15 @@ export const max = {
   get isEmbedded() { return Boolean(this.initData); },
   // Display-only data. Identity and authorization always come from the API's signature check.
   get displayName() { return window.WebApp?.initDataUnsafe?.user?.first_name || 'Ученик'; },
+  get photoUrl() {
+    if (!this.isEmbedded) return null;
+    const value = window.WebApp?.initDataUnsafe?.user?.photo_url;
+    if (!value) return null;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' ? url.href : null;
+    } catch { return null; }
+  },
   get preferenceScope() { return this.isEmbedded ? String(window.WebApp?.initDataUnsafe?.user?.id ?? 'max') : 'browser'; },
   ready() { if (this.isEmbedded) window.WebApp?.ready?.(); },
   // One way to leave the mini-app: web pages, mail and phone links. MAX documents openLink for web links only,

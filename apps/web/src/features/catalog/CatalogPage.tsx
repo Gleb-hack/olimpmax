@@ -7,6 +7,7 @@ import { api } from '../../lib/api';
 import { useFilters, usePlan } from '../../lib/queries';
 import { formats } from '../../lib/format';
 import { OlympiadCard } from './OlympiadCard';
+import { CatalogPagination } from './CatalogPagination';
 
 export function CatalogPage() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ export function CatalogPage() {
     <div className="results-label" aria-live="polite"><span>{catalog.data ? `Найдено: ${catalog.data.total}` : 'Каталог олимпиад'}</span><span>{hasFilters ? 'По вашим фильтрам' : 'Все предметы'}</span></div>
     {catalog.isPending ? <Loading label="Загружаем олимпиады…" /> : catalog.isError ? <EmptyState title="Не удалось загрузить каталог" action={<Button onClick={() => catalog.refetch()}>Попробовать снова</Button>}>{catalog.error.message}</EmptyState> : !catalog.data.items.length ? <EmptyState icon="search" title="Ничего не нашлось" action={<Button variant="secondary" onClick={reset}>Сбросить фильтры</Button>}>Попробуйте другой запрос или выберите меньше фильтров.</EmptyState> : <>
       <div className="catalog-list">{catalog.data.items.map(item => <OlympiadCard key={item.id} item={item} saved={savedIds.has(item.id)} tracking={plan.data?.items.find(entry => entry.olympiad.id === item.id)?.tracking} backTo={`/catalog${params.size ? `?${params}` : ''}`} />)}</div>
-      <div className="pagination"><Button variant="secondary" disabled={catalog.data.page <= 1} onClick={() => { updateParam('page', String(catalog.data.page - 1)); window.scrollTo(0, 0); }}>Назад</Button><span>{catalog.data.page} / {Math.max(1, Math.ceil(catalog.data.total / 20))}</span><Button variant="secondary" disabled={catalog.data.page * 20 >= catalog.data.total} onClick={() => { updateParam('page', String(catalog.data.page + 1)); window.scrollTo(0, 0); }}>Далее</Button></div>
+      <CatalogPagination page={catalog.data.page} totalPages={Math.max(1, Math.ceil(catalog.data.total / catalog.data.pageSize))} onChange={page => { updateParam('page', String(page)); window.scrollTo(0, 0); }} />
     </>}
     {sortOpen && <Dialog title="Сортировка" onClose={() => setSortOpen(false)}><div className="choice-list">{[{ value: 'rating', label: 'По рейтингу источника', description: 'Сначала с высоким рейтингом' }, { value: 'name', label: 'По названию', description: 'От А до Я' }].map(option => <label key={option.value} className="choice-row"><input type="radio" name="sort" value={option.value} checked={(params.get('sort') || 'rating') === option.value} onChange={() => { updateParam('sort', option.value); setSortOpen(false); }} /><span><strong>{option.label}</strong><small>{option.description}</small></span></label>)}</div></Dialog>}
   </>;
