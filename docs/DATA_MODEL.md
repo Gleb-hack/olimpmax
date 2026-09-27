@@ -11,6 +11,12 @@ erDiagram
   subjects ||--o{ user_subjects : interests
   user_profiles ||--o{ plan_items : saves
   olympiads ||--o{ plan_items : tracked
+  olympiad_series ||--o{ olympiad_series_links : groups
+  olympiads ||--o| olympiad_series_links : "belongs to"
+  olympiad_series ||--o{ series_stages : schedule
+  olympiad_series ||--o{ series_profiles : "RSOSH profiles"
+  olympiad_series ||--o{ series_benefits : gives
+  universities ||--o{ series_benefits : accepts
 ```
 
 | Таблица | Назначение и ключ |
@@ -23,6 +29,15 @@ erDiagram
 | `user_subjects` | Уникальная пара пользователь + предмет, два внешних ключа |
 | `plan_items` | Уникальная пара пользователь + олимпиада, отслеживание, заметка |
 | `import_runs` | История успешных импортов, SHA-256 файла, отчёт |
+| `olympiad_series` | Олимпиада как целое («Олимпиада РАНХиГС»): slug, псевдонимы, общий уровень, формат, качество расписания |
+| `olympiad_series_links` | Карточка каталога → серия и её профили РСОШ; признак `schedule_conflict` |
+| `series_stages` | Этапы серии из `olympiads_clean`: название, текст дат, формат этапа; ISO-даты только при явном годе |
+| `series_profiles` | Профиль перечня РСОШ: сезон, уровень 1–3, направления подготовки |
+| `universities` | Вуз: slug, название, город |
+| `series_benefits` | Льгота вуза по серии: БВИ / 100 баллов, для всех дипломантов или только победителей, порог ЕГЭ |
+| `reference_sources` | Какие файлы справочника загружены: SHA-256, сезон, статус и ссылка перечня |
+
+Таблицы справочника полностью пересобираются из `data/reference` (`pnpm db:reference`, также часть `pnpm db:import`). Правила выбора уровня и расписания, порядок обновления файлов — в [data/reference/README.md](../data/reference/README.md). Уровень карточки хранится в `olympiads.level*` и пересчитывается при каждом импорте каталога или справочника.
 
 Внешние ключи запрещают планы и этапы для несуществующей олимпиады. Ограничения базы проверяют классы 1–11, рейтинг 0–10, порядок дат и наличие подтверждающих метаданных. Для поиска создан индекс `pg_trgm`, для предметов — обратный индекс связи, для классов и остальных фильтров — обычные индексы.
 
