@@ -46,7 +46,6 @@ export function PlanPage() {
           {events.isPending ? <Loading /> : <div className="plan-card-list">{shownEvents.map(event => <PlanCard key={`${event.stageId}-${event.kind}`} entry={shownById.get(event.olympiadId)!} event={event} onOpen={() => setEditingId(event.olympiadId)} />)}</div>}
         </section>}
         <section className="section"><h2 className="section-caption">{withoutEvent.length === shownEntries.length ? 'Сохранённые олимпиады' : 'Все олимпиады в плане'}</h2><div className="plan-card-list">{shownEntries.map(entry => <PlanCard key={entry.olympiad.id} entry={entry} onOpen={() => setEditingId(entry.olympiad.id)} />)}</div></section>
-        <p className="hint">«Скоро» — олимпиады с подтверждёнными событиями в ближайшие 90 дней. Напоминания от бота ещё не подключены.</p>
       </>}
     </>}{editing && <EditPlanItem entry={editing} onClose={() => setEditingId(null)} />}</>;
 }

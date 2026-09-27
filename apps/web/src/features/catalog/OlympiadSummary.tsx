@@ -1,10 +1,30 @@
 import type { Olympiad } from '../../lib/api';
 import { calendarLabels, formats, gradeLabel, levelLabel } from '../../lib/format';
 
+// Fixed pastel hues keep each status recognizable across catalog cards and details.
+const statusHues: Record<string, number> = {
+  'Этап указан': 210,
+  'Расписание не опубликовано': 235,
+  'Следующий цикл ожидается': 280,
+  'Итоги опубликованы': 175,
+  'Идёт этап': 135,
+  'Этап запланирован': 195,
+  'Регистрация открыта': 100,
+  'Регистрация завершена': 350,
+  'Регистрация откроется позже': 40,
+  'Информация ожидается': 65,
+  'Расписание опубликовано': 255,
+  'Есть ближайшее событие': 155,
+  'Расписание обновлено': 315,
+  'Нет ближайших событий': 25,
+  'Не проводится по данным источника': 5,
+};
+
 export function OlympiadStatus({ item }: { item: Olympiad }) {
   const label = item.statusRaw?.trim() || calendarLabels[item.calendarState];
   if (/не указан/i.test(label)) return null;
-  return <span className={`badge badge--${item.calendarState === 'not_held' ? 'gray' : 'blue'}`}>{label}</span>;
+  const hue = statusHues[label] ?? [...label].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) % 360, 0);
+  return <span className="badge" style={{ backgroundColor: `hsl(${hue} 58% 92%)`, color: `hsl(${hue} 32% 33%)` }}>{label}</span>;
 }
 
 export function OlympiadMeta({ item }: { item: Olympiad }) {

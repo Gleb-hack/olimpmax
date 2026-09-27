@@ -5,7 +5,6 @@ import { useFilters } from '../../lib/queries';
 import { useProfile } from '../../lib/profile';
 import { max } from '../../lib/max';
 import { useSession } from '../../lib/session';
-import { isMock } from '../../lib/api';
 import { profileGradeLabel } from '../../lib/format';
 import { ProfileAvatar } from './ProfileAvatar';
 
@@ -32,6 +31,6 @@ export function ProfilePage() {
     </div>
     <Button className="full-width profile-edit-button" onClick={() => navigate('/profile/edit')}><Pencil size={16} />Редактировать профиль</Button>
     <div className="settings-list profile-links"><SettingsRow icon={Shield} tone="green" title="Данные и конфиденциальность" subtitle="Управление данными" onClick={() => navigate('/profile/privacy')} /><SettingsRow icon={CircleHelp} title="Помощь и FAQ" subtitle="Ответы на частые вопросы" onClick={() => navigate('/profile/help')} /></div>
-    <p className="hint centered-text">{isMock ? 'Демонстрационный профиль сохранён в браузере.' : saving ? 'Сохраняем настройки…' : 'Профиль и план сохранены в вашем аккаунте.'}<br />Автоматический подбор пока не подключён.</p><button className="profile-signout" onClick={() => { logout(); navigate('/welcome', { replace: true }); }}>Выйти из аккаунта</button>{storageError && <Notice tone="error">{storageError}</Notice>}
+    <button className="profile-signout" onClick={() => { logout(); navigate('/welcome', { replace: true }); }}>Выйти из аккаунта</button>{storageError && <Notice tone="error">{storageError}</Notice>}
   </>;
 }
