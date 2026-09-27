@@ -45,7 +45,7 @@ export async function enrich(db: Database, rows: Olympiad[], today = moscowToday
     return { row, card, stages: rowStages };
   });
 }
-export async function catalog(db: Database, query: CatalogQuery, today = moscowToday(), options: { excludeNotHeld?: boolean } = {}) {
+export function catalogConditions(db: Database, query: CatalogQuery, options: { excludeNotHeld?: boolean; requireSchedule?: boolean } = {}) {
   const conditions: (SQL | undefined)[] = [eq(olympiads.inCatalog, true)];
   if (options.excludeNotHeld) conditions.push(sql`${olympiads.scheduleStatus} <> 'not_held'`);
   // Every normalized word must occur; punctuation, case and е/ё do not affect lookup.
@@ -56,7 +56,15 @@ export async function catalog(db: Database, query: CatalogQuery, today = moscowT
   if (query.formats) conditions.push(inArray(olympiads.format, query.formats));
   if (query.participation) conditions.push(inArray(olympiads.participation, query.participation));
   if (query.scheduleStatus) conditions.push(eq(olympiads.scheduleStatus, query.scheduleStatus));
-  const where = and(...conditions);
+  if (options.requireSchedule) conditions.push(or(
+    sql`nullif(trim(${olympiads.calendarRaw}), '') is not null`,
+    inArray(olympiads.id, db.select({ id: stages.olympiadId }).from(stages)
+      .where(and(eq(stages.origin, 'csv'), sql`nullif(trim(${stages.rawDates}), '') is not null`))),
+  ));
+  return and(...conditions);
+}
+export async function catalog(db: Database, query: CatalogQuery, today = moscowToday(), options: { excludeNotHeld?: boolean; requireSchedule?: boolean } = {}) {
+  const where = catalogConditions(db, query, options);
   const [rows, total] = await Promise.all([
     db.select().from(olympiads).where(where).orderBy(...(query.sort === 'name' ? [asc(olympiads.title), asc(olympiads.id)] : [sql`${olympiads.rating} desc nulls last`, asc(olympiads.id)]))
       .limit(query.pageSize).offset((query.page - 1) * query.pageSize),

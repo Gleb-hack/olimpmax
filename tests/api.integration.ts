@@ -11,7 +11,7 @@ import { parseCsv } from '../apps/api/src/import/csv.js';
 import { signedInitData, testBotToken } from './fixtures.js';
 import * as contracts from '../packages/contracts/src/index.js';
 import type { CompleteJson } from '../apps/api/src/features/assistant/deepseek.js';
-import { databaseAssistantData } from '../apps/api/src/features/assistant/assistant.js';
+import { answerAssistant, databaseAssistantData, evidenceFor } from '../apps/api/src/features/assistant/assistant.js';
 
 // Each run owns a new database. Neither the working catalog nor a user's plan is deleted.
 if (!process.env.DATABASE_URL) throw new Error('Для интеграционных тестов нужен DATABASE_URL');
@@ -232,6 +232,37 @@ test('assistant deadline lookup applies subject, grade and verified-date filters
   assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ subjectIds: [chemistryId] })), []);
   assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ grades: [4] })), []);
   assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ formats: ['online'] })), []);
+  assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({ q: 'неизвестная олимпиада' })), []);
+});
+
+test('assistant reads reimported source dates live and keeps yearless dates separate from verified events', async () => {
+  const reader = databaseAssistantData(connection.db, '', '2026-09-27');
+  const original = rows.find(row => row.olympiad.id === 5031)!.olympiad;
+  const calendar = 'Регистрация: До 15 окт\nЗаключительный этап: 2 ноя 2026';
+  const raw = { ...original.rawSource, 'Календарь': calendar };
+  const quote = (value: string) => '"' + value.replaceAll('"', '""') + '"';
+  const updatedCsv = Buffer.from([Object.keys(raw).map(quote).join(';'), Object.values(raw).map(quote).join(';')].join('\n'));
+  await importCsv(connection.db, updatedCsv, 'assistant-updated-schedule.csv');
+  const current = (await reader.detail(5031))!;
+  assert.equal(current.calendarRaw, calendar);
+  assert.equal(current.nextEvent, null);
+  assert.deepEqual(evidenceFor(current).sourceStages.map(stage => stage.rawDates), ['До 15 окт', '2 ноя 2026']);
+  assert.deepEqual(evidenceFor(current).verifiedStages, []);
+  const query = contracts.CatalogQuery.parse({ q: 'Наше наследие', grades: [9], formats: ['onsite'] });
+  assert.deepEqual(await reader.deadlineIds(query), []);
+  assert.deepEqual(await reader.scheduleIds(query), [5031]);
+  assert.deepEqual(await reader.scheduleIds({ ...query, formats: ['online'] }), []);
+  let calls = 0;
+  const answer = await answerAssistant(contracts.AssistantRequest.parse({ message: 'Какие ближайшие даты у Нашего наследия для 9 класса?' }), reader,
+    async (_system, payload) => {
+      if (++calls === 1) return { intent: 'deadlines', queries: ['Наше наследие'], grade: 9, format: 'onsite' };
+      const evidence = (payload as { evidence: ReturnType<typeof evidenceFor>[] }).evidence;
+      assert.equal(evidence[0]!.calendarText, calendar);
+      return { message: 'По расписанию: регистрация — до 15 окт, заключительный этап — 2 ноя 2026. Год регистрации нужно уточнить.', olympiadIds: [5031] };
+    }, '2026-09-27', AbortSignal.timeout(10000));
+  assert.equal(calls, 2);
+  assert.match(answer.message, /15 окт/);
+  assert.equal(answer.olympiads[0]!.calendarRaw, calendar);
 });
 
 test('web research needs the matching authenticated user and explicit proposal token', async t => {

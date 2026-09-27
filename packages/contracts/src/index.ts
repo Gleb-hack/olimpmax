@@ -82,8 +82,20 @@ export const ProfilePreferences = z.object({
   subjects: z.array(z.number().int().positive()).max(35).refine(ids => new Set(ids).size === ids.length, 'Предметы не должны повторяться'),
   online: z.boolean(), onsite: z.boolean(),
 }).strict();
-export const ProfilePatch = ProfilePreferences.partial().refine(value => Object.keys(value).length > 0, 'Укажите изменения профиля');
+export const Avatar = z.string().max(1400000).refine(value => {
+  const match = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+  if (!match) return false;
+  try {
+    const bytes = atob(match[2]!);
+    if (bytes.length > 1024 * 1024) return false;
+    if (match[1] === 'png') return bytes.startsWith('\x89PNG\r\n\x1a\n');
+    if (match[1] === 'jpeg') return bytes.startsWith('\xff\xd8\xff');
+    return bytes.startsWith('RIFF') && bytes.slice(8, 12) === 'WEBP';
+  } catch { return false; }
+}, 'Выберите фото JPG, PNG или WebP размером до 1 МБ.').nullable();
+export const ProfilePatch = ProfilePreferences.extend({ avatar: Avatar }).partial().refine(value => Object.keys(value).length > 0, 'Укажите изменения профиля');
 export const UserProfile = ProfilePreferences.extend({
+  avatar: Avatar.default(null),
   id: z.uuid(), maxUserId: z.string(), registeredAt: z.string().nullable(), createdAt: z.string(),
 });
 export type UserProfile = z.infer<typeof UserProfile>;

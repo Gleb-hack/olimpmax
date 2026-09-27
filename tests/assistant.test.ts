@@ -11,7 +11,7 @@ const data: AssistantData = {
   subjects: async () => [{ id: 8, name: 'Информатика' }],
   search: async () => ({ items: [{ id: item.id }], total: 1 }),
   detail: async id => id === item.id ? item : null,
-  planIds: async () => [], deadlineIds: async () => [],
+  planIds: async () => [], deadlineIds: async () => [], scheduleIds: async () => [item.id],
 };
 const request = (message = 'Подбери олимпиаду') => AssistantRequest.parse({ message });
 const completeWith = (...answers: unknown[]): CompleteJson => async () => answers.shift();
@@ -67,14 +67,34 @@ test('plan retrieval uses the scoped adapter and not client claims', async () =>
     completeWith({ intent: 'plan', olympiadIds: [item.id] }, { message: 'В плане пока пусто.', olympiadIds: [] }), '2026-09-23', signal);
   assert.equal(reads, 1); assert.deepEqual(result.olympiads, []);
 });
-test('no verified deadlines does not imply that the catalog has no olympiads', async () => {
+test('deadline requests pass existing source schedules to the model instead of reporting missing dates', async () => {
   let calls = 0;
-  const result = await answerAssistant(request('Ближайшие дедлайны'), data, async () => {
-    calls++; return { intent: 'deadlines' };
+  const result = await answerAssistant(request('Ближайшие дедлайны'), { ...data, scheduleIds: async query => {
+    assert.deepEqual(query.subjectIds, [8]); assert.deepEqual(query.grades, [9]); assert.equal(query.q, 'Наше наследие'); return [item.id];
+  } }, async (_system, payload) => {
+    if (++calls === 1) return { intent: 'deadlines', queries: ['Наше наследие'], subjectIds: [8], grade: 9 };
+    const input = payload as { scheduleMode: string; evidence: ReturnType<typeof evidenceFor>[] };
+    assert.equal(input.scheduleMode, 'source_text');
+    assert.equal(input.evidence[0]!.calendarText, item.calendarRaw);
+    assert(input.evidence[0]!.sourceStages.length > 0);
+    assert.equal(input.evidence[0]!.verifiedStages.length, 0);
+    return { message: 'По расписанию: школьный тур — 1–19 сен. Сезон нужно уточнить.', olympiadIds: [item.id] };
   }, '2026-09-23', signal);
-  assert.equal(calls, 1);
-  assert.match(result.message, /нет подтверждённых ближайших сроков/);
-  assert.match(result.message, /не означает, что олимпиад нет/);
+  assert.equal(calls, 2); assert.equal(result.olympiads[0]!.id, item.id);
+  assert.match(result.message, /1–19 сен/); assert.equal(result.research, undefined);
+});
+test('verified upcoming events take precedence and truly empty schedules do not claim registration is closed', async () => {
+  let calls = 0;
+  await answerAssistant(request('Ближайшие даты'), { ...data, deadlineIds: async () => [item.id],
+    scheduleIds: async () => { throw Error('must not use fallback'); } }, async (_system, payload) => {
+    if (++calls === 1) return { intent: 'deadlines' };
+    assert.equal((payload as { scheduleMode: string }).scheduleMode, 'verified_upcoming');
+    return { message: 'Ближайший этап.', olympiadIds: [item.id] };
+  }, '2026-09-23', signal);
+  const empty = await answerAssistant(request('Ближайшие даты'), { ...data, scheduleIds: async () => [] },
+    completeWith({ intent: 'deadlines' }), '2026-09-23', signal);
+  assert.match(empty.message, /нет расписания/); assert.match(empty.message, /не означает, что регистрация закрыта/);
+  assert.deepEqual(empty.olympiads, []);
 });
 test('DeepSeek calls only the official endpoint and uses JSON/non-thinking mode', async () => {
   const fakeFetch: typeof fetch = async (url, options) => {

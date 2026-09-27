@@ -1,0 +1,2 @@
+ALTER TABLE "user_profiles" ADD COLUMN "avatar" text;--> statement-breakpoint
+ALTER TABLE "user_profiles" ADD CONSTRAINT "profile_avatar_length" CHECK ("user_profiles"."avatar" is null or length("user_profiles"."avatar") <= 1400000);

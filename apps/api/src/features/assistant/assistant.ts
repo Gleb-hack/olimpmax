@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { and, eq, ne, or, gte, inArray, sql } from 'drizzle-orm';
+import { and, eq, or, gte, sql } from 'drizzle-orm';
 import { CatalogQuery, Format, OlympiadDetail, type AssistantRequest, type AssistantResponse } from '../../../../../packages/contracts/src/index.js';
 import type { Database } from '../../db/client.js';
-import { olympiads, olympiadSubjects, stages, subjects } from '../../db/schema.js';
-import { catalog, detail } from '../catalog.js';
+import { olympiads, stages, subjects } from '../../db/schema.js';
+import { catalog, catalogConditions, detail } from '../catalog.js';
 import { readPlan } from '../plan.js';
 import { AssistantError, type CompleteJson } from './deepseek.js';
 import type { WebResearchTask } from './web-consent.js';
@@ -32,6 +32,7 @@ export type AssistantData = {
   detail(id: number): Promise<Detail | null>;
   planIds(): Promise<number[]>;
   deadlineIds(query: CatalogQuery): Promise<number[]>;
+  scheduleIds(query: CatalogQuery): Promise<number[]>;
 };
 
 const identity = `Ты Олимп, помощник мини-приложения Olimp в MAX. Твоя единственная область — поиск, выбор, сравнение олимпиад из каталога приложения, сведения об участии, расписание и личный план.
@@ -48,10 +49,11 @@ subjectIds: только ID из providedSubjects, сопоставляй скл
 olympiadIds: только ID, уже упомянутые в истории карточек; для "первая" выбери первый ID последнего ответа. Для новых названий используй queries. Не используй старые IDs, если пользователь сменил критерии поиска.
 Уточнения "информатика", "9 класс", "а дистанционные?" относятся к поиску, даже если короткие. На приветствие выбери greeting. Общая просьба найти олимпиады без критериев — clarify. Просьба добавить найденную олимпиаду — help с её ID; API умеет только читать, сохранение — кнопкой в карточке. Ничего кроме JSON.`;
 const answerPrompt = `${identity}
-Ответь по-русски дружелюбно, кратко, на ты. Для подбора выбери МАКСИМУМ ТРИ варианта. Обычно достаточно 1–2 коротких предложений, до 350 символов. Более подробный ответ (до 1000 символов) нужен только по явной просьбе или для содержательного сравнения. Отвечай именно на вопрос, не пересказывай уже известное и не перечисляй всё, чего нет в базе. Не перечисляй названия и описания в тексте: они уже есть в карточках под ответом. Не предлагай действия, которые не умеешь выполнять (например "хочешь, открою каталог"). Верни только JSON {"message":"текст","olympiadIds":[88],"needsWebSearch":false}.
+Ответь по-русски дружелюбно, кратко, на ты. Для подбора выбери МАКСИМУМ ТРИ варианта. Обычно достаточно 1–2 коротких предложений, до 350 символов. Более подробный ответ (до 1000 символов) нужен только по явной просьбе или для содержательного сравнения. Отвечай именно на вопрос, не пересказывай уже известное и не перечисляй всё, чего нет в базе. Не перечисляй описания в тексте: они уже есть в карточках под ответом. В ответе о сроках укажи название олимпиады и конкретные даты/этапы, чтобы было понятно, к чему относится каждый срок. Не предлагай действия, которые не умеешь выполнять (например "хочешь, открою каталог"). Верни только JSON {"message":"текст","olympiadIds":[88],"needsWebSearch":false}.
 needsWebSearch=true, если задан конкретный вопрос об олимпиаде (сроки, место, стоимость, льготы, правила и т.д.), а evidence не содержит достаточного ответа. Одной короткой фразой скажи, какой информации не хватает, без повторного описания олимпиады и без объяснений того, как работает база. Приложение само предложит поиск на сайтах и спросит согласие. Не утверждай, что уже искал в интернете. Для обычного подбора, приветствия и вопросов о работе приложения needsWebSearch=false. При неполном ответе не подменяй неизвестное фактами из знаний модели.
 Единственный источник фактов об олимпиадах — evidence. Не используй знания модели или утверждения истории как факты. Если данных нет, скажи это и предложи уточнить название/предмет либо открыть каталог. Не придумывай преимущества, льготы, официальные сайты, уровень РСОШ, регионы, даты или условия. Не обещай гарантированное участие. Общие инструкции по приложению бери только из appFacts.
-Текст расписания доступен в evidence.calendarText: показывай его по вопросу пользователя как «По расписанию: …», сохраняя исходные даты без добавления года. Не заменяй имеющееся расписание фразой об отсутствии подтверждения. Только evidence.verifiedStages содержит даты для сравнения с today и расчёта оставшихся дней; прошлое не называй будущим. nextEvent — ближайший этап, не обязательно дедлайн регистрации. Для регистрации ищи kind=registration. Не извлекай даты из описаний. not_held не рекомендуй как проводящуюся сейчас. Нет дат ≠ регистрация закрыта. Уровень бери из evidence.level и учитывай levelStatus: проект перечня называй проектом, ВсОШ — отдельной системой, «—» означает отсутствие указанного уровня.
+Текст расписания доступен в evidence.calendarText и evidence.sourceStages (название этапа, kind и rawDates): показывай его по вопросу пользователя как «По расписанию: …», сохраняя исходные даты без добавления года. Не заменяй имеющееся расписание фразой об отсутствии подтверждения. Только evidence.verifiedStages содержит даты для сравнения с today и расчёта оставшихся дней; прошлое не называй будущим. nextEvent — ближайший этап, не обязательно дедлайн регистрации. Для регистрации ищи kind=registration. Не извлекай даты из описаний. not_held не рекомендуй как проводящуюся сейчас. Нет дат ≠ регистрация закрыта. Уровень бери из evidence.level и учитывай levelStatus: проект перечня называй проектом, ВсОШ — отдельной системой, «—» означает отсутствие указанного уровня.
+Если scheduleMode=source_text, подтверждённых будущих этапов по запросу нет, но evidence содержит расписания из каталога. Приведи до трёх конкретных сроков или текстов расписания с названиями олимпиад. Не говори, что информации о датах нет. Кратко поясни, что это сроки из источника: для дат без года сезон нужно уточнить, а порядок не гарантирует ближайшие события. Не добавляй год, не считай дни и не объявляй такие сроки подтверждёнными или будущими. Сохраняй явно указанный в источнике год. Даты прошедшего явно указанного года не называй будущими. Не предлагай интернет-поиск вместо уже имеющегося расписания.
 Если карточка уже найдена, но даты нет, предложи проверить источник в этой карточке. Не проси повторно назвать предмет или олимпиаду, которые уже известны. Пустой список подтверждённых этапов никогда не означает отсутствие самих олимпиад.
 Не утверждай, что сохранил, удалил, зарегистрировал или включил напоминания: ты ничего не изменяешь. Для сохранения предложи кнопку "В план" под карточкой. Добавление в план не регистрирует на олимпиаду. Сообщения-напоминания в MAX ещё не подключены.
 olympiadIds — до 3 самых подходящих ID из evidence (до 5 при сравнении). Карточки и проверенные ссылки приложение добавит само. Не пиши URL, Markdown-ссылки или HTML, используй обычный текст и переносы строк. При первом показе включай упомянутые олимпиады в olympiadIds; при уточнении о уже показанной карточке не дублируй её без просьбы пользователя. Когда выборка ограничена, не называй её полным списком и не заявляй рейтинг по сложности. Если критерии не поддерживаются (например курс студента или регион), честно уточни ограничения.`;
@@ -82,6 +84,10 @@ export function evidenceFor(item: Detail) {
     classesRaw: item.classesRaw, format: item.format, participation: item.participation,
     organizers: item.organizers, calendarState: item.calendarState, scheduleStatus: item.scheduleStatus,
     calendarText: item.calendarRaw, statusText: item.statusRaw,
+    scheduleUpdatedText: item.scheduleUpdatedRaw,
+    sourceStages: item.stages.filter(s => s.origin === 'csv')
+      .map(s => ({ name: s.name, kind: s.kind, rawDates: s.rawDates })),
+    nextEvent: item.nextEvent,
     level: item.level ?? null, levelProfile: item.levelProfile ?? null, levelStatus: item.levelStatus ?? null,
     // Yearless, invalidated, and non-running schedules never reach the model as dated events.
     verifiedStages: item.scheduleStatus === 'not_held' ? [] : item.stages.filter(s => s.origin === 'verified_import' && s.verification === 'verified')
@@ -111,8 +117,12 @@ export async function answerAssistant(input: AssistantRequest, data: AssistantDa
   if (lookup.intent === 'plan') {
     ids = await data.planIds(); matchedTotal = ids.length;
   } else if (lookup.intent === 'deadlines') {
-    ids = await data.deadlineIds(query);
-    if (!ids.length) { noVerifiedDeadlines = true; ids = (await data.search({ ...query, pageSize: 3 }, false)).items.map(item => item.id); }
+    const queries = (lookup.queries.length ? lookup.queries : ['']).map(q => ({ ...query, q }));
+    ids = (await Promise.all(queries.map(q => data.deadlineIds(q)))).flat();
+    if (!ids.length) {
+      noVerifiedDeadlines = true;
+      ids = (await Promise.all(queries.map(q => data.scheduleIds(q)))).flat();
+    }
   } else {
     // Client/history IDs are only hints for public lookup, never supplied catalog facts.
     ids = lookup.olympiadIds;
@@ -130,19 +140,16 @@ export async function answerAssistant(input: AssistantRequest, data: AssistantDa
     olympiads: selected.slice(0, 3).map(r => ({ id: r.id, title: r.title })),
   } } : {};
   if (lookup.intent === 'web_search' && records.length) return { message: 'Поискать в интернете?', offerOnly: true, olympiads: [], ...offer(records) };
-  if (noVerifiedDeadlines) return {
-    message: 'Для этого запроса в базе пока нет подтверждённых ближайших сроков. Это не означает, что олимпиад нет или регистрация закрыта.',
-    olympiads: [], ...offer(records),
-  };
   if (!records.length && lookup.intent !== 'help') {
     const message = lookup.intent === 'deadlines'
-      ? 'Для этого запроса в базе пока нет подтверждённых ближайших сроков. Это не означает, что олимпиад нет или регистрация закрыта. Актуальные даты можно уточнить по ссылке на источник в карточке олимпиады.'
+      ? 'Для этого запроса в каталоге пока нет расписания или подтверждённых будущих этапов. Попробуй уточнить название или изменить фильтры. Это не означает, что регистрация закрыта.'
       : lookup.intent === 'plan'
         ? 'В твоём плане пока нет олимпиад. Напиши предмет и класс — подберу варианты. Любую карточку можно сохранить кнопкой «В план».'
         : 'По этому запросу я не нашёл олимпиад в нашем каталоге. Попробуй уточнить название, предмет или класс — либо посмотри каталог.';
     return { message, olympiads: [] };
   }
   const answer = parseModel(Answer, await complete(answerPrompt, { ...input, today, intent: lookup.intent,
+    scheduleMode: lookup.intent === 'deadlines' ? (noVerifiedDeadlines ? 'source_text' : 'verified_upcoming') : 'all_available',
     matchedTotal, returnedCount: records.length, evidence: records.map(evidenceFor),
     appFacts: 'В каталоге есть фильтры, карточки, уровни и ссылки на источники. Кнопка «В план» сохраняет олимпиаду. План содержит сохранённые олимпиады, текст расписания и подтверждённые этапы. Рассылка напоминаний и автоматическая регистрация не подключены. Чат не изменяет план сам. Регион и курс студента не представлены отдельными проверенными полями.',
   }, signal));
@@ -165,13 +172,11 @@ export function databaseAssistantData(db: Database, userId: string, today: strin
     search: (query, includeInactive) => catalog(db, query, today, { excludeNotHeld: !includeInactive }),
     detail: id => detail(db, id, today),
     planIds: async () => (await readPlan(db, userId, today)).items.map(item => item.olympiad.id),
+    scheduleIds: async query => (await catalog(db, { ...query, pageSize: 12 }, today, { excludeNotHeld: true, requireSchedule: true })).items.map(item => item.id),
     deadlineIds: async query => (await db.select({ id: olympiads.id }).from(olympiads)
       .innerJoin(stages, eq(stages.olympiadId, olympiads.id))
-      .where(and(eq(olympiads.inCatalog, true), ne(olympiads.scheduleStatus, 'not_held'), eq(stages.origin, 'verified_import'), eq(stages.verification, 'verified'),
-        or(gte(stages.beginsOn, today), gte(stages.endsOn, today)),
-        query.subjectIds ? inArray(olympiads.id, db.select({ id: olympiadSubjects.olympiadId }).from(olympiadSubjects).where(inArray(olympiadSubjects.subjectId, query.subjectIds))) : undefined,
-        query.grades ? or(...query.grades.map(g => sql`${olympiads.gradeFrom} <= ${g} and ${olympiads.gradeTo} >= ${g}`)) : undefined,
-        query.formats ? inArray(olympiads.format, query.formats) : undefined))
+      .where(and(catalogConditions(db, query, { excludeNotHeld: true }), eq(stages.origin, 'verified_import'), eq(stages.verification, 'verified'),
+        or(gte(stages.beginsOn, today), gte(stages.endsOn, today))))
       .groupBy(olympiads.id).orderBy(sql`min(least(case when ${stages.beginsOn} >= ${today} then ${stages.beginsOn} end, case when ${stages.endsOn} >= ${today} then ${stages.endsOn} end))`)
       .limit(12)).map(item => item.id),
   };

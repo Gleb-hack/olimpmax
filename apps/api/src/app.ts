@@ -100,7 +100,7 @@ export async function buildApp(options: AppOptions) {
     routes.get('/me', { schema: { response: { 200: c.UserProfile } } }, request => readProfile(db, request.user.sub));
     routes.post('/me/registration', { schema: { body: c.ProfilePreferences, response: { 200: c.UserProfile, 400: c.ErrorResponse, 409: c.ErrorResponse } } }, request =>
       saveProfile(db, request.user.sub, request.body, true, now()));
-    routes.patch('/me/profile', { schema: { body: c.ProfilePatch, response: { 200: c.UserProfile, 400: c.ErrorResponse, 409: c.ErrorResponse } } }, request =>
+    routes.patch('/me/profile', { bodyLimit: 1500000, schema: { body: c.ProfilePatch, response: { 200: c.UserProfile, 400: c.ErrorResponse, 409: c.ErrorResponse } } }, request =>
       saveProfile(db, request.user.sub, request.body, false, now()));
     routes.delete('/me', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
       await deleteAccount(db, request.user.sub);

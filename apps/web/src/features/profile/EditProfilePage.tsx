@@ -10,8 +10,9 @@ import { SubjectsDialog } from './SubjectsDialog';
 import { ProfileAvatar } from './ProfileAvatar';
 
 export function EditProfilePage() {
-  const { profile, update, storageError, saving } = useProfile();
-  const [draft, setDraft] = useState<LocalProfile>(() => ({ ...profile, name: profile.name || max.displayName }));
+  const { profile, update, storageError, saving, legacyAvatar } = useProfile();
+  const [draft, setDraft] = useState<LocalProfile>(() => ({ ...profile, avatar: profile.avatar ?? legacyAvatar, name: profile.name || max.displayName }));
+  const [photoChanged, setPhotoChanged] = useState(false);
   const [subjectsOpen, setSubjectsOpen] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const photoInput = useRef<HTMLInputElement>(null);
@@ -22,12 +23,12 @@ export function EditProfilePage() {
     if (!file) return;
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 1024 * 1024) { setPhotoError('Выберите фото JPG, PNG или WebP размером до 1 МБ.'); return; }
     const reader = new FileReader();
-    reader.onload = () => { const avatar = reader.result; if (typeof avatar === 'string') { setDraft(current => ({ ...current, avatar })); setPhotoError(''); } };
+    reader.onload = () => { const avatar = reader.result; if (typeof avatar === 'string') { setDraft(current => ({ ...current, avatar })); setPhotoChanged(true); setPhotoError(''); } };
     reader.onerror = () => setPhotoError('Не удалось прочитать фото. Попробуйте другой файл.');
     reader.readAsDataURL(file);
   }
   return <><Header title="Редактировать профиль" back="/profile" />
-    <form className="edit-profile" onSubmit={async event => { event.preventDefault(); if (await update({ ...draft, name: draft.name.trim(), region: draft.region.trim() })) navigate('/profile'); }}>
+    <form className="edit-profile" onSubmit={async event => { event.preventDefault(); const { avatar, ...preferences } = draft; if (await update({ ...preferences, ...(photoChanged || (profile.avatar === null && legacyAvatar !== null) ? { avatar } : {}), name: draft.name.trim(), region: draft.region.trim() })) navigate('/profile'); }}>
       <fieldset className="profile-controls" disabled={saving}><div className="avatar-editor"><ProfileAvatar image={draft.avatar} large /><button type="button" className="avatar-editor__button" aria-label="Изменить фото профиля" onClick={() => photoInput.current?.click()}><Pencil size={14} /></button><input ref={photoInput} type="file" className="sr-only" tabIndex={-1} accept="image/png,image/jpeg,image/webp" aria-label="Фото профиля" onChange={event => { selectPhoto(event.target.files?.[0]); event.target.value = ''; }} /></div>
       {photoError && <Notice tone="error">{photoError}</Notice>}
       <label className="field"><span>Имя</span><input required autoComplete="given-name" value={draft.name} maxLength={80} placeholder="Ваше имя" onChange={event => setDraft({ ...draft, name: event.target.value })} /></label>

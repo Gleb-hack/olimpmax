@@ -58,11 +58,13 @@ export const stages = pgTable('olympiad_stages', {
 export const users = pgTable('user_profiles', {
   id: uuid('id').primaryKey().defaultRandom(), maxUserId: text('max_user_id').notNull().unique(),
   displayName: text('display_name').notNull(), createdAt: timestampNow('created_at'),
+  avatar: text('avatar'),
   profileName: text('profile_name'), grade: integer('grade'), region: text('region').notNull().default(''),
   online: boolean('online').notNull().default(true), onsite: boolean('onsite').notNull().default(true),
   registeredAt: timestamp('registered_at', { withTimezone: true, mode: 'string' }),
   updatedAt: timestampNow('updated_at'),
 }, t => [
+  check('profile_avatar_length', sql`${t.avatar} is null or length(${t.avatar}) <= 1400000`),
   check('profile_name_length', sql`${t.profileName} is null or length(trim(${t.profileName})) between 1 and 80`),
   check('profile_grade_valid', sql`${t.grade} is null or ${t.grade} between 1 and 11`),
   check('profile_region_length', sql`length(${t.region}) <= 100`),

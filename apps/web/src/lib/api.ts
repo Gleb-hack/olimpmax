@@ -89,6 +89,7 @@ export type PlanEntry = z.infer<typeof c.PlanItem>;
 export type PlanPatch = z.infer<typeof c.PlanPatch>;
 export const api = {
   async startSession() { sessionAllowed = true; return c.UserProfile.parse(await request('/me', {}, true)); },
+  async currentProfile(signal?: AbortSignal) { return c.UserProfile.parse(await request('/me', { signal }, true)); },
   async register(profile: c.ProfilePreferences) { return c.UserProfile.parse(await request('/me/registration', { method: 'POST', body: JSON.stringify(c.ProfilePreferences.parse(profile)) }, true)); },
   async deleteAccount() { await request('/me', { method: 'DELETE' }, true); },
   async profile(patch: c.ProfilePatch) { return c.UserProfile.parse(await request('/me/profile', { method: 'PATCH', body: JSON.stringify(c.ProfilePatch.parse(patch)) }, true)); },

@@ -40,6 +40,7 @@ test('MAX registration, profile persistence, migration and account isolation', a
     return { ...data, headers: { authorization: `Bearer ${data.accessToken}` } };
   };
   const legacy = await signIn(700);
+  assert.equal(legacy.user.avatar, null);
   assert.equal(legacy.user.id, legacyId); assert(legacy.user.registeredAt);
   const legacyPlan = c.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: legacy.headers })).json());
   assert.equal(legacyPlan.items[0]?.note, 'Сохранить заметку'); assert.equal(legacyPlan.items[0]?.tracking, false);
@@ -56,19 +57,31 @@ test('MAX registration, profile persistence, migration and account isolation', a
   const freshA = await signIn(701); assert.equal(freshA.user.name, 'Анна'); assert.equal(freshA.user.id, a.user.id);
   assert.equal((await app.inject({ method: 'PUT', url: '/me/plan/88', headers: freshA.headers })).statusCode, 204);
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: freshA.headers, payload: { note: 'Личная заметка' } })).statusCode, 204);
+  // Separate authenticated sessions of the same MAX account share one server photo.
+  const avatar = 'data:image/png;base64,' + Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), Buffer.alloc(40_000)]).toString('base64');
+  assert.equal((await app.inject({ method: 'PATCH', url: '/me/profile', payload: { avatar } })).statusCode, 401);
+  const photo = await app.inject({ method: 'PATCH', url: '/me/profile', headers: a.headers, payload: { avatar } });
+  assert.equal(photo.statusCode, 200, photo.body);
+  assert.equal(photo.json().avatar, avatar);
+  assert.equal((await app.inject({ url: '/me', headers: freshA.headers })).json().avatar, avatar);
+  assert.equal((await app.inject({ url: '/me', headers: b.headers })).json().avatar, null);
   const saved = await app.inject({ method: 'PATCH', url: '/me/profile', headers: a.headers, payload: { subjects: [8], grade: 11 } });
   assert.equal(saved.statusCode, 200); assert.equal(saved.headers['cache-control'], 'no-store');
-  const invalid = [ { userId: b.user.id, grade: 9 }, { maxUserId: '702' }, { registeredAt: null }, { grade: 12 }, { name: '  ' }, { subjects: [8, 8] }, { subjects: [2147483647], name: 'Не сохранять' }, {} ];
+  const invalid = [ { avatar: 'https://example.com/photo.png' }, { avatar: 'data:image/svg+xml;base64,PHN2Zy8+' }, { avatar: 'data:image/png;base64,aGVsbG8=' }, { avatar: 'data:image/png;base64,' + Buffer.alloc(1024 * 1024 + 1).toString('base64') }, { userId: b.user.id, grade: 9 }, { maxUserId: '702' }, { registeredAt: null }, { grade: 12 }, { name: '  ' }, { subjects: [8, 8] }, { subjects: [2147483647], name: 'Не сохранять' }, {} ];
   for (const payload of invalid) assert.equal((await app.inject({ method: 'PATCH', url: '/me/profile', headers: a.headers, payload })).statusCode, 400);
   assert.equal((await app.inject({ url: '/me', headers: b.headers })).json().registeredAt, null);
   assert.equal((await app.inject({ url: '/me/plan', headers: b.headers })).json().total, 0);
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: b.headers, payload: { note: 'Чужое' } })).statusCode, 404);
   await app.close(); app = await buildApp(config);
   const persisted = await signIn(701);
+  assert.equal(persisted.user.avatar, avatar);
   assert.equal(persisted.user.name, 'Анна'); assert.equal(persisted.user.grade, 11); assert.deepEqual(persisted.user.subjects, [8]); assert.equal(persisted.user.online, false);
   assert.equal((await app.inject({ url: '/me/plan', headers: persisted.headers })).json().items[0].note, 'Личная заметка');
   const counts = await connection.pool.query("select count(*) from user_profiles where max_user_id = '701'"); assert.equal(Number(counts.rows[0].count), 1);
   await assert.rejects(connection.pool.query('update user_profiles set grade = 12 where id = $1', [a.user.id]), /check constraint/);
+  const cleared = await app.inject({ method: 'PATCH', url: '/me/profile', headers: persisted.headers, payload: { avatar: null } });
+  assert.equal(cleared.statusCode, 200); assert.equal(cleared.json().avatar, null);
+  assert.equal((await signIn(701)).user.avatar, null);
   // Two competing registration requests can never overwrite one another.
   const both = await Promise.all(['Борис', 'Другое имя'].map(name => app!.inject({ method: 'POST', url: '/me/registration', headers: b.headers, payload: { ...preferences, name } })));
   assert.deepEqual(both.map(r => r.statusCode).sort(), [200, 409]);
