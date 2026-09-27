@@ -7,6 +7,7 @@ import { useUI } from '../../lib/ui-store';
 import { OlympiadMeta, OlympiadStatus, OlympiadTags } from './OlympiadSummary';
 
 export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }: { item: Olympiad; saved: boolean; tracking?: boolean; backTo?: string; returnTo?: string }) {
+  const navigate = useNavigate();
   const mutation = usePlanActions();
   const selected = useUI(state => state.comparisonIds);
   const toggle = useUI(state => state.toggleComparison);

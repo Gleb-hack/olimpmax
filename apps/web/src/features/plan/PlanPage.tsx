@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Switch } from '@maxhub/max-ui';
 import { Button, Dialog, EmptyState, Header, Loading, Notice, Icon } from '@olimp/ui';
 import { useEvents, usePlan, usePlanActions } from '../../lib/queries';
 import { PlanCard } from './PlanCard';
 import type { PlanEntry } from '../../lib/api';
 
-function EditPlanItem({ entry, onClose }: { entry: PlanEntry; onClose: () => void }) {
+function EditPlanItem({ entry, onClose, backTo }: { entry: PlanEntry; onClose: () => void; backTo?: string }) {
   const [note, setNote] = useState(entry.note || '');
   const [tracking, setTracking] = useState(entry.tracking);
   const [removeConfirm, setRemoveConfirm] = useState(false);
@@ -18,15 +18,24 @@ function EditPlanItem({ entry, onClose }: { entry: PlanEntry; onClose: () => voi
     {mutation.isError && <Notice tone="error">{mutation.error.message}</Notice>}
     <Button className="full-width" disabled={mutation.isPending} onClick={() => mutation.mutate({ id: entry.olympiad.id, action: 'patch', patch: { tracking, note: note.trim() || null } }, { onSuccess: onClose })}>{mutation.isPending ? 'Сохраняем…' : 'Сохранить'}</Button>
     <Link className="text-link centered" to={`/olympiads/${entry.olympiad.id}`}>Подробнее об олимпиаде</Link>
+    {backTo && <Link className="text-link centered" to={backTo}>Назад в каталог</Link>}
     {removeConfirm ? <div className="remove-confirm"><p>Убрать олимпиаду и её заметку из плана?</p><div className="button-pair"><Button variant="secondary" onClick={() => setRemoveConfirm(false)}>Оставить</Button><Button variant="danger" disabled={mutation.isPending} onClick={() => mutation.mutate({ id: entry.olympiad.id, action: 'remove' }, { onSuccess: onClose })}>Убрать</Button></div></div> : <button className="danger-link centered" onClick={() => setRemoveConfirm(true)}><Icon name="trash" size={15} />Убрать из плана</button>}
   </Dialog>;
 }
 
 export function PlanPage() {
+  const [params, setParams] = useSearchParams();
+  const { state } = useLocation();
+  const backTo = typeof state?.backTo === 'string' && /^\/catalog(?:\?|$)/.test(state.backTo) ? state.backTo : undefined;
   const plan = usePlan();
   const events = useEvents();
   const [subject, setSubject] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const editingId = Number(params.get('olympiad')) || null;
+  const setEditingId = (id: number | null) => {
+    const next = new URLSearchParams(params);
+    if (id === null) next.delete('olympiad'); else next.set('olympiad', String(id));
+    setParams(next, { replace: id === null, state });
+  };
   const entries = plan.data?.items ?? [];
   const subjects = [...new Map(entries.flatMap(entry => entry.olympiad.subjects).map(value => [value.id, value])).values()];
   const shownEntries = entries.filter(entry => subject === null || entry.olympiad.subjects.some(value => value.id === subject));
@@ -46,5 +55,5 @@ export function PlanPage() {
         </section>}
         <section className="section"><h2 className="section-caption">{withoutEvent.length === shownEntries.length ? 'Сохранённые олимпиады' : 'Все олимпиады в плане'}</h2><div className="plan-card-list">{shownEntries.map(entry => <PlanCard key={entry.olympiad.id} entry={entry} onOpen={() => setEditingId(entry.olympiad.id)} />)}</div></section>
       </>}
-    </>}{editing && <EditPlanItem entry={editing} onClose={() => setEditingId(null)} />}</>;
+    </>}{editing && <EditPlanItem key={editing.olympiad.id} entry={editing} backTo={backTo} onClose={() => setEditingId(null)} />}</>;
 }

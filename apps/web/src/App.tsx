@@ -18,6 +18,7 @@ import { isMock } from './lib/api';
 import { useSession } from './lib/session';
 import { ProfileProvider } from './lib/profile';
 import { AuthPage, WelcomePage } from './features/auth/AuthPages';
+import { useCatalogNavigation } from './lib/catalog-navigation';
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -26,23 +27,24 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: 
   render() { return this.state.failed ? <div className="app-shell"><EmptyState title="Не удалось открыть страницу" action={<Button onClick={() => window.location.reload()}>Перезагрузить</Button>}>Попробуйте обновить приложение. Ваш план сохранён на сервере.</EmptyState></div> : this.props.children; }
 }
 function Layout() {
-  const { pathname, state } = useLocation();
+  const { pathname, search: queryString, state } = useLocation();
+  const catalogTo = useCatalogNavigation();
   const navigate = useNavigate();
   const detail = pathname.startsWith('/olympiads/');
   const search = pathname === '/search';
+  const planItem = pathname === '/plan' && new URLSearchParams(queryString).has('olympiad');
   const chat = pathname === '/olimp';
   const comparing = useUI(state => state.comparisonIds.length >= 2) && (detail || search || pathname === '/catalog');
   const backTo = typeof state?.backTo === 'string' && /^\/(?:catalog|search|olimp)(?:\?|$)/.test(state.backTo) ? state.backTo : '/catalog';
   const subpage = pathname.startsWith('/profile/');
   const returnTo = typeof state?.returnTo === 'string' && /^\/catalog(?:\?|$)/.test(state.returnTo) ? state.returnTo : '/catalog';
   useEffect(() => {
-    window.scrollTo(0, 0);
     const heading = document.querySelector('h1');
     document.title = `${heading?.textContent || 'Olimp'} · Olimp`;
     heading?.focus({ preventScroll: true });
-    return max.backButton(subpage ? () => navigate('/profile') : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null);
-  }, [pathname, navigate, subpage, detail, search, backTo, returnTo]);
-  return <div className={`app-shell ${chat ? 'app-shell--chat' : ''} ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />{!subpage && !detail && !search && <BottomNav />}</div>;
+    return max.backButton(subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null);
+  }, [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo]);
+  return <div className={`app-shell ${chat ? 'app-shell--chat' : ''} ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />{!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}</div>;
 }
 function ProtectedApp() {
   const { user } = useSession();

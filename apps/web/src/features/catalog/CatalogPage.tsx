@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { olympiadLevelOptions } from '@olimp/contracts';
 import { Button, Dialog, EmptyState, Header, Loading, Notice, Select, Icon } from '@olimp/ui';
 import { api } from '../../lib/api';
 import { useFilters, usePlan } from '../../lib/queries';
@@ -27,15 +28,16 @@ export function CatalogPage() {
   };
   const reset = () => { paramsRef.current = new URLSearchParams(); setParams({}); };
   const savedIds = new Set(plan.data?.items.map(entry => entry.olympiad.id));
-  const hasFilters = ['q', 'subjectIds', 'grades', 'formats'].some(key => params.has(key));
+  const hasFilters = ['q', 'subjectIds', 'grades', 'formats', 'levels'].some(key => params.has(key));
   return <>
     <Header title="Каталог" action={<button className="icon-button icon-button--blue" aria-label="Поиск олимпиад" onClick={() => navigate('/search', { state: { backTo: `/catalog${params.size ? `?${params}` : ''}` } })}><Icon name="search" size={18} /></button>} />
     <div className="filter-grid">
       <Select label="Предмет" placeholder="Предмет" icon="book" searchable searchPlaceholder="Найти предмет" value={params.get('subjectIds') || ''} onChange={value => updateParam('subjectIds', value)} options={[{ value: '', label: 'Все предметы' }, ...(filters.data?.subjects.map(subject => ({ value: String(subject.id), label: subject.name })) ?? [])]} />
       <Select label="Класс" placeholder="Класс" icon="graduation-cap" align="right" value={params.get('grades') || ''} onChange={value => updateParam('grades', value)} options={[{ value: '', label: 'Все классы' }, ...Array.from({ length: 11 }, (_, index) => ({ value: String(index + 1), label: `${index + 1} класс` }))]} />
       <Select label="Формат" placeholder="Формат" icon="list" value={params.get('formats') || ''} onChange={value => updateParam('formats', value)} options={[{ value: '', label: 'Любой формат' }, ...Object.entries(formats).map(([value, label]) => ({ value, label }))]} />
-      <button className="reset-filter" onClick={reset}><Icon name="refresh" size={17} />Сбросить фильтры</button>
+      <Select label="Уровень" placeholder="Уровень" icon="award" align="right" value={params.get('levels') || ''} onChange={value => updateParam('levels', value)} options={[{ value: '', label: 'Любой уровень' }, ...olympiadLevelOptions]} />
     </div>
+    <button className="reset-filter full-width" onClick={reset}><Icon name="refresh" size={16} />Сбросить фильтры</button>
     {filters.isError && <Notice tone="warning">Список предметов не загрузился. <button className="text-button" onClick={() => filters.refetch()}>Повторить</button></Notice>}
     <Button className="full-width sort-button" onClick={() => setSortOpen(true)}><Icon name="sort" size={15} />{params.get('sort') === 'name' ? 'По названию' : 'Сортировать'}</Button>
     <div className="results-label" aria-live="polite"><span>{catalog.data ? `Найдено: ${catalog.data.total}` : 'Каталог олимпиад'}</span><span>{hasFilters ? 'По вашим фильтрам' : 'Все предметы'}</span></div>

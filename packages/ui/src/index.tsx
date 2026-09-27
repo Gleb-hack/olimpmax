@@ -16,9 +16,9 @@ const tabs = [
   { to: '/plan', label: 'План', icon: 'calendar' },
   { to: '/profile', label: 'Профиль', icon: 'user' },
 ] satisfies { to: string; label: string; icon: IconName }[];
-export function BottomNav() {
+export function BottomNav({ catalogTo = '/catalog' }: { catalogTo?: string }) {
   return <nav className="bottom-nav" aria-label="Основная навигация">{tabs.map(({ to, label, icon }) =>
-    <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
+    <NavLink key={to} to={to === '/catalog' ? catalogTo : to} className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
       <Icon name={icon} size={22} /><span>{label}</span>
     </NavLink>)}
   </nav>;
