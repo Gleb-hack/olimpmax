@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import type { z } from 'zod';
 import { OlympiadCard, OlympiadDetail, type Stage } from '@olimp/contracts';
 import details from '../src/lib/mock-details.json';
-import { registrationDeadline, registrationLabel, stageSummary } from '../src/features/catalog/detail-format.ts';
+import { hiddenReferenceNote, primaryStages, registrationDeadline, registrationLabel, stageSummary } from '../src/features/catalog/detail-format.ts';
 import { levelLabel, profileGradeLabel, scheduleLabel } from '../src/lib/format.ts';
 
 const stage = (patch: Partial<z.infer<typeof Stage>> = {}): z.infer<typeof Stage> => ({
@@ -26,6 +26,8 @@ test('source schedules and registration text are visible without manufacturing d
 test('level labels preserve draft status, distinguish ВсОШ and do not infer a missing level', () => {
   assert.equal(levelLabel({ level: 'III', levelStatus: 'Проект РСОШ 2026/27; не утвержден на 24.09.2026' }), 'III уровень · проект РСОШ 2026/27');
   assert.equal(levelLabel({ level: 'ВсОШ' }), 'ВсОШ');
+  assert.equal(levelLabel({ level: 'II–III', levelStatus: 'Проект РСОШ 2026/27' }), 'II–III уровни · проект РСОШ 2026/27');
+  assert.equal(levelLabel({ level: null, levelStatus: 'Профиль не входит в перечень РСОШ 2026/27' }), 'Не указан');
   assert.equal(levelLabel({ level: '—' }), 'Не указан');
   assert.equal(levelLabel({}), 'Не указан');
 });
@@ -56,4 +58,22 @@ test('catalog carries actual organizers and accepts responses from the previous 
 test('profile grade label is shared by the profile card and the grade chip', () => {
   assert.equal(profileGradeLabel(9), '9 класс');
   assert.equal(profileGradeLabel(null), null);
+});
+
+test('the card shows the schedule the API chose and explains a hidden reference schedule', () => {
+  const csv = stage({ id: '00000000-0000-4000-8000-000000000002', origin: 'csv', verification: 'unverified', endsOn: null, rawDates: 'До 21 окт' });
+  const reference = stage({ id: '00000000-0000-4000-8000-000000000003', origin: 'reference', verification: 'unverified', endsOn: null, sourceUrl: null, verifiedAt: null, rawDates: 'до 22 сентября', mode: 'online' });
+  const verified = stage();
+  const base = { stages: [csv, reference, verified], calendarState: 'unverified' as const };
+  assert.deepEqual(primaryStages({ ...base, scheduleSource: 'reference' }).map(s => s.origin), ['reference', 'verified_import']);
+  assert.deepEqual(primaryStages({ ...base, scheduleSource: 'catalog' }).map(s => s.origin), ['csv', 'verified_import']);
+  assert.deepEqual(primaryStages(base).map(s => s.origin), ['csv', 'verified_import']);
+  assert.match(registrationLabel({ stages: [csv, reference], calendarState: 'unverified', scheduleSource: 'reference' }), /до 22 сентября/);
+  assert.match(registrationLabel({ stages: [csv, reference], calendarState: 'unverified', scheduleSource: 'catalog' }), /До 21 окт/);
+  const info = (scheduleQuality: 'ok' | 'placeholder' | 'outdated' | 'hidden') => ({ slug: 'x', name: 'X', generalLevel: null, formatRaw: null, scheduleQuality, rsoshTitle: null, note: null, profiles: [] });
+  assert.equal(hiddenReferenceNote({ ...base, scheduleSource: 'reference', seriesInfo: info('ok') }), null);
+  assert.match(hiddenReferenceNote({ ...base, scheduleSource: 'catalog', seriesInfo: info('placeholder') })!, /шаблон/);
+  assert.match(hiddenReferenceNote({ ...base, scheduleSource: 'catalog', seriesInfo: info('outdated') })!, /прошлому сезону/);
+  assert.match(hiddenReferenceNote({ ...base, scheduleSource: 'catalog', seriesInfo: info('ok') })!, /расходятся/);
+  assert.equal(hiddenReferenceNote({ stages: [csv], scheduleSource: 'catalog', seriesInfo: null }), null);
 });
