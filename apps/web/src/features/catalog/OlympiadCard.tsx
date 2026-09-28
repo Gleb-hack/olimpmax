@@ -4,7 +4,7 @@ import type { Olympiad } from '../../lib/api';
 import { usePlanActions } from '../../lib/queries';
 import { scheduleLabel } from '../../lib/format';
 import { useUI } from '../../lib/ui-store';
-import { OlympiadMeta, OlympiadStatus, OlympiadTags } from './OlympiadSummary';
+import { OlympiadMeta, OlympiadStatus, OlympiadTags, StageCountdown } from './OlympiadSummary';
 
 export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }: { item: Olympiad; saved: boolean; tracking?: boolean; backTo?: string; returnTo?: string }) {
   const mutation = usePlanActions();
@@ -17,6 +17,7 @@ export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }:
     <OlympiadMeta item={item} /><OlympiadTags item={item} compact />
     <div className="card-schedule"><span className="muted">{item.nextEvent ? item.nextEvent.name || 'Ближайший этап' : 'Расписание'}</span>
       <span className="schedule-line"><Icon name="bell" size={15} />{scheduleLabel(item)}</span>
+      <StageCountdown item={item} />
     </div>
     <div className="card-actions"><label className={`compare-check ${checked ? 'is-checked' : ''}`}><input type="checkbox" checked={checked} onChange={() => toggle(item.id)} /><span className="compare-check__box" aria-hidden="true">{checked && <Icon name="check" size={11} />}</span><span>{checked ? 'Выбрано' : 'Сравнить'}</span></label>
       <Button size="small" className={saved && tracking ? 'tracking-button--saved' : ''} variant={saved && tracking ? 'secondary' : 'primary'} aria-pressed={saved && tracking} disabled={mutation.isPending} onClick={() => mutation.mutate(saved ? { id: item.id, action: 'patch', patch: { tracking: !tracking } } : { id: item.id, action: 'save' })}>

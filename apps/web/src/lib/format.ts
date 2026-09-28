@@ -29,3 +29,33 @@ export function dateParts(day: string) {
   const date = new Date(`${day}T12:00:00+03:00`);
   return { day: date.toLocaleDateString('ru-RU', { day: 'numeric', timeZone: 'Europe/Moscow' }), month: date.toLocaleDateString('ru-RU', { month: 'short', timeZone: 'Europe/Moscow' }).replace('.', '') };
 }
+
+export function moscowToday(now = new Date()) {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+}
+export function daysBetween(from: string, to: string) {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
+export function daysWord(count: number) {
+  const plural = new Intl.PluralRules('ru').select(count);
+  return plural === 'one' ? 'день' : plural === 'few' ? 'дня' : 'дней';
+}
+/**
+ * «35 дней до этапа «Муниципальный этап»» for the next stage that has not started yet. Counted from today in Moscow,
+ * so a cached card never shows a stale number; null when the API found nothing to count or the stage has already begun.
+ */
+export function stageCountdown(item: Pick<Olympiad, 'upcomingStage'>, today = moscowToday()) {
+  const stage = item.upcomingStage;
+  if (!stage) return null;
+  const days = daysBetween(today, stage.startsOn);
+  if (days < 0) return null;
+  const registration = stage.kind === 'registration' && (!stage.name || /^регистрац/i.test(stage.name.trim()));
+  const target = registration ? 'начала регистрации' : stage.name ? `этапа «${stage.name}»` : 'следующего этапа';
+  return {
+    days, estimated: stage.estimated, date: formatDay(stage.startsOn),
+    /** The stage alone, for places that already say «до следующего этапа». */
+    stage: registration ? 'начало регистрации' : stage.name ?? 'следующий этап',
+    value: days === 0 ? 'Сегодня' : `${days} ${daysWord(days)}`,
+    text: days === 0 ? (registration ? 'открывается регистрация' : stage.name ? `начинается этап «${stage.name}»` : 'начинается следующий этап') : `до ${target}`,
+  };
+}

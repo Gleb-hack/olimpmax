@@ -8,7 +8,6 @@ const Environment = z.object({
   JWT_SECRET: z.string().min(32).refine(v => !v.includes('replace-this'), 'Создайте собственный JWT_SECRET'),
   MAX_BOT_TOKEN: z.string().optional(), ALLOW_DEV_AUTH: z.enum(['true', 'false']).default('false'),
   DEEPSEEK_API_KEY: z.string().trim().optional(),
-  SERPER_API_KEY: z.string().trim().optional(),
   DEEPSEEK_MODEL: z.string().trim().min(1).max(100).default('deepseek-flash'),
 });
 export function readConfig(env: NodeJS.ProcessEnv = process.env) {
@@ -19,5 +18,5 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env) {
   if (e.NODE_ENV === 'production' && !e.MAX_BOT_TOKEN) throw new Error('Для production нужен MAX_BOT_TOKEN');
   return { databaseUrl: e.DATABASE_URL, host: e.HOST, port: e.PORT, jwtSecret: e.JWT_SECRET,
     botToken: e.MAX_BOT_TOKEN, allowDevAuth: e.ALLOW_DEV_AUTH === 'true', corsOrigin: e.CORS_ORIGIN, trustProxyHops: e.TRUST_PROXY_HOPS,
-    deepseekApiKey: e.DEEPSEEK_API_KEY, deepseekModel: e.DEEPSEEK_MODEL, serperApiKey: e.SERPER_API_KEY };
+    deepseekApiKey: e.DEEPSEEK_API_KEY, deepseekModel: e.DEEPSEEK_MODEL };
 }

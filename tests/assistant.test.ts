@@ -1,9 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { AssistantRequest, OlympiadDetail } from '../packages/contracts/src/index.js';
+import { AssistantRequest, OlympiadDetail, parseFaq } from '../packages/contracts/src/index.js';
 import { answerAssistant, evidenceFor, researchQuestion, type AssistantData } from '../apps/api/src/features/assistant/assistant.js';
 import { AssistantError, deepseekCompletion, type CompleteJson } from '../apps/api/src/features/assistant/deepseek.js';
+import { normalizeSlang, isBareSubjectRequest } from '../apps/api/src/features/assistant/slang.js';
+import { searchFaq } from '../apps/api/src/features/assistant/knowledge.js';
+import { WEB_SEARCH_ANNOUNCEMENT } from '../apps/api/src/features/assistant/web-research.js';
 
 const item = OlympiadDetail.parse(JSON.parse(readFileSync(new URL('../apps/web/src/lib/mock-details.json', import.meta.url), 'utf8'))[0]);
 const signal = AbortSignal.timeout(10000);
@@ -13,7 +16,12 @@ const data: AssistantData = {
   search: async () => ({ items: [{ id: item.id }], total: 1 }),
   detail: async id => id === item.id ? item : null,
   planIds: async () => [], deadlineIds: async () => [], scheduleIds: async () => [item.id],
+  universityNames: async () => [{ slug: 'bmstu', name: 'МГТУ им. Н.Э. Баумана', aliases: ['МГТУ'] }, { slug: 'hse', name: 'НИУ ВШЭ', aliases: ['ВШЭ'] }],
+  universities: async slugs => slugs.map(slug => ({ slug, name: slug === 'hse' ? 'НИУ ВШЭ' : 'МГТУ им. Н.Э. Баумана', fullName: null, city: 'Москва',
+    benefits: [{ olympiad: 'Высшая проба', benefits: ['БВИ — без вступительных испытаний'], requirement: 'ЕГЭ по профильному предмету от 75 баллов', cards: 30 }] })),
+  faq: () => [],
 };
+const faqEntries = parseFaq(readFileSync(new URL('../data/faq/olympiad_faq_2026-27.csv', import.meta.url), 'utf8'));
 const request = (message = 'Подбери олимпиаду') => AssistantRequest.parse({ message });
 const completeWith = (...answers: unknown[]): CompleteJson => async () => answers.shift();
 
@@ -132,8 +140,9 @@ test('explicit web follow-up resolves history and creates only a contextual offe
     calls++; assert.deepEqual((payload as AssistantRequest).history, input.history);
     return { intent: 'web_search', olympiadIds: [item.id], researchQuestion: question };
   }, '2026-09-23', signal);
-  assert.equal(calls, 1); assert.equal(result.offerOnly, true); assert.deepEqual(result.olympiads, []);
+  assert.equal(calls, 1); assert.equal(result.message, WEB_SEARCH_ANNOUNCEMENT); assert.deepEqual(result.olympiads, []);
   assert.equal(result.research?.task.question, question); assert(!result.research?.task.question.includes(input.message));
+  assert.deepEqual(result.research?.task.olympiadIds, [item.id]);
 });
 test('web follow-up retains specific needs and changing olympiads changes the target', async () => {
   const input = AssistantRequest.parse({ message: 'Тогда поищи в интернете', history: [
@@ -153,7 +162,7 @@ test('ambiguous or missing web topic asks for clarification and never searches t
   const noSearch = { ...data, search: async () => { throw Error('must not search'); } };
   for (const lookup of [{ intent: 'web_search' }, { intent: 'web_search', clarification: 'О какой из этих олимпиад поискать?' }]) {
     const result = await answerAssistant(request('Поищи о ней в интернете'), noSearch, completeWith(lookup), '2026-09-23', signal);
-    assert.match(result.message, /О какой/); assert.equal(result.research, undefined);
+    assert.match(result.message, /О какой|Что именно поискать/); assert.equal(result.research, undefined);
   }
 });
 test('missing evidence does not repeat a previously displayed card', async () => {
@@ -230,4 +239,84 @@ test('assistant evidence carries the primary schedule and only applicable admiss
   assert.deepEqual(catalogSchedule.sourceStages.map(s => s.rawDates), ['До 21 окт']);
   assert.deepEqual(catalogSchedule.admissionBenefits, []);
   assert.equal(catalogSchedule.benefitsNote, 'Профиль не входит в перечень');
+});
+
+test('slang: «матеша», «общага», «инфа» are read as subjects, «нет инфы» stays «информация»', () => {
+  const math = normalizeSlang('олимпы по матеше 9 класс');
+  assert.equal(math.text, 'олимпиады по математика 9 класс'); assert.deepEqual(math.subjects, ['Математика']);
+  assert.ok(isBareSubjectRequest(math.text, math.subjects));
+  assert.deepEqual(normalizeSlang('а по общаге?').subjects, ['Обществознание']);
+  assert.deepEqual(normalizeSlang('общага 10 класс').subjects, ['Обществознание']);
+  const dorm = normalizeSlang('Есть ли общага в МФТИ?');
+  assert.deepEqual(dorm.subjects, []); assert.match(dorm.glossary[0]!.meaning, /общежитие/);
+  assert.deepEqual(normalizeSlang('инфа').subjects, ['Информатика']);
+  assert.deepEqual(normalizeSlang('нет инфы о сроках').subjects, []);
+  assert.deepEqual(normalizeSlang('физра или физа').subjects, ['Физическая культура', 'Физика']);
+  assert.deepEqual(normalizeSlang('что есть по русскому и по немецкому').subjects, ['Русский язык', 'Немецкий язык']);
+  assert.deepEqual(normalizeSlang('Русский медвежонок').subjects, []);
+  assert.match(normalizeSlang('когда ЗЭ всоша по химе').text, /заключительный этап ВсОШ .* по химия/);
+  const admission = normalizeSlang('хочу в бауманку, какие олимпы дают бвишку или сотку');
+  assert.deepEqual(admission.universities, ['bmstu']); assert.match(admission.text, /БВИ/); assert.match(admission.text, /100 баллов ЕГЭ/);
+  assert.equal(isBareSubjectRequest(normalizeSlang('реши задачу по матеше').text, ['Математика']), false);
+});
+
+test('a slang subject reaches the catalog filter even when the model misses it or calls the message off-topic', async () => {
+  const subjects = async () => [{ id: 3, name: 'Математика' }, { id: 12, name: 'Обществознание' }];
+  for (const [message, lookup, expected] of [['олимпы по матеше 9 класс', { intent: 'off_topic' }, [3]], ['а по общаге?', { intent: 'search' }, [12]],
+    ['общага', { intent: 'clarify' }, [12]]] as const) {
+    let searched: number[] | undefined;
+    await answerAssistant(request(message), { ...data, subjects, search: async query => { searched = query.subjectIds; return { items: [{ id: item.id }], total: 1 }; } },
+      async (_system, input) => {
+        const payload = input as { normalizedMessage?: string; glossary?: unknown[]; evidence?: unknown };
+        if (payload.evidence) return { message: 'Вот вариант.', olympiadIds: [item.id] };
+        assert.ok(payload.glossary!.length > 0); assert.notEqual(payload.normalizedMessage, message);
+        return lookup;
+      }, '2026-09-23', signal);
+    assert.deepEqual(searched, expected, message);
+  }
+});
+
+test('general questions are answered from the FAQ with its sources, without web search', async () => {
+  const found = searchFaq('Можно ли подать БВИ сразу в несколько вузов?', faqEntries);
+  assert.equal(found[0]!.entry.question, 'Можно ли одновременно заявить БВИ в нескольких вузах?');
+  let evidence: { question: string }[] = [];
+  const result = await answerAssistant(request('Можно ли подать бвишку сразу в несколько вузов?'), { ...data, faq: question => searchFaq(question, faqEntries) },
+    async (_system, input) => {
+      const payload = input as { faq?: { question: string }[] };
+      if (!payload.faq) return { intent: 'question' };
+      evidence = payload.faq;
+      return { message: 'На бюджет БВИ используют только в одном вузе на одной программе.', olympiadIds: [], faqIndexes: [0] };
+    }, '2026-09-28', signal);
+  assert.equal(evidence[0]!.question, found[0]!.entry.question);
+  assert.equal(result.research, undefined);
+  assert.equal(result.webSources?.[0]?.kind, 'faq');
+  assert.ok(result.webSources!.some(source => source.url.startsWith('https://agprf.org/')));
+});
+
+test('a question the database cannot answer goes to web search at once, with the university it is about', async () => {
+  // The university has benefits in the base: the model looks at them first and says what is missing.
+  const partial = await answerAssistant(request('какой проходной в вышку на пми?'), data, async (_system, input) => {
+    const payload = input as { normalizedMessage: string; universities?: { name: string }[] };
+    assert.match(payload.normalizedMessage, /НИУ ВШЭ/);
+    if (!payload.universities) return { intent: 'question', researchQuestion: 'Какой проходной балл в НИУ ВШЭ на ПМИ?' };
+    assert.equal(payload.universities[0]!.name, 'НИУ ВШЭ');
+    return { message: 'В нашей базе нет проходных баллов НИУ ВШЭ.', olympiadIds: [], needsWebSearch: true };
+  }, '2026-09-28', signal);
+  assert.equal(partial.message, `В нашей базе нет проходных баллов НИУ ВШЭ. ${WEB_SEARCH_ANNOUNCEMENT}`);
+  assert.deepEqual(partial.research?.task.universitySlugs, ['hse']);
+  // Nothing in the base at all: no second model call, the search starts immediately.
+  let calls = 0;
+  const empty = await answerAssistant(request('какой проходной в вышку на пми?'), { ...data, universities: async () => [] },
+    async () => { calls++; return { intent: 'question', researchQuestion: 'Какой проходной балл в НИУ ВШЭ на ПМИ?' }; }, '2026-09-28', signal);
+  assert.equal(calls, 1);
+  assert.equal(empty.message, `В нашей базе нет ответа на этот вопрос. ${WEB_SEARCH_ANNOUNCEMENT}`);
+  assert.deepEqual(empty.research?.task, { question: 'Какой проходной балл в НИУ ВШЭ на ПМИ?', olympiadIds: [], universitySlugs: ['hse'] });
+});
+
+test('a university named in a search becomes the benefits filter', async () => {
+  let universities: string[] | undefined;
+  await answerAssistant(request('какие олимпы по физике дают бви в бауманку'), { ...data, search: async query => {
+    universities = query.universities; return { items: [{ id: item.id }], total: 1 };
+  } }, completeWith({ intent: 'search', universitySlugs: ['bmstu', 'unknown-slug'] }, { message: 'Вот вариант.', olympiadIds: [item.id] }), '2026-09-28', signal);
+  assert.deepEqual(universities, ['bmstu']);
 });

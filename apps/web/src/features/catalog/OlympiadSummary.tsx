@@ -1,5 +1,6 @@
+import { Icon } from '@olimp/ui';
 import type { Olympiad } from '../../lib/api';
-import { calendarLabels, formats, gradeLabel, levelLabel } from '../../lib/format';
+import { calendarLabels, formats, gradeLabel, levelLabel, stageCountdown } from '../../lib/format';
 
 // Fixed pastel hues keep each status recognizable across catalog cards and details.
 const statusHues: Record<string, number> = {
@@ -35,4 +36,14 @@ export function OlympiadMeta({ item }: { item: Olympiad }) {
 export function OlympiadTags({ item, compact = false }: { item: Olympiad; compact?: boolean }) {
   const subjects = compact ? item.subjects.slice(0, 3) : item.subjects;
   return <div className="tags olympiad-tags">{subjects.map(subject => <span className="tag tag--blue" key={subject.id}>{subject.name}</span>)}{compact && item.subjects.length > 3 && <span className="tag">+{item.subjects.length - 3}</span>}<span className="tag">{gradeLabel(item)}</span>{levelLabel(item) !== 'Не указан' && <span className="tag" title={item.levelStatus ?? undefined}>{levelLabel(item)}</span>}</div>;
+}
+
+/** «35 дней до этапа «…»». Hidden when the next stage start is unknown or has passed. */
+export function StageCountdown({ item, className }: { item: Olympiad; className?: string }) {
+  const countdown = stageCountdown(item);
+  if (!countdown) return null;
+  const title = `Начало — ${countdown.date}${countdown.estimated ? '. Год в источнике не указан и рассчитан по текущему сезону' : ''}`;
+  return <p className={['stage-countdown', countdown.days <= 3 ? 'stage-countdown--soon' : '', className].filter(Boolean).join(' ')} title={title}>
+    <Icon name="calendar" size={13} /><strong>{countdown.value}</strong><span>{countdown.text}</span>
+  </p>;
 }

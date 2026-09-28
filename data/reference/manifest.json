@@ -11,9 +11,16 @@
       "status": "Проект РСОШ 2026/27",
       "url": "https://www.garant.ru/products/ipo/prime/doc/56963051/"
     },
-    "benefits": {
-      "file": "sources/vuzi_olympiad_benefits_cleaned.csv",
-      "description": "Льготы вузов при поступлении по олимпиадам: БВИ или 100 баллов и минимальный балл ЕГЭ для подтверждения."
-    }
+    "benefits": [
+      {
+        "file": "sources/vuzi_olympiad_benefits_cleaned.csv",
+        "description": "Льготы вузов при поступлении по олимпиадам: БВИ или 100 баллов и минимальный балл ЕГЭ для подтверждения."
+      },
+      {
+        "file": "sources/vuzi_olympiad_benefits_2026.csv",
+        "description": "Льготы ещё 13 вузов (МГТУ им. Баумана, НИЯУ МИФИ, МГИМО, Финансовый университет, СПбПУ, МИСИС, РЭУ им. Плеханова, РАНХиГС, УрФУ, РУДН, МГЮА, РХТУ, МИРЭА). «БВИ / 100 баллов» — обе льготы.",
+        "skipUnknownOlympiads": true
+      }
+    ]
   }
 }

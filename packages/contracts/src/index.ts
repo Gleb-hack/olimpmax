@@ -62,6 +62,8 @@ export const NextEvent = z.object({
   sourceUrl: z.string().url(),
 });
 export const CalendarState = z.enum(['unknown', 'unverified', 'verified', 'needs_review', 'no_upcoming', 'not_held']);
+/** Start of the next stage for the «N дней до этапа» counter; `estimated` — the source gave no year, it comes from the season. */
+export const UpcomingStage = z.object({ name: z.string().nullable(), kind: z.enum(['registration', 'competition', 'other']), startsOn: IsoDay, estimated: z.boolean() });
 export const SeriesRef = z.object({ slug: Slug, name: z.string() });
 export const UniversityRef = z.object({ slug: Slug, name: z.string(), city: z.string() });
 export const Benefit = z.object({
@@ -92,6 +94,7 @@ export const OlympiadCard = z.object({
   rating: z.number().nullable(), scheduleStatus: ScheduleStatus,
   statusRaw: z.string(), sourceUrl: z.string().url(), sourceGroup: z.string().nullable(),
   nextEvent: NextEvent.nullable(), calendarState: CalendarState,
+  upcomingStage: UpcomingStage.nullable().optional(),
 });
 export const OlympiadDetail = OlympiadCard.extend({
   organizers: z.array(z.string()), contacts: z.array(z.string()), documents: z.array(z.string()),
@@ -191,20 +194,71 @@ export const AssistantRequest = z.object({
   history: z.array(AssistantHistoryItem).max(10).default([]),
 }).strict().refine(v => v.message.length + v.history.reduce((n, m) => n + m.content.length, 0) <= 12000,
   'Слишком длинная история разговора');
-export const AssistantWebOffer = z.object({
+/**
+ * The database had no answer and Olimp is already looking on the web: the app immediately sends `token`
+ * to /assistant/web-search (no consent step). The token is a signed server ticket, never a client-built query.
+ */
+export const AssistantWebSearch = z.object({
   token: z.string().min(1).max(12000), question: z.string().max(2000),
-  olympiads: z.array(z.object({ id: z.number().int().positive(), title: z.string() })).min(1).max(3),
+  olympiadIds: z.array(z.number().int().positive()).max(3),
 });
+/** page / pdf — read on the web; faq — the olympiad FAQ of the app (data/faq) with its official sources. */
 export const AssistantWebSource = z.object({
-  title: z.string(), url: z.url().refine(url => /^https?:\/\//.test(url)), checkedAt: z.iso.datetime(), kind: z.enum(['page', 'search_result']).optional(),
+  title: z.string(), url: z.url().refine(url => /^https?:\/\//.test(url)), checkedAt: z.iso.datetime(), kind: z.enum(['page', 'pdf', 'faq']).optional(),
 });
 export const AssistantWebRequest = z.object({ token: z.string().min(1).max(12000) }).strict();
 export const AssistantResponse = z.object({
   message: z.string().min(1).max(4000), olympiads: z.array(OlympiadCard).max(5),
-  offerOnly: z.boolean().optional(),
-  webSearchOffer: AssistantWebOffer.optional(),
+  webSearch: AssistantWebSearch.optional(),
   webSources: z.array(AssistantWebSource).max(6).optional(),
   webDisclaimer: z.string().max(500).optional(),
 });
 export type AssistantRequest = z.infer<typeof AssistantRequest>;
 export type AssistantResponse = z.infer<typeof AssistantResponse>;
+
+/**
+ * Minimal RFC 4180 reader: quoted fields, "" escapes, CRLF/LF, optional BOM. The delimiter is taken from the header line.
+ * Shared by the Mini App (FAQ page) and the API (assistant knowledge), so both read the same data/*.csv files.
+ */
+export function parseDelimited(text: string): Record<string, string>[] {
+  const source = text.replace(/^﻿/, '');
+  const header = source.split(/\r?\n/, 1)[0] ?? '';
+  const delimiter = (header.match(/;/g)?.length ?? 0) >= (header.match(/,/g)?.length ?? 0) ? ';' : ',';
+  const rows: string[][] = [];
+  let row: string[] = [], field = '', quoted = false;
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i]!;
+    if (quoted) {
+      if (char === '"' && source[i + 1] === '"') { field += '"'; i++; }
+      else if (char === '"') quoted = false;
+      else field += char;
+    } else if (char === '"' && field === '') quoted = true;
+    else if (char === delimiter) { row.push(field); field = ''; }
+    else if (char === '\n' || char === '\r') {
+      if (char === '\r' && source[i + 1] === '\n') i++;
+      row.push(field); field = '';
+      if (row.some(value => value.trim())) rows.push(row);
+      row = [];
+    } else field += char;
+  }
+  row.push(field);
+  if (row.some(value => value.trim())) rows.push(row);
+  const [columns, ...body] = rows;
+  if (!columns) return [];
+  return body.map(values => Object.fromEntries(columns.map((column, index) => [column.trim(), (values[index] ?? '').trim()])));
+}
+
+export type FaqSource = { name: string; url: string };
+export type FaqEntry = { category: string; question: string; answer: string; sources: FaqSource[]; checkedAt: string | null };
+/** data/faq/*.csv: category;question;answer;source_name;source_url;checked_at — several sources are separated by « | ». */
+export function parseFaq(text: string): FaqEntry[] {
+  return parseDelimited(text).flatMap(row => {
+    const question = row.question ?? '', answer = row.answer ?? '';
+    if (!question || !answer) return [];
+    const names = (row.source_name ?? '').split(' | ').map(v => v.trim());
+    const urls = (row.source_url ?? '').split('|').map(v => v.trim()).filter(Boolean);
+    const sources = urls.flatMap((url, index) => /^https?:\/\//.test(url) ? [{ name: names[index] || new URL(url).hostname, url }] : []);
+    const checkedAt = /^\d{4}-\d{2}-\d{2}$/.test(row.checked_at ?? '') ? row.checked_at! : null;
+    return [{ category: row.category || 'Другое', question, answer, sources, checkedAt }];
+  });
+}

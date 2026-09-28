@@ -282,27 +282,35 @@ test('assistant reads reimported source dates live and keeps yearless dates sepa
   assert.equal(answer.olympiads[0]!.calendarRaw, calendar);
 });
 
-test('web research needs the matching authenticated user and explicit proposal token', async t => {
-  let reads = 0, searches = 0;
+test('web research runs only on the server ticket of the matching user, without a consent step', async t => {
+  let reads = 0;
   const chatApp = await buildApp({ db: connection.db, jwtSecret: 'test'.repeat(16), now: () => now,
     assistantCompletion: async (_system, input) => {
       if ('providedSubjects' in (input as object)) return { intent: 'detail', olympiadIds: [4357] };
       if ('evidence' in (input as object)) return { message: 'Стоимость в базе не указана.', olympiadIds: [4357], needsWebSearch: true };
-      if ('candidates' in (input as object)) return { indexes: [0] };
-      return { message: 'На проверенной странице стоимость не указана [0].', found: false, sourceIndexes: [0] };
-    }, searchWeb: async () => { searches++; return [{ url: 'https://organizer.ru/rules', title: 'Правила', snippet: 'Данные о стоимости отсутствуют.' }]; },
-    readPublicPage: async url => { reads++; return { url, title: 'Олимпиада', text: 'Данные о стоимости отсутствуют.', links: [] }; },
+      if ('candidates' in (input as object)) {
+        const candidates = (input as { candidates: { index: number; url: string }[] }).candidates;
+        // The olympiad's own catalog page comes first, the curated links follow.
+        assert.equal(candidates[0]!.url, 'https://olimpiada.ru/activity/4357');
+        assert.ok(candidates.some(c => c.url === 'https://rsr-olymp.ru/'));
+        return { indexes: [0] };
+      }
+      return { message: 'На странице олимпиады стоимость не указана [0].', found: false, sourceIndexes: [0] };
+    },
+    readPublicPage: async url => { reads++; return { url, title: 'Олимпиада', text: 'Данные о стоимости отсутствуют. '.repeat(4), links: [], kind: 'html' }; },
   });
   t.after(() => chatApp.close());
-  const offer = contracts.AssistantResponse.parse((await chatApp.inject({ method: 'POST', url: '/assistant/chat', headers: auth(tokenA), payload: { message: 'Сколько стоит участие?' } })).json()).webSearchOffer!;
-  assert(offer); assert.equal(reads, 0); assert.equal(searches, 0);
-  const payload = { token: offer.token };
+  const chat = contracts.AssistantResponse.parse((await chatApp.inject({ method: 'POST', url: '/assistant/chat', headers: auth(tokenA), payload: { message: 'Сколько стоит участие?' } })).json());
+  assert.match(chat.message, /Сейчас поищу в интернете/);
+  const ticket = chat.webSearch!;
+  assert(ticket); assert.deepEqual(ticket.olympiadIds, [4357]); assert.equal(reads, 0);
+  const payload = { token: ticket.token };
   assert.equal((await chatApp.inject({ method: 'POST', url: '/assistant/web-search', payload })).statusCode, 401);
   assert.equal((await chatApp.inject({ method: 'POST', url: '/assistant/web-search', headers: auth(tokenB), payload })).statusCode, 400);
   assert.equal((await chatApp.inject({ method: 'POST', url: '/assistant/web-search', headers: auth(tokenA), payload: { token: 'yes', url: 'http://localhost' } })).statusCode, 400);
-  assert.equal(reads, 0); assert.equal(searches, 0);
+  assert.equal(reads, 0);
   const result = await chatApp.inject({ method: 'POST', url: '/assistant/web-search', headers: auth(tokenA), payload });
-  assert.equal(result.statusCode, 200, result.body); assert.equal(reads, 1); assert.equal(searches, 1);
+  assert.equal(result.statusCode, 200, result.body); assert.equal(reads, 1);
   const answer = contracts.AssistantResponse.parse(result.json());
-  assert.equal(answer.webSources?.[0]?.url, 'https://organizer.ru/rules'); assert(answer.webDisclaimer);
+  assert.equal(answer.webSources?.[0]?.url, 'https://olimpiada.ru/activity/4357'); assert(answer.webDisclaimer);
 });

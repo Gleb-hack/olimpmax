@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   nameKey, combineLevels, parseGeneralLevel, parseRuDates, isoDay, isPlaceholderSchedule, isOutdatedSchedule, scheduleQuality,
-  parseBenefit, parseRequirement, stageKind, stageMode, dayMonthMentions, scheduleConflicts, type ScheduleStage,
+  parseBenefit, parseBenefits, parseRequirement, REQUIREMENT_NOT_NEEDED, stageKind, stageMode, dayMonthMentions, scheduleConflicts, type ScheduleStage,
 } from '../apps/api/src/reference/model.js';
 import { resolveLevel, catalogLevel } from '../apps/api/src/reference/levels.js';
 import { buildReference, readReferenceDir, checkAgainstCatalog, referenceFiles, type ReferenceInput } from '../apps/api/src/reference/load.js';
@@ -93,6 +93,12 @@ test('benefits and ЕГЭ requirements are normalized; OCR notes mean «not stat
   assert.equal(parseRequirement('ЕГЭ от 75 баллов по профильному предмету.').minScore, 75);
   assert.deepEqual(parseRequirement('не видно на предоставленных скриншотах'), { minScore: null, maxScore: null, text: null, known: true });
   assert.equal(parseRequirement('по решению приёмной комиссии').known, false);
+  // The 2026 delivery lists two benefits in one cell and marks ВсОШ diplomas as not needing ЕГЭ confirmation.
+  assert.deepEqual(parseBenefits('БВИ / 100 баллов'), [{ kind: 'bvi', diploma: 'any' }, { kind: 'score_100', diploma: 'any' }]);
+  assert.deepEqual(parseBenefits('БВИ / 100 баллов победителям'), [{ kind: 'bvi', diploma: 'winner' }, { kind: 'score_100', diploma: 'winner' }]);
+  assert.deepEqual(parseBenefits('БВИ'), [{ kind: 'bvi', diploma: 'any' }]);
+  assert.equal(parseBenefits('БВИ / скидка'), null);
+  assert.deepEqual(parseRequirement('Не требуется.'), { minScore: null, maxScore: null, text: REQUIREMENT_NOT_NEEDED, known: true });
 });
 
 test('level priority: RSOSH profile, then catalog verdict, then the series general level', () => {
@@ -118,10 +124,16 @@ test('bundled reference data is consistent with the catalog', () => {
   const input = readReferenceDir();
   const bundle = buildReference(input, { today });
   assert.deepEqual(bundle.issues.filter(i => i.severity === 'error'), []);
-  assert.equal(bundle.series.length, 87);
-  assert.equal(bundle.links.length, 344);
-  assert.equal(bundle.benefits.length, 611);
-  assert.equal(bundle.universities.length, 10);
+  assert.equal(bundle.series.length, 95);
+  assert.equal(bundle.links.length, 357);
+  // 611 from the first file + 1240 from vuzi_olympiad_benefits_2026 («БВИ / 100 баллов» rows give two benefits each).
+  assert.equal(bundle.benefits.length, 1851);
+  assert.equal(bundle.universities.length, 23);
+  assert.deepEqual(bundle.issues.filter(i => i.code === 'skipped_olympiad'), []);
+  const bmstu = bundle.benefits.filter(b => b.university === 'bmstu' && b.series === 'innopolis-open');
+  assert.deepEqual(bmstu.map(b => b.kind).sort(), ['bvi', 'score_100']);
+  assert.equal(bundle.benefits.find(b => b.university === 'mgimo' && b.series === 'vsosh-history')!.requirement, REQUIREMENT_NOT_NEEDED);
+  assert.equal(bundle.links.filter(l => l.series === 'vsosh-foreign-languages').length, 6);
   const byslug = new Map(bundle.series.map(s => [s.slug, s]));
   assert.equal(byslug.get('ranepa')!.profiles.get('история')!.level, 2);
   assert.equal(byslug.get('ranepa')!.generalLevel, 'III');
@@ -146,6 +158,12 @@ test('unknown names, profiles and series are errors, not silent skips', () => {
   const benefits = 'sources/vuzi_olympiad_benefits_cleaned.csv';
   const unknownName = buildReference(patch(benefits, t => t + 'ИТМО,Санкт-Петербург,Несуществующая олимпиада,БВИ,ЕГЭ от 75 баллов\n'), { today });
   assert.ok(unknownName.issues.some(i => i.code === 'unknown_olympiad' && i.message.includes('Несуществующая олимпиада')));
+  // A delivery marked skipUnknownOlympiads drops olympiads that are not in the project with a warning instead.
+  const extra = 'sources/vuzi_olympiad_benefits_2026.csv';
+  const skipped = buildReference(patch(extra, t => t + 'МИРЭА,Москва,Несуществующая олимпиада,БВИ,Не требуется.\n'), { today });
+  assert.deepEqual(skipped.issues.filter(i => i.severity === 'error'), []);
+  assert.ok(skipped.issues.some(i => i.code === 'skipped_olympiad' && i.message.includes('Несуществующая олимпиада')));
+  assert.equal(skipped.benefits.length, 1851);
   const badProfile = buildReference(patch(referenceFiles.links, t => t.replace('5285;ranepa;история;', '5285;ranepa;астрология;')), { today });
   assert.ok(badProfile.issues.some(i => i.code === 'unknown_profile'));
   const badSeries = buildReference(patch(referenceFiles.links, t => t.replace('5285;ranepa;', '5285;ranepa-x;')), { today });

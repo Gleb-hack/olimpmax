@@ -23,9 +23,9 @@
   "missingFromFile": [],
   "hiddenFromCatalog": 0,
   "reference": {
-    "referenceSha256": "435ad5b5e73629b9b7ec8af6be830f2ff0e16c136dd195ce98e59a3686e5aef5",
+    "referenceSha256": "f1a1c35fe4cf7daf9ed9792ec4e297f2c11358feb0b1f55e19ed4eaf7800d36e",
     "season": "2026/27",
-    "series": 87,
+    "series": 95,
     "seriesWithSchedule": 64,
     "scheduleQuality": {
       "ok": 35,
@@ -34,9 +34,9 @@
     },
     "seriesInRsoshList": 71,
     "rsoshProfiles": 283,
-    "universities": 10,
-    "benefits": 611,
-    "links": 344,
+    "universities": 23,
+    "benefits": 1851,
+    "links": 357,
     "linksSkipped": 0,
     "scheduleConflicts": [
       5618,
@@ -57,10 +57,10 @@
     ],
     "levels": {
       "bySource": {
+        "catalog": 35,
         "none": 338,
         "rsosh_list": 317,
-        "series": 8,
-        "catalog": 35
+        "series": 8
       },
       "changed": 325
     },
