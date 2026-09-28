@@ -20,8 +20,12 @@ EXPOSE 3001
 CMD ["node", "apps/api/dist/server.js"]
 
 # MAX bot: commands, buttons and the daily reminder mailing. Long polling, no public port.
+# The Russian Trusted Root CA is bundled so the bot can reach platform-api2.max.ru over HTTPS.
 FROM build AS bot
 ENV NODE_ENV=production
+COPY deploy/russiantrustedca.crt /usr/local/share/ca-certificates/russiantrustedca.crt
+USER root
+RUN update-ca-certificates
 USER node
 CMD ["node", "apps/bot/dist/main.js"]
 
