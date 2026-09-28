@@ -15,7 +15,7 @@ const databaseName = `olimp_test_${randomUUID().replaceAll('-', '')}`;
 const testUrl = new URL(process.env.DATABASE_URL); testUrl.pathname = '/' + databaseName;
 const connection = connectDatabase(testUrl.toString());
 const today = '2026-09-27';
-const source = readFileSync(new URL('../olimpiady.csv', import.meta.url));
+const source = readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url));
 const additions = { buffer: readFileSync(new URL(`../data/reference/${referenceFiles.additions}`, import.meta.url)), sourceFile: 'catalog-additions.csv' };
 const input = readReferenceDir();
 const reference = buildReference(input, { today });

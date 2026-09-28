@@ -13,7 +13,7 @@ if (args.some(arg => arg.startsWith('--') && !flags.includes(arg)) || args.filte
   throw new Error('Использование: db:import [путь.csv] [--replace-catalog] [--skip-reference]');
 }
 const customFile = args.find(arg => !arg.startsWith('--'));
-const file = customFile ? resolve(customFile) : fileURLToPath(new URL('../../../../olimpiady.csv', import.meta.url));
+const file = customFile ? resolve(customFile) : fileURLToPath(new URL('../../../../data/catalog/olimpiady.csv', import.meta.url));
 const buffer = await readFile(file);
 // Cards missing from the olimpiada.ru export (data/reference/catalog-additions.csv) are imported with it.
 const additionsFile = fileURLToPath(new URL(referenceFiles.additions, defaultReferenceDir));

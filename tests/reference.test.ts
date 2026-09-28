@@ -148,7 +148,7 @@ test('bundled reference data is consistent with the catalog', () => {
   assert.equal(bundle.series.filter(s => s.scheduleQuality === 'placeholder').length, 26);
   // OCR typos in the benefits file resolve through aliases.
   assert.equal(bundle.benefits.filter(b => b.series === 'defense-tech' && b.university === 'hse').length, 1);
-  const main = parseCsv(readFileSync(new URL('../olimpiady.csv', import.meta.url)));
+  const main = parseCsv(readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url)));
   const additions = parseCsv(readFileSync(new URL(`../data/reference/${referenceFiles.additions}`, import.meta.url)));
   assert.equal(additions.length, 58);
   const ids = new Set(main.map(r => r.olympiad.id));

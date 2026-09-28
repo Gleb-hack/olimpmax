@@ -25,7 +25,7 @@ test('MAX registration, profile persistence, migration and account isolation', a
   const files = readdirSync(folder).filter(f => f.endsWith('.sql')).sort();
   // Delay only the profile migration to exercise an existing user's upgrade.
   for (const file of files.filter(file => !file.startsWith('0002_'))) await connection.pool.query(readFileSync(new URL(file, folder), 'utf8'));
-  await importCsv(connection.db, readFileSync(new URL('../olimpiady.csv', import.meta.url)), 'test.csv');
+  await importCsv(connection.db, readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url)), 'test.csv');
   const legacyId = randomUUID();
   await connection.pool.query('insert into user_profiles (id, max_user_id, display_name) values ($1, $2, $3)', [legacyId, '700', 'Существующий пользователь']);
   await connection.pool.query('insert into plan_items (user_id, olympiad_id, note, tracking) values ($1, 88, $2, false)', [legacyId, 'Сохранить заметку']);

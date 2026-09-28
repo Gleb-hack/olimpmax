@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parseCsv, parseCalendar, auditCsv, normalizeSearch, headers, enrichedHeaders } from '../apps/api/src/import/csv.js';
-const source = readFileSync(new URL('../olimpiady.csv', import.meta.url));
+const source = readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url));
 
 test('all CSV records and multiline quoted content are preserved', () => {
   const rows = parseCsv(source);

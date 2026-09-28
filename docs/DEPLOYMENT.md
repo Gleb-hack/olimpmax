@@ -1,6 +1,6 @@
 # Публичный запуск Olimp в MAX
 
-Код находится в ветке [Ilya](https://github.com/Gleb-hack/olimpmax/tree/Ilya). Для работы пользователей нужен постоянно включённый сервер с PostgreSQL и HTTPS. GitHub хранит исходники; загрузка ветки сама по себе приложение не публикует.
+Код находится в ветке [main](https://github.com/Gleb-hack/olimpmax/tree/main). Для работы пользователей нужен постоянно включённый сервер с PostgreSQL и HTTPS. GitHub хранит исходники; загрузка ветки сама по себе приложение не публикует.
 
 В этой инструкции один VPS обслуживает интерфейс, API и базу. Docker Compose запускает PostgreSQL, применяет миграции, запускает API и Caddy. Caddy выдаёт HTTPS-сертификат и направляет `/api/*` в API. Данные и сертификаты сохраняются в отдельных Docker volumes.
 
@@ -20,7 +20,7 @@
 ## 2. Скачать ветку и задать настройки
 
 ```bash
-git clone --branch Ilya --single-branch https://github.com/Gleb-hack/olimpmax.git
+git clone --branch main --single-branch https://github.com/Gleb-hack/olimpmax.git
 cd olimpmax
 cp .env.production.example .env.production
 chmod 600 .env.production
@@ -110,7 +110,7 @@ docker compose --env-file .env.production -f compose.production.yaml exec -T pos
 Обновление:
 
 ```bash
-git pull --ff-only origin Ilya
+git pull --ff-only origin main
 docker compose --env-file .env.production -f compose.production.yaml build
 docker compose --env-file .env.production -f compose.production.yaml stop api web
 docker compose --env-file .env.production -f compose.production.yaml run --rm migrate
@@ -140,4 +140,4 @@ docker compose --env-file .env.production -f compose.production.yaml logs --tail
 
 В Compose API и PostgreSQL не публикуют порты наружу. `TRUST_PROXY_HOPS=1` разрешает API учитывать адрес клиента только от непосредственного прокси в частной сети или loopback; это нужно для ограничений частоты запросов. При другой сетевой схеме настройку нужно пересмотреть.
 
-Старый прототип из `main` сохранён в этой ветке в `legacy/main-prototype/` только как архив. Его сценарий публикации не запускается; текущий стек использует `compose.production.yaml`.
+Ранний HTML/Python-прототип находится в `docs/archive/prototype/` и не входит в сборку. Прежний GitHub Actions workflow, копировавший исходники в `/var/www/html/`, удалён. Текущая публикация выполняется вручную через Docker Compose по шагам выше; проверочный workflow в GitHub Actions только запускает тесты и сборку, но не обновляет сервер.

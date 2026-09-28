@@ -1,7 +1,11 @@
 {
-  "name": "olimp", "private": true, "type": "module",
+  "name": "olimp",
+  "private": true,
+  "type": "module",
   "packageManager": "pnpm@11.25.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:api": "node --watch --import tsx --env-file-if-exists=.env apps/api/src/server.ts",
@@ -23,7 +27,15 @@
     "db:stages": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/stages.ts",
     "db:reference": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/reference.ts",
     "data:check": "node --import tsx apps/api/src/scripts/check-reference.ts",
-    "db:local": "node --env-file-if-exists=.env scripts/local-db.mjs"
+    "db:local": "node --env-file-if-exists=.env scripts/local-db.mjs",
+    "check": "pnpm typecheck && pnpm test && pnpm data:check && pnpm build"
   },
-  "devDependencies": { "@types/node": "^24.0.0", "@types/pg": "^8.15.0", "drizzle-kit": "0.31.11", "esbuild": "0.28.2", "tsx": "^4.20.0", "typescript": "^5.9.0" }
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.0",
+    "drizzle-kit": "0.31.11",
+    "esbuild": "0.28.2",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
 }
