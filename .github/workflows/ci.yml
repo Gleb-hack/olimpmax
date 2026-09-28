@@ -47,3 +47,4 @@ jobs:
       - run: pnpm db:migrate
       - run: pnpm db:import
       - run: pnpm test:integration
+      - run: docker build --target web --tag olimp-web:ci .
