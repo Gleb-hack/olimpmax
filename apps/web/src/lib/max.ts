@@ -1,6 +1,8 @@
 type MaxWebApp = {
   initData?: string;
   initDataUnsafe?: { user?: { id?: number; first_name?: string; last_name?: string; photo_url?: string | null }; start_param?: string };
+  // Not in the current MAX bridge; read if a future version reports the interface theme.
+  colorScheme?: string;
   ready?: () => void;
   openLink?: (url: string) => void;
   BackButton?: { show: () => void; hide: () => void; onClick: (callback: () => void) => void; offClick: (callback: () => void) => void };

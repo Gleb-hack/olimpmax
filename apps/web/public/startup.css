@@ -6,3 +6,9 @@ body { margin: 0; background: #fff; }
 .startup-screen p { margin: 12px 0 0; color: #6b7690; font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 @keyframes startup-progress { from { transform: translateX(0); } to { transform: translateX(150%); } }
 @media (prefers-reduced-motion: reduce) { .startup-screen__progress::after { animation: none; width: 100%; opacity: .65; } }
+/* Dark theme (data-theme is set by the inline script in index.html before this screen paints): colors of styles.css tokens. */
+:root[data-theme='dark'] { color-scheme: dark; }
+:root[data-theme='dark'] body, :root[data-theme='dark'] .startup-screen { background: #0b0f14; }
+:root[data-theme='dark'] .startup-screen__progress { background: #1d1f25; }
+:root[data-theme='dark'] .startup-screen__progress::after { background: #2d5fff; }
+:root[data-theme='dark'] .startup-screen p { color: #98a2b3; }
