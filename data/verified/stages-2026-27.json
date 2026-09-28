@@ -1738,5 +1738,1475 @@
     "endsOn": "2026-10-11",
     "sourceUrl": "https://olymp.mephi.ru/engineering/about",
     "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5451,
+    "key": "2026-27-mosh-fingram-invite-registration",
+    "name": "Регистрация на пригласительный этап",
+    "kind": "registration",
+    "beginsOn": "2026-09-22",
+    "endsOn": "2026-11-03",
+    "sourceUrl": "https://mos.olimpiada.ru/schedule",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5451,
+    "key": "2026-27-mosh-fingram-invite",
+    "name": "Пригласительный этап",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-11-03",
+    "sourceUrl": "https://mos.olimpiada.ru/schedule",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 108,
+    "key": "2026-27-mosh-physics-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-15",
+    "endsOn": "2026-10-22",
+    "sourceUrl": "https://mos.olimpiada.ru/schedule",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5393,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5394,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5395,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5396,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5616,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5617,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5638,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6934,
+    "key": "2026-27-izumrud-registration-qualifying",
+    "name": "Регистрация и отборочный этап (онлайн)",
+    "kind": "registration",
+    "beginsOn": "2026-09-01",
+    "endsOn": "2027-01-19",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5393,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5394,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5395,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5396,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5616,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5617,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5638,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6934,
+    "key": "2026-27-izumrud-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-02",
+    "sourceUrl": "https://dovuz.urfu.ru/olymps/izumrud",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 169,
+    "key": "2026-27-bmstu-physics-wave-1",
+    "name": "Отборочный этап, 1 волна",
+    "kind": "competition",
+    "beginsOn": "2026-10-23",
+    "endsOn": "2026-10-25",
+    "sourceUrl": "https://olymp.bmstu.ru/ru/news/2026/09/14/raspisanie-otborochnogo-etapa-2026-2027",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 169,
+    "key": "2026-27-bmstu-physics-wave-2",
+    "name": "Отборочный этап, 2 волна",
+    "kind": "competition",
+    "beginsOn": "2026-12-05",
+    "endsOn": "2026-12-07",
+    "sourceUrl": "https://olymp.bmstu.ru/ru/news/2026/09/14/raspisanie-otborochnogo-etapa-2026-2027",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 406,
+    "key": "2026-27-bmstu-informatics-wave-1",
+    "name": "Отборочный этап, 1 волна",
+    "kind": "competition",
+    "beginsOn": "2026-10-23",
+    "endsOn": "2026-10-25",
+    "sourceUrl": "https://olymp.bmstu.ru/ru/news/2026/09/14/raspisanie-otborochnogo-etapa-2026-2027",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 406,
+    "key": "2026-27-bmstu-informatics-wave-2",
+    "name": "Отборочный этап, 2 волна",
+    "kind": "competition",
+    "beginsOn": "2026-12-05",
+    "endsOn": "2026-12-07",
+    "sourceUrl": "https://olymp.bmstu.ru/ru/news/2026/09/14/raspisanie-otborochnogo-etapa-2026-2027",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5790,
+    "key": "2026-27-bmstu-chemistry-wave-1",
+    "name": "Отборочный этап, 1 волна",
+    "kind": "competition",
+    "beginsOn": "2026-11-08",
+    "endsOn": "2026-11-08",
+    "sourceUrl": "https://olymp.bmstu.ru/ru/news/2026/09/14/raspisanie-otborochnogo-etapa-2026-2027",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5790,
+    "key": "2026-27-bmstu-chemistry-wave-2",
+    "name": "Отборочный этап, 2 волна",
+    "kind": "competition",
+    "beginsOn": "2026-11-29",
+    "endsOn": "2026-11-29",
+    "sourceUrl": "https://olymp.bmstu.ru/ru/news/2026/09/14/raspisanie-otborochnogo-etapa-2026-2027",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 168,
+    "key": "2026-27-bmstu-math-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-11-16",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.bmstu.ru/ru/news/2026/09/14/raspisanie-otborochnogo-etapa-2026-2027",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 4354,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 4355,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5178,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5296,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5418,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5758,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5822,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5872,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5873,
+    "key": "2026-27-mission-registration",
+    "name": "Регистрация участников",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-30",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 4354,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-05",
+    "endsOn": "2026-12-06",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 4355,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-05",
+    "endsOn": "2026-12-06",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5178,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-03",
+    "endsOn": "2026-12-04",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5296,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-05",
+    "endsOn": "2026-12-06",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5418,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2026-12-02",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5758,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2026-12-02",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5822,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2026-12-02",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5872,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-03",
+    "endsOn": "2026-12-04",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5873,
+    "key": "2026-27-mission-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-03",
+    "endsOn": "2026-12-04",
+    "sourceUrl": "https://www.fa.ru/for-applicants/olympiads/mission/calendar/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5428,
+    "key": "2026-27-tolstoy-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2026-12-31",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5207,
+    "key": "2026-27-tolstoy-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5443,
+    "key": "2026-27-tolstoy-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5768,
+    "key": "2026-27-tolstoy-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6971,
+    "key": "2026-27-tolstoy-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5805,
+    "key": "2026-27-tolstoy-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5846,
+    "key": "2026-27-tolstoy-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5367,
+    "key": "2026-27-innopolis-math-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-10-20",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/math",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5367,
+    "key": "2026-27-innopolis-math-round-1",
+    "name": "1-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-10-25",
+    "endsOn": "2026-10-25",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/math",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5367,
+    "key": "2026-27-innopolis-math-round-2",
+    "name": "2-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-11-29",
+    "endsOn": "2026-11-29",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/math",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5367,
+    "key": "2026-27-innopolis-math-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-03-05",
+    "endsOn": "2027-03-07",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/math",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5283,
+    "key": "2026-27-innopolis-informatics-registration",
+    "name": "Приём заявок на 1 отборочный тур",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-10-14",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/informatics",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5283,
+    "key": "2026-27-innopolis-informatics-round-1",
+    "name": "1-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-10-17",
+    "endsOn": "2026-10-18",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/informatics",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5283,
+    "key": "2026-27-innopolis-informatics-round-2",
+    "name": "2-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-11-21",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/informatics",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5283,
+    "key": "2026-27-innopolis-informatics-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-26",
+    "endsOn": "2027-02-28",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/informatics",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5770,
+    "key": "2026-27-innopolis-ai-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-01",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/ai",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5770,
+    "key": "2026-27-innopolis-ai-round-1",
+    "name": "1-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-11-07",
+    "endsOn": "2026-11-08",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/ai",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5770,
+    "key": "2026-27-innopolis-ai-round-2",
+    "name": "2-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2027-01-16",
+    "endsOn": "2027-01-17",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/ai",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5770,
+    "key": "2026-27-innopolis-ai-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-03-13",
+    "endsOn": "2027-03-14",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/ai",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5284,
+    "key": "2026-27-innopolis-robotics-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-10",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/robo",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5284,
+    "key": "2026-27-innopolis-robotics-round-1",
+    "name": "1-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-11-14",
+    "endsOn": "2026-11-15",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/robo",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5284,
+    "key": "2026-27-innopolis-robotics-round-2",
+    "name": "2-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2027-01-15",
+    "endsOn": "2027-02-05",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/robo",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5698,
+    "key": "2026-27-innopolis-infosec-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-11-11",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/cyberbez",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5698,
+    "key": "2026-27-innopolis-infosec-round-1",
+    "name": "1-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-11-14",
+    "endsOn": "2026-11-15",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/cyberbez",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5698,
+    "key": "2026-27-innopolis-infosec-round-2",
+    "name": "2-й отборочный тур (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2027-01-24",
+    "endsOn": "2027-01-24",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/cyberbez",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5698,
+    "key": "2026-27-innopolis-infosec-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-19",
+    "endsOn": "2027-02-21",
+    "sourceUrl": "https://dovuz.innopolis.university/innopolis-open/cyberbez",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 396,
+    "key": "2026-27-belchonok-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-01",
+    "endsOn": "2027-01-12",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 397,
+    "key": "2026-27-belchonok-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-01",
+    "endsOn": "2027-01-12",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 398,
+    "key": "2026-27-belchonok-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-01",
+    "endsOn": "2027-01-12",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5159,
+    "key": "2026-27-belchonok-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-01",
+    "endsOn": "2027-01-12",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5160,
+    "key": "2026-27-belchonok-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-01",
+    "endsOn": "2027-01-12",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5518,
+    "key": "2026-27-belchonok-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-01",
+    "endsOn": "2027-01-12",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 397,
+    "key": "2026-27-belchonok-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-07",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 396,
+    "key": "2026-27-belchonok-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-07",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5160,
+    "key": "2026-27-belchonok-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-07",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 398,
+    "key": "2026-27-belchonok-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-14",
+    "endsOn": "2027-02-14",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5159,
+    "key": "2026-27-belchonok-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-14",
+    "endsOn": "2027-02-14",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5518,
+    "key": "2026-27-belchonok-final",
+    "name": "Заключительный этап (очно)",
+    "kind": "competition",
+    "beginsOn": "2027-02-14",
+    "endsOn": "2027-02-14",
+    "sourceUrl": "https://dovuz.sfu.ru/abiturientu-sfu/olimpiady/belchonok/2026-2027-uchebnyy-god/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 390,
+    "key": "2026-27-rggu-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-11",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 391,
+    "key": "2026-27-rggu-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-11",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 392,
+    "key": "2026-27-rggu-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-11",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 393,
+    "key": "2026-27-rggu-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-11",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5360,
+    "key": "2026-27-rggu-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-11",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 390,
+    "key": "2026-27-rggu-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-01-27",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 391,
+    "key": "2026-27-rggu-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-01-27",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 392,
+    "key": "2026-27-rggu-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-01-27",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 393,
+    "key": "2026-27-rggu-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-01-27",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5360,
+    "key": "2026-27-rggu-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-01-27",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5360,
+    "key": "2026-27-rggu-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-21",
+    "endsOn": "2027-02-21",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 392,
+    "key": "2026-27-rggu-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-21",
+    "endsOn": "2027-02-21",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 393,
+    "key": "2026-27-rggu-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-21",
+    "endsOn": "2027-02-21",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 391,
+    "key": "2026-27-rggu-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-22",
+    "endsOn": "2027-02-22",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 390,
+    "key": "2026-27-rggu-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-22",
+    "endsOn": "2027-02-22",
+    "sourceUrl": "https://www.rsuh.ru/education/cdo/olimpiada-rggu-dlya-shkolnikov.php",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6925,
+    "key": "2026-27-formulo-qualifying",
+    "name": "Отборочный этап (заочно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-13",
+    "sourceUrl": "https://www.formulo.org/ru/olymp/2026-eco-ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5618,
+    "key": "2026-27-formulo-qualifying",
+    "name": "Отборочный этап (заочно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-13",
+    "sourceUrl": "https://www.formulo.org/ru/olymp/2026-lang-ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 223,
+    "key": "2026-27-formulo-qualifying",
+    "name": "Отборочный этап (заочно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-15",
+    "endsOn": "2026-11-05",
+    "sourceUrl": "https://www.formulo.org/ru/olymp/2026-math-ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5633,
+    "key": "2026-27-formulo-qualifying",
+    "name": "Отборочный этап (заочно)",
+    "kind": "competition",
+    "beginsOn": "2026-11-16",
+    "endsOn": "2026-11-29",
+    "sourceUrl": "https://www.formulo.org/ru/olymp/2026-phys-ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5825,
+    "key": "2026-27-ai-registration",
+    "name": "Регистрация и тренировочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-07-01",
+    "endsOn": "2026-09-20",
+    "sourceUrl": "https://ai.edu.gov.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5825,
+    "key": "2026-27-ai-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-09-21",
+    "endsOn": "2026-10-06",
+    "sourceUrl": "https://ai.edu.gov.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5825,
+    "key": "2026-27-ai-main",
+    "name": "Основной этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-14",
+    "endsOn": "2026-10-18",
+    "sourceUrl": "https://ai.edu.gov.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5825,
+    "key": "2026-27-ai-final",
+    "name": "Финал",
+    "kind": "competition",
+    "beginsOn": "2026-11-16",
+    "endsOn": "2026-11-21",
+    "sourceUrl": "https://ai.edu.gov.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5369,
+    "key": "2026-27-nto-registration",
+    "name": "Регистрация (старший трек, 8–11 классы)",
+    "kind": "registration",
+    "beginsOn": "2026-08-26",
+    "endsOn": "2026-10-22",
+    "sourceUrl": "https://ntcontest.ru/participants/schedule/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5369,
+    "key": "2026-27-nto-stage-1",
+    "name": "Этап I — индивидуальный (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-09-17",
+    "endsOn": "2026-10-23",
+    "sourceUrl": "https://ntcontest.ru/participants/schedule/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5369,
+    "key": "2026-27-nto-stage-2",
+    "name": "Этап II — командный",
+    "kind": "competition",
+    "beginsOn": "2026-11-05",
+    "endsOn": "2026-12-11",
+    "sourceUrl": "https://ntcontest.ru/participants/schedule/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 4,
+    "key": "2026-27-turlom-registration",
+    "name": "Регистрация на осенний турнир",
+    "kind": "registration",
+    "beginsOn": null,
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://турлом.олимп.рф/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 4,
+    "key": "2026-27-turlom-autumn",
+    "name": "Осенний турнир (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-10-04",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://турлом.олимп.рф/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5008,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5009,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5285,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5411,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5412,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5415,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5772,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6962,
+    "key": "2026-27-ranepa-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-09-16",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5008,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5009,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5285,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5411,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5412,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5415,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5772,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6962,
+    "key": "2026-27-ranepa-qualifying",
+    "name": "Отборочный этап",
+    "kind": "competition",
+    "beginsOn": "2026-10-20",
+    "endsOn": "2026-11-18",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5008,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5009,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5285,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5411,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5412,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5415,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5772,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6962,
+    "key": "2026-27-ranepa-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-01-30",
+    "endsOn": "2027-02-11",
+    "sourceUrl": "https://www.ranepa.ru/olymp/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5477,
+    "key": "2026-27-granit-qualifying",
+    "name": "Отборочный тур (все профили)",
+    "kind": "competition",
+    "beginsOn": "2026-10-05",
+    "endsOn": "2027-01-13",
+    "sourceUrl": "https://ogn.spmi.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5480,
+    "key": "2026-27-granit-qualifying",
+    "name": "Отборочный тур (все профили)",
+    "kind": "competition",
+    "beginsOn": "2026-10-05",
+    "endsOn": "2027-01-13",
+    "sourceUrl": "https://ogn.spmi.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5481,
+    "key": "2026-27-granit-qualifying",
+    "name": "Отборочный тур (все профили)",
+    "kind": "competition",
+    "beginsOn": "2026-10-05",
+    "endsOn": "2027-01-13",
+    "sourceUrl": "https://ogn.spmi.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 199,
+    "key": "2026-27-kutafin-registration",
+    "name": "Регистрация",
+    "kind": "registration",
+    "beginsOn": "2026-10-01",
+    "endsOn": "2027-01-11",
+    "sourceUrl": "https://msal.ru/content/abiturientam/olimpiady-i-konkursy/kutafinskaya-olimpiada-shkolnikov-po-pravu/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 199,
+    "key": "2026-27-kutafin-qualifying",
+    "name": "Отборочный этап (дистанционно; 8–10 классы — 16 января, 11 класс — 17 января)",
+    "kind": "competition",
+    "beginsOn": "2027-01-16",
+    "endsOn": "2027-01-17",
+    "sourceUrl": "https://msal.ru/content/abiturientam/olimpiady-i-konkursy/kutafinskaya-olimpiada-shkolnikov-po-pravu/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 199,
+    "key": "2026-27-kutafin-final",
+    "name": "Заключительный этап (очно; 8–10 классы — 27 февраля, 11 класс — 28 февраля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-27",
+    "endsOn": "2027-02-28",
+    "sourceUrl": "https://msal.ru/content/abiturientam/olimpiady-i-konkursy/kutafinskaya-olimpiada-shkolnikov-po-pravu/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5428,
+    "key": "2026-27-tolstoy-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2026-12-31",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5207,
+    "key": "2026-27-tolstoy-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5443,
+    "key": "2026-27-tolstoy-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5768,
+    "key": "2026-27-tolstoy-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 6971,
+    "key": "2026-27-tolstoy-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5805,
+    "key": "2026-27-tolstoy-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
+  },
+  {
+    "olympiadId": 5846,
+    "key": "2026-27-tolstoy-qualifying",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-12-01",
+    "endsOn": "2027-01-01",
+    "sourceUrl": "https://olymp.tsput.ru/",
+    "verifiedAt": "2026-09-28T22:25:00+03:00"
   }
 ]
