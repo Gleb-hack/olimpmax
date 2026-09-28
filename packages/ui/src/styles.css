@@ -509,7 +509,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { width: 100%; max-width: 1100px; min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
+.welcome-page { width: 100%; max-width: 800px; min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
 .welcome-art { position: absolute; inset: 0; overflow: hidden; }
 /* Anchor the artwork above the actions so the mascot feet retain clearance on short screens. */
 .welcome-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center calc(100% - 48px); }
@@ -643,13 +643,13 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 .university-series li a:hover { color: var(--olimp-blue); }
 .university-page .olympiad-detail-row dd .text-link { display: inline-flex; align-items: center; gap: 5px; }
 .university-page .button.button.olympiad-detail__track { margin-top: 20px; }
-/* Desktop wide layout stays within 1100px, including the width toggle. Phones never get it. */
+/* Desktop wide layout stays within 800px, including the width toggle. Phones never get it. */
 .width-toggle { display: none; }
 @media (min-width: 720px) {
-  .width-toggle { position: fixed; z-index: 7; top: 16px; right: max(16px, calc((100vw - 1100px) / 2 + 16px)); display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #4a5263; box-shadow: 0 0 0 1px #e3e7ee, 0 6px 20px #253a7014; }
+  .width-toggle { position: fixed; z-index: 7; top: 16px; right: max(16px, calc((100vw - 800px) / 2 + 16px)); display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #4a5263; box-shadow: 0 0 0 1px #e3e7ee, 0 6px 20px #253a7014; }
   .width-toggle:hover, .width-toggle[aria-pressed=true] { color: var(--olimp-blue); }
-  .app-shell--wide { max-width: min(1100px, 100%); }
-  .app-shell--wide .bottom-nav { width: min(1100px, 100%); }
+  .app-shell--wide { max-width: min(800px, 100%); }
+  .app-shell--wide .bottom-nav { width: min(800px, 100%); }
   .app-shell--wide .page { padding-inline: 28px; }
   .app-shell--wide .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .app-shell--wide .catalog-list, .app-shell--wide .plan-card-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
