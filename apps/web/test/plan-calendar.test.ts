@@ -83,3 +83,13 @@ test('the organizing university is recognized by short or full name and goes fir
   ], ['Московский физико-технический институт']);
   assert.deepEqual(groups.map(g => [g.name, g.organizer]), [['МФТИ', true], ['ИТМО', false]]);
 });
+
+test('the plan card tile shows the next stage date even without a tracked next event', async () => {
+  const { planCardDate } = await import('../src/features/plan/plan-card-format.ts');
+  const base = { olympiad: { upcomingStage: { date: '2026-10-12' } }, calendarEvents: [] } as unknown as PlanEntry;
+  assert.equal(planCardDate(base, null, '2026-09-28'), '2026-10-12');
+  assert.equal(planCardDate(base, { date: '2026-10-01' } as never, '2026-09-28'), '2026-10-01');
+  const fromCalendar = { olympiad: { upcomingStage: { date: '2026-09-01' } }, calendarEvents: [event('ends', '2026-11-01'), event('starts', '2026-10-20')] } as unknown as PlanEntry;
+  assert.equal(planCardDate(fromCalendar, null, '2026-09-28'), '2026-10-20');
+  assert.equal(planCardDate({ olympiad: {}, calendarEvents: [] } as unknown as PlanEntry, null, '2026-09-28'), null);
+});

@@ -16,3 +16,14 @@ export function eventLabel(entry: Pick<PlanEntry, 'stages'>, event: PlanCardEven
   if (stage?.kind === 'registration') return event.kind === 'ends' ? 'Дедлайн регистрации' : 'Начало регистрации';
   return event.kind === 'ends' ? 'Окончание этапа' : 'Начало этапа';
 }
+
+/**
+ * The day shown in the card's date tile: the tracked next event, otherwise the stage the countdown counts to,
+ * otherwise the first upcoming date of the plan calendar. Null only when the olympiad has no future dates at all.
+ */
+export function planCardDate(entry: Pick<PlanEntry, 'olympiad' | 'calendarEvents'>, next: PlanCardEvent | null | undefined, today: string) {
+  if (next) return next.date;
+  const upcoming = entry.olympiad.upcomingStage?.date;
+  if (upcoming && upcoming >= today) return upcoming;
+  return (entry.calendarEvents ?? []).map(event => event.date).filter(date => date >= today).sort()[0] ?? null;
+}
