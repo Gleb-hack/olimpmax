@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button, Notice, Icon } from '@olimp/ui';
 import type { Olympiad } from '../../lib/api';
 import { usePlanActions } from '../../lib/queries';
@@ -8,6 +8,7 @@ import { OlympiadMeta, OlympiadStatus, OlympiadTags, StageCountdown } from './Ol
 
 export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }: { item: Olympiad; saved: boolean; tracking?: boolean; backTo?: string; returnTo?: string }) {
   const mutation = usePlanActions();
+  const navigate = useNavigate();
   const selected = useUI(state => state.comparisonIds);
   const toggle = useUI(state => state.toggleComparison);
   const checked = selected.includes(item.id);
@@ -20,9 +21,12 @@ export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }:
       <StageCountdown item={item} />
     </div>
     <div className="card-actions"><label className={`compare-check ${checked ? 'is-checked' : ''}`}><input type="checkbox" checked={checked} onChange={() => toggle(item.id)} /><span className="compare-check__box" aria-hidden="true">{checked && <Icon name="check" size={11} />}</span><span>{checked ? 'Выбрано' : 'Сравнить'}</span></label>
-      <Button size="small" className={saved && tracking ? 'tracking-button--saved' : ''} variant={saved && tracking ? 'secondary' : 'primary'} aria-pressed={saved && tracking} disabled={mutation.isPending} onClick={() => mutation.mutate(saved ? { id: item.id, action: 'patch', patch: { tracking: !tracking } } : { id: item.id, action: 'save' })}>
-        {saved && tracking && <Icon name="check" size={13} />}{mutation.isPending ? 'Сохраняем…' : saved && tracking ? 'Отслеживается' : 'Отслеживать'}
-      </Button>
+      {/* Not saved → «Отслеживать»; tracked → «Отслеживается» (a tap pauses it); paused → «В плане», which opens the olympiad in «Мой план». */}
+      {saved && !tracking ? <Button size="small" variant="secondary" className="plan-button" onClick={() => navigate(`/plan?olympiad=${item.id}`, { state: backTo?.startsWith('/catalog') ? { backTo } : undefined })}>
+        <Icon name="calendar" size={13} />В плане
+      </Button> : <Button size="small" className={saved ? 'tracking-button--saved' : ''} variant={saved ? 'secondary' : 'primary'} aria-pressed={saved} disabled={mutation.isPending} onClick={() => mutation.mutate(saved ? { id: item.id, action: 'patch', patch: { tracking: false } } : { id: item.id, action: 'save' })}>
+        {saved && <Icon name="check" size={13} />}{mutation.isPending ? 'Сохраняем…' : saved ? 'Отслеживается' : 'Отслеживать'}
+      </Button>}
     </div>
     {mutation.isError && <Notice tone="error">{mutation.error.message}</Notice>}
   </article>;

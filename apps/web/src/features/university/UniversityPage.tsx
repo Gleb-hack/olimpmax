@@ -23,7 +23,7 @@ function SeriesCard({ card, backTo, currentId }: { card: UniversitySeries; backT
   const id = `university-series-${card.slug}`;
   const copy = <>
     <span className="university-benefit__avatar" aria-hidden="true" data-length={card.initials.length > 2 ? 'long' : undefined}>{card.initials}</span>
-    <span className="university-benefit__copy"><strong>{card.name}{card.current ? <em className="university-benefit__badge">эта олимпиада</em> : card.own && <em className="university-benefit__badge">олимпиада вуза</em>}</strong><span>{card.benefit}</span></span>
+    <span className="university-benefit__copy"><strong>{card.name}</strong><span>{card.benefit}</span></span>
   </>;
   // One catalog card: go straight to it. Several (one per subject): open the list. None: nothing to open.
   if (single) return <li className="university-benefit"><Link className="university-benefit__head" to={`/olympiads/${single.id}`} state={{ backTo, historyBack: true }}>

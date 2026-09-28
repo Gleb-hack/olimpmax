@@ -5,6 +5,7 @@ import { Icon, type IconName } from './Icon';
 
 export { Icon, type IconName } from './Icon';
 export { Select } from './Select';
+export { Combobox, highlightWords, type ComboboxGroup } from './Combobox';
 
 export function Button({ children, variant = 'primary', className = '', ...props }: Omit<React.ComponentProps<typeof MaxButton>, 'variant'> & { variant?: 'primary' | 'secondary' | 'danger' }) {
   return <MaxButton {...props} innerClassNames={{ content: 'olimp-button-content' }} className={`button button--${variant} ${className}`}>{children}</MaxButton>;

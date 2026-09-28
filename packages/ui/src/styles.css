@@ -656,3 +656,24 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 /* University logos (public/logos/universities): a square tile clipped by the avatar's rounded corners. */
 .university-benefit__avatar.has-logo, .university-hero__avatar.has-logo { overflow: hidden; background: #fff; box-shadow: 0 0 0 1px #e3e7ee; }
 .university-benefit__avatar.has-logo img, .university-hero__avatar.has-logo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Combobox: a text field with a list of suggestions under it (the region in the profile). Same look as the Select menu. */
+.combobox { position: relative; min-width: 0; }
+.combobox__control { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px 0 12px; background: #fff; border: 1px solid var(--olimp-border); border-radius: 12px; transition: border-color .15s, box-shadow .15s; }
+.combobox__control > svg:first-child { color: var(--olimp-blue); }
+.combobox__control:hover { border-color: #ced7f8; }
+.combobox.is-open .combobox__control, .combobox__control:focus-within { border-color: #8ca4ff; box-shadow: 0 0 0 3px #315bff14; }
+.combobox.is-invalid .combobox__control { border-color: #e6a2a8; box-shadow: 0 0 0 3px #d1383814; }
+.field .combobox__control input, .combobox__control input { flex: 1; min-width: 0; min-height: 42px; padding: 0; border: 0; outline: none; background: transparent; box-shadow: none; color: #303749; font: inherit; font-size: 13px; }
+.combobox__control input::placeholder { color: #9aa3b6; }
+.combobox__clear { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; color: #8d97aa; }
+.combobox__clear:hover { background: #f1f3f8; color: #4a5263; }
+.combobox__chevron { color: var(--olimp-icon-muted); transition: transform .18s; }
+.combobox.is-open .combobox__chevron { color: var(--olimp-blue); transform: rotate(180deg); }
+.combobox__menu { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 8px); max-height: min(300px, 55dvh); overflow-y: auto; overscroll-behavior: contain; padding: 4px 7px 7px; background: #fff; border: 1px solid #e6eaf3; border-radius: 18px; box-shadow: 0 14px 40px #2435681a, 0 3px 10px #24356808; animation: select-appear .14s ease-out; }
+.combobox__group { position: sticky; top: -4px; z-index: 1; margin: 0 -7px; padding: 10px 16px 6px; background: #fff; color: #858d9e; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
+.combobox__option { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; margin-bottom: 2px; padding: 9px 11px; border-radius: 10px; color: #343d50; font-size: 13px; line-height: 1.35; cursor: pointer; user-select: none; }
+.combobox__option.is-active { background: #f4f6fc; }
+.combobox__option.is-selected { color: var(--olimp-blue); background: #edf1ff; font-weight: 550; }
+.combobox__option mark { background: none; color: var(--olimp-blue); font-weight: 650; }
+.field > label { font-size: 12px; font-weight: 550; }
+.field__error { color: #b33c46; font-size: 11px; }
