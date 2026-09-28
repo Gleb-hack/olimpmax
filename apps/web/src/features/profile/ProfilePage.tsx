@@ -6,11 +6,15 @@ import { max } from '../../lib/max';
 import { useSession } from '../../lib/session';
 import { profileGradeLabel } from '../../lib/format';
 import { ProfileAvatar } from './ProfileAvatar';
+import { useTheme, type ThemePreference } from '../../lib/theme';
+
+const themeOptions: { value: ThemePreference; label: string }[] = [{ value: 'light', label: 'Светлая' }, { value: 'dark', label: 'Тёмная' }, { value: 'system', label: 'Системная' }];
 
 export function ProfilePage() {
   const navigate = useNavigate();
   const { profile, storageError, saving, legacy, importLegacy } = useProfile();
   const { logout } = useSession();
+  const { preference, setPreference } = useTheme();
   const filters = useFilters();
   const grade = profileGradeLabel(profile.grade);
   const selected = filters.data?.subjects.filter(subject => profile.subjects.includes(subject.id)) ?? [];
@@ -30,6 +34,9 @@ export function ProfilePage() {
     </div>
     <Button className="full-width profile-edit-button" onClick={() => navigate('/profile/edit')}><Icon name="edit" size={15} />Редактировать профиль</Button>
     <div className="settings-list profile-links"><SettingsRow icon="shield" tone="green" title="Данные и конфиденциальность" subtitle="Управление данными" onClick={() => navigate('/profile/privacy')} /><SettingsRow icon="help-circle" title="Помощь и FAQ" subtitle="Ответы на частые вопросы" onClick={() => navigate('/profile/help')} /><SettingsRow icon="graduation-cap" tone="amber" title="Вопросы по олимпиадам" subtitle="Участие, БВИ, льготы и дипломы" onClick={() => navigate('/profile/olympiad-faq')} /></div>
+    <section className="panel theme-picker"><h2 id="theme-picker-title">Тема оформления</h2><div className="segmented segmented--fill" role="radiogroup" aria-labelledby="theme-picker-title">{themeOptions.map(option =>
+      <button key={option.value} type="button" role="radio" aria-checked={preference === option.value} className={preference === option.value ? 'is-active' : ''} onClick={() => setPreference(option.value)}>{option.label}</button>)}
+    </div></section>
     <button className="profile-signout" onClick={() => { logout(); navigate('/welcome', { replace: true }); }}>Выйти из аккаунта</button>{storageError && <Notice tone="error">{storageError}</Notice>}
   </>;
 }

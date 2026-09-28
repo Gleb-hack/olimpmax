@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Icon } from '@olimp/ui';
 import type { Olympiad } from '../../lib/api';
 import { calendarLabels, formats, gradeLabel, levelLabel, stageCountdown } from '../../lib/format';
@@ -25,7 +26,7 @@ export function OlympiadStatus({ item }: { item: Olympiad }) {
   const label = item.statusRaw?.trim() || calendarLabels[item.calendarState];
   if (/не указан/i.test(label)) return null;
   const hue = statusHues[label] ?? [...label].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) % 360, 0);
-  return <span className="badge" style={{ backgroundColor: `hsl(${hue} 58% 92%)`, color: `hsl(${hue} 32% 33%)` }}>{label}</span>;
+  return <span className="badge badge--status" style={{ '--badge-hue': hue } as CSSProperties}>{label}</span>;
 }
 
 export function OlympiadMeta({ item }: { item: Olympiad }) {
