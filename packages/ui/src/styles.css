@@ -2,7 +2,7 @@
 :root {
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #171a21;
-  background: #eef0f5;
+  background: #fff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -24,7 +24,7 @@
 }
 * { box-sizing: border-box; scrollbar-width: none; }
 *::-webkit-scrollbar { display: none; width: 0; height: 0; }
-body { margin: 0; min-width: 0; font-size: 14px; line-height: 1.45; }
+body { margin: 0; min-width: 0; background: #fff; font-size: 14px; line-height: 1.45; }
 /* The mini-app has a fixed mobile layout: no pinch or double-tap zoom (JS in lib/zoom.ts covers iOS). */
 html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* iOS zooms into focused fields smaller than 16px; enlarge them only on iOS. */
@@ -504,12 +504,12 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .subject-choice.is-selected .subject-choice__check { background: var(--olimp-blue); border-color: var(--olimp-blue); color: #fff; }
 .subject-choice:has(input:focus-visible) { outline: 2px solid #819cff; outline-offset: -2px; }
 .subjects-dialog .button { flex-shrink: 0; }
-@media (min-width: 600px) { .app-shell { box-shadow: 0 0 0 1px #e5e8ee, 0 12px 80px #253a7010; } .page { padding-top: 32px; } }
+@media (min-width: 600px) { .page { padding-top: 32px; } }
 @media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { width: 100%; max-width: none; min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
+.welcome-page { width: 100%; max-width: 1100px; min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
 .welcome-art { position: absolute; inset: 0; overflow: hidden; }
 /* Anchor the artwork above the actions so the mascot feet retain clearance on short screens. */
 .welcome-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center calc(100% - 48px); }
@@ -643,13 +643,13 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 .university-series li a:hover { color: var(--olimp-blue); }
 .university-page .olympiad-detail-row dd .text-link { display: inline-flex; align-items: center; gap: 5px; }
 .university-page .button.button.olympiad-detail__track { margin-top: 20px; }
-/* Wide (tablet) layout on a desktop screen: the toggle sits in the free space beside the app. Phones never get it. */
+/* Desktop wide layout stays within 1100px, including the width toggle. Phones never get it. */
 .width-toggle { display: none; }
 @media (min-width: 720px) {
-  .width-toggle { position: fixed; z-index: 7; top: 16px; right: 16px; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #4a5263; box-shadow: 0 0 0 1px #e3e7ee, 0 6px 20px #253a7014; }
+  .width-toggle { position: fixed; z-index: 7; top: 16px; right: max(16px, calc((100vw - 1100px) / 2 + 16px)); display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #4a5263; box-shadow: 0 0 0 1px #e3e7ee, 0 6px 20px #253a7014; }
   .width-toggle:hover, .width-toggle[aria-pressed=true] { color: var(--olimp-blue); }
-  .app-shell--wide { max-width: min(880px, calc(100% - 144px)); }
-  .app-shell--wide .bottom-nav { width: min(880px, calc(100% - 144px)); }
+  .app-shell--wide { max-width: min(1100px, 100%); }
+  .app-shell--wide .bottom-nav { width: min(1100px, 100%); }
   .app-shell--wide .page { padding-inline: 28px; }
   .app-shell--wide .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .app-shell--wide .catalog-list, .app-shell--wide .plan-card-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
