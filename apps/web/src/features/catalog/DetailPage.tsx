@@ -85,7 +85,6 @@ export function DetailPage() {
       </div></details>}
       {benefits && <UniversityBenefits groups={universityBenefits(benefits.items, item.organizers)} note={benefits.note} olympiadId={item.id} />}
       {contacts.length > 0 && <section className="olympiad-detail__about"><h2>Контакты</h2><ul className="contact-list">{contacts.map((contact, index) => <ContactItem key={index} contact={contact} />)}</ul></section>}
-      <button className="olympiad-detail__source" onClick={() => max.openExternal(item.sourceUrl)}>Подробнее об олимпиаде<Icon name="external-link" size={14} /></button>
     </>}
   </div>;
 }

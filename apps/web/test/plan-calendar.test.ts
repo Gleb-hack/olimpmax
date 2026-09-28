@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { dayKey, monthGrid, monthTitle, planCalendarItems, shiftMonth, soonCount, visibleItems } from '../src/features/plan/calendar-model.ts';
+import { dayKey, monthGrid, monthTitle, planCalendarItems, planCalendarRanges, rangeDays, rangeTitle, shiftMonth, soonCount, visibleItems } from '../src/features/plan/calendar-model.ts';
 import { isOrganizer, universityBenefits, universityInitials } from '../src/features/catalog/detail-format.ts';
 import type { PlanEntry } from '../src/lib/api.ts';
 
@@ -37,6 +37,22 @@ test('calendar lists tracked olympiads only, with readable labels, and filters b
   assert.equal(soonCount(entries, '2026-10-25'), 1); assert.equal(soonCount(entries, '2026-09-28'), 0);
 });
 
+test('a stage with a start and an end covers every day between them', () => {
+  const items = planCalendarItems([entry(7, 'ВсОШ по химии', true, [event('starts', '2026-10-12', 'competition', 'Школьный этап'), event('ends', '2026-10-16', 'competition', 'Школьный этап'), event('ends', '2026-11-01', 'registration', 'Регистрация')])]);
+  const ranges = planCalendarRanges(items);
+  assert.deepEqual(ranges.map(r => [r.start, r.end, r.name]), [['2026-10-12', '2026-10-16', 'Школьный этап']]);
+  const days = rangeDays(ranges);
+  assert.deepEqual([...days.keys()].sort(), ['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15', '2026-10-16']);
+  assert.deepEqual(days.get('2026-10-12'), { tone: 'competition', start: true, end: false });
+  assert.deepEqual(days.get('2026-10-14'), { tone: 'competition', start: false, end: false });
+  assert.deepEqual(days.get('2026-10-16'), { tone: 'competition', start: false, end: true });
+  assert.equal(rangeTitle('2026-10-12', '2026-10-16'), '12–16 октября');
+  assert.equal(rangeTitle('2026-09-30', '2026-10-02'), '30 сентября – 2 октября');
+  const middle = visibleItems(items, { year: 2026, month: 10 }, '2026-09-28', '2026-10-14', ranges);
+  assert.deepEqual(middle.items.map(i => i.label), ['Школьный этап: идёт, 12–16 октября']);
+  assert.deepEqual(visibleItems(items, { year: 2026, month: 10 }, '2026-09-28', '2026-10-12', ranges).items.map(i => i.label), ['Школьный этап: начало']);
+});
+
 test('«Вузы с льготами»: one card per university, БВИ first, initials like the Figma avatar', () => {
   assert.equal(universityInitials('МФТИ'), 'МФ');
   assert.equal(universityInitials('НИУ ВШЭ'), 'ВШ');
@@ -66,4 +82,14 @@ test('the organizing university is recognized by short or full name and goes fir
     { university: mipt, kind: 'bvi', diploma: 'any', minScore: 75, maxScore: null, requirement: 'x' },
   ], ['Московский физико-технический институт']);
   assert.deepEqual(groups.map(g => [g.name, g.organizer]), [['МФТИ', true], ['ИТМО', false]]);
+});
+
+test('the plan card tile shows the next stage date even without a tracked next event', async () => {
+  const { planCardDate } = await import('../src/features/plan/plan-card-format.ts');
+  const base = { olympiad: { upcomingStage: { date: '2026-10-12' } }, calendarEvents: [] } as unknown as PlanEntry;
+  assert.equal(planCardDate(base, null, '2026-09-28'), '2026-10-12');
+  assert.equal(planCardDate(base, { date: '2026-10-01' } as never, '2026-09-28'), '2026-10-01');
+  const fromCalendar = { olympiad: { upcomingStage: { date: '2026-09-01' } }, calendarEvents: [event('ends', '2026-11-01'), event('starts', '2026-10-20')] } as unknown as PlanEntry;
+  assert.equal(planCardDate(fromCalendar, null, '2026-09-28'), '2026-10-20');
+  assert.equal(planCardDate({ olympiad: {}, calendarEvents: [] } as unknown as PlanEntry, null, '2026-09-28'), null);
 });

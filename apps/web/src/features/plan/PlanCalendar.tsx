@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Icon } from '@olimp/ui';
 import type { PlanEntry } from '../../lib/api';
 import { dateParts, moscowToday } from '../../lib/format';
-import { dayKey, dayTitle, monthGrid, monthOf, monthTitle, planCalendarItems, shiftMonth, visibleItems, type CalendarItem, type MonthRef } from './calendar-model';
+import { dayKey, dayTitle, monthGrid, monthOf, monthTitle, ongoingItems, planCalendarItems, planCalendarRanges, rangeDays, shiftMonth, visibleItems, type CalendarItem, type MonthRef } from './calendar-model';
 
 const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
@@ -26,7 +26,9 @@ export function PlanCalendar({ entries, onOpen }: { entries: PlanEntry[]; onOpen
     for (const item of items) map.set(item.date, [...map.get(item.date) ?? [], item]);
     return map;
   }, [items]);
-  const list = visibleItems(items, shown, today, selected);
+  const ranges = useMemo(() => planCalendarRanges(items), [items]);
+  const periods = useMemo(() => rangeDays(ranges), [ranges]);
+  const list = visibleItems(items, shown, today, selected, ranges);
   // The first event after the shown month, to jump to when this month has nothing left.
   const next = items.find(item => item.date >= today && item.date > dayKey(shown, 31));
   const go = (delta: number) => { setShown(month => shiftMonth(month, delta)); setSelected(null); };
@@ -46,9 +48,12 @@ export function PlanCalendar({ entries, onOpen }: { entries: PlanEntry[]; onOpen
           const events = byDay.get(key) ?? [];
           const tones = [...new Set(events.map(event => event.tone))];
           const tone = tones.includes('registration') ? 'registration' : tones[0];
-          const label = `${dayTitle(key)}${events.length ? `: ${events.map(event => `${event.title} — ${event.label}`).join('; ')}` : ''}`;
-          return <span key={column} role="gridcell"><button type="button" aria-label={label} aria-pressed={selected === key}
-            className={['calendar-day', tone ? `calendar-day--marked calendar-tone--${tone}` : '', key === today ? 'calendar-day--today' : '', key < today ? 'calendar-day--past' : '', selected === key ? 'calendar-day--selected' : ''].filter(Boolean).join(' ')}
+          const period = periods.get(key);
+          const described = [...events, ...ongoingItems(ranges, key)];
+          const label = `${dayTitle(key)}${described.length ? `: ${described.map(event => `${event.title} — ${event.label}`).join('; ')}` : ''}`;
+          const cell = period ? ['calendar-cell--range', `calendar-tone--${period.tone}`, period.start ? 'calendar-cell--range-start' : '', period.end ? 'calendar-cell--range-end' : '', key < today ? 'calendar-cell--past' : ''].filter(Boolean).join(' ') : undefined;
+          return <span key={column} role="gridcell" className={cell}><button type="button" aria-label={label} aria-pressed={selected === key}
+            className={['calendar-day', tone ? `calendar-day--marked calendar-tone--${tone}` : '', period && !tone ? 'calendar-day--in-range' : '', period && tone && (period.start || period.end) && !(period.start && period.end) ? 'calendar-day--range-edge' : '', key === today ? 'calendar-day--today' : '', key < today ? 'calendar-day--past' : '', selected === key ? 'calendar-day--selected' : ''].filter(Boolean).join(' ')}
             onClick={() => setSelected(selected === key ? null : key)}>
             <span className="calendar-day__number">{day}</span>
             {tones.length > 0 && <span className="calendar-day__dots" aria-hidden="true">{tones.map(value => <i key={value} className={`calendar-tone--${value}`} />)}</span>}

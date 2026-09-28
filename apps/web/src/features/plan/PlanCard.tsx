@@ -1,13 +1,14 @@
 import { Icon } from '@olimp/ui';
 import type { PlanEntry } from '../../lib/api';
-import { dateParts, formatDay, formats, scheduleLabel } from '../../lib/format';
+import { dateParts, formatDay, formats, moscowToday, scheduleLabel } from '../../lib/format';
 import { OlympiadTags, StageCountdown } from '../catalog/OlympiadSummary';
-import { eventLabel, eventTiming, type PlanCardEvent } from './plan-card-format';
+import { eventLabel, eventTiming, planCardDate, type PlanCardEvent } from './plan-card-format';
 
 export function PlanCard({ entry, event, onOpen }: { entry: PlanEntry; event?: PlanCardEvent; onOpen: () => void }) {
   const item = entry.olympiad;
   const next = entry.tracking ? event ?? item.nextEvent : null;
-  const parts = next ? dateParts(next.date) : null;
+  const tileDate = entry.tracking ? planCardDate(entry, next, moscowToday()) : null;
+  const parts = tileDate ? dateParts(tileDate) : null;
   const timing = next ? eventTiming(next.date) : null;
   const subtitle = event?.name || item.organizers?.join(', ');
   const noDate = scheduleLabel({ ...item, calendarRaw: entry.calendarRaw });
