@@ -140,4 +140,4 @@ docker compose --env-file .env.production -f compose.production.yaml logs --tail
 
 В Compose API и PostgreSQL не публикуют порты наружу. `TRUST_PROXY_HOPS=1` разрешает API учитывать адрес клиента только от непосредственного прокси в частной сети или loopback; это нужно для ограничений частоты запросов. При другой сетевой схеме настройку нужно пересмотреть.
 
-Ранний HTML/Python-прототип находится в `docs/archive/prototype/` и не входит в сборку. Прежний GitHub Actions workflow, копировавший исходники в `/var/www/html/`, удалён. Текущая публикация выполняется вручную через Docker Compose по шагам выше; проверочный workflow в GitHub Actions только запускает тесты и сборку, но не обновляет сервер.
+Публикация выполняется вручную через Docker Compose по шагам выше; проверочный workflow в GitHub Actions только запускает тесты и сборку, но не обновляет сервер.
