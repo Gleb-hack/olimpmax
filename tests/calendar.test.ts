@@ -23,7 +23,7 @@ test('Moscow day boundary, year boundary and leap-year arithmetic', () => {
   assert.equal(addDays('2028-02-28', 1), '2028-02-29');
 });
 test('contracts reject invalid dates, impossible order, unsupported filters and excessive pages', () => {
-  const valid = { olympiadId: 88, key: 'test', name: 'test', kind: 'competition', beginsOn: '2026-10-01', endsOn: '2026-10-02', sourceUrl: 'https://example.org', verifiedAt: '2026-09-22T00:00:00Z', verifiedBy: 'Тест' };
+  const valid = { olympiadId: 88, key: 'test', name: 'test', kind: 'competition', beginsOn: '2026-10-01', endsOn: '2026-10-02', sourceUrl: 'https://example.org', verifiedAt: '2026-09-22T00:00:00Z' };
   assert.equal(VerifiedStagesFile.safeParse([valid]).success, true);
   assert.equal(VerifiedStagesFile.safeParse([{ ...valid, beginsOn: '2026-02-30' }]).success, false);
   assert.equal(VerifiedStagesFile.safeParse([{ ...valid, beginsOn: '2026-10-03' }]).success, false);
@@ -106,4 +106,23 @@ test('plan calendar: starts and ends of ranges, deadlines and one-day stages, wi
   // Verified stages keep exact dates: one day or start and end.
   assert.deepEqual(scheduleEvents([{ ...stage, beginsOn: '2026-10-05', endsOn: '2026-10-05' }], { scheduleSource: 'catalog', statusRaw: '', calendarState: 'verified', anchor: '2026-09-24' })
     .map(e => [e.kind, e.date, e.estimated]), [['day', '2026-10-05', false]]);
+});
+
+test('a verified date replaces the catalog estimate of the same moment; other catalog stages stay', () => {
+  const verified = (name: string, kind: 'registration' | 'competition', beginsOn: string | null, endsOn: string | null) =>
+    ({ ...stage, id: randomUUID(), name, kind, beginsOn, endsOn });
+  const events = (stages: ReturnType<typeof csv>[]) =>
+    scheduleEvents(stages, { scheduleSource: 'catalog', statusRaw: 'Этап запланирован', calendarState: 'verified', anchor: '2026-09-24' })
+      .map(e => [e.name, e.kind, e.date, e.estimated]);
+  assert.deepEqual(events([
+    csv('Регистрация', 'До 7 сен', 'registration'), verified('Регистрация на 1 тур', 'registration', '2026-09-07', '2026-10-10'),
+    csv('Отборочный этап', '1—2 ноя'), verified('1 тур', 'competition', '2026-11-03', '2026-11-03'),
+    csv('Интернет-тур', '20 окт'), verified('Интернет-тур (онлайн)', 'competition', '2026-11-09', '2026-12-09'),
+    csv('Финал', '14 фев'),
+  ]), [
+    ['Регистрация на 1 тур', 'starts', '2026-09-07', false], ['Регистрация на 1 тур', 'ends', '2026-10-10', false],
+    ['1 тур', 'day', '2026-11-03', false],
+    ['Интернет-тур (онлайн)', 'starts', '2026-11-09', false], ['Интернет-тур (онлайн)', 'ends', '2026-12-09', false],
+    ['Финал', 'day', '2027-02-14', true],
+  ]);
 });

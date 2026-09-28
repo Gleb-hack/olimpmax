@@ -1,0 +1,1742 @@
+[
+  {
+    "olympiadId": 74,
+    "key": "2026-27-vsosh-school-sirius-physics",
+    "name": "Школьный этап на платформе «Сириус» (день зависит от группы региона)",
+    "kind": "competition",
+    "beginsOn": "2026-09-29",
+    "endsOn": "2026-10-02",
+    "sourceUrl": "https://siriusolymp.ru/school2026/about",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 77,
+    "key": "2026-27-vsosh-school-sirius-biology",
+    "name": "Школьный этап на платформе «Сириус» (день зависит от группы региона)",
+    "kind": "competition",
+    "beginsOn": "2026-10-06",
+    "endsOn": "2026-10-09",
+    "sourceUrl": "https://siriusolymp.ru/school2026/about",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 76,
+    "key": "2026-27-vsosh-school-sirius-chemistry",
+    "name": "Школьный этап на платформе «Сириус» (день зависит от группы региона)",
+    "kind": "competition",
+    "beginsOn": "2026-10-12",
+    "endsOn": "2026-10-16",
+    "sourceUrl": "https://siriusolymp.ru/school2026/about",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 72,
+    "key": "2026-27-vsosh-school-sirius-math",
+    "name": "Школьный этап на платформе «Сириус» (день зависит от группы региона)",
+    "kind": "competition",
+    "beginsOn": "2026-10-13",
+    "endsOn": "2026-10-16",
+    "sourceUrl": "https://siriusolymp.ru/school2026/about",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 73,
+    "key": "2026-27-vsosh-school-sirius-informatics",
+    "name": "Школьный этап на платформе «Сириус» (день зависит от группы региона)",
+    "kind": "competition",
+    "beginsOn": "2026-10-19",
+    "endsOn": "2026-10-23",
+    "sourceUrl": "https://siriusolymp.ru/school2026/about",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 147,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 148,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 149,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 150,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 151,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 152,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 157,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 159,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 160,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 227,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5058,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5208,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5319,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5448,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5449,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5572,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5574,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5668,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5669,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5670,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5819,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5906,
+    "key": "2026-27-hse-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-08-20",
+    "endsOn": "2026-09-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 147,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа (одна из двух дат на выбор)",
+    "kind": "competition",
+    "beginsOn": "2026-09-29",
+    "endsOn": "2026-10-03",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 148,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-09-26",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 149,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-27",
+    "endsOn": "2026-09-27",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 150,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа (одна из двух дат на выбор)",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-10-02",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 151,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа (одна из двух дат на выбор)",
+    "kind": "competition",
+    "beginsOn": "2026-09-25",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 152,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа (одна из двух дат на выбор)",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-09-30",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 157,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-09-26",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 159,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-10-03",
+    "endsOn": "2026-10-03",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 160,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа (одна из двух дат на выбор)",
+    "kind": "competition",
+    "beginsOn": "2026-09-25",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 227,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-09-26",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5058,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-27",
+    "endsOn": "2026-09-27",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5208,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа (одна из двух дат на выбор)",
+    "kind": "competition",
+    "beginsOn": "2026-09-28",
+    "endsOn": "2026-10-03",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5319,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-27",
+    "endsOn": "2026-09-27",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5448,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-27",
+    "endsOn": "2026-09-27",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5449,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-09-26",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5572,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-10-04",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5574,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-10-03",
+    "endsOn": "2026-10-03",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5668,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-10-04",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5669,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-10-04",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5670,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-26",
+    "endsOn": "2026-09-26",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5819,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-10-04",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5906,
+    "key": "2026-27-hse-round-1",
+    "name": "1 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-09-27",
+    "endsOn": "2026-09-27",
+    "sourceUrl": "https://olymp.hse.ru/mmo/timetable",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 147,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 148,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 149,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 150,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 151,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 152,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 157,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 159,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 160,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 227,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5058,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5208,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5319,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5448,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5449,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5572,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5574,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5668,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5669,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5670,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5819,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5906,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 153,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5907,
+    "key": "2026-27-hse-round-2",
+    "name": "2 тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-13",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 147,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 148,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 149,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 150,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 151,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 152,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 157,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 159,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 160,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 227,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5058,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5208,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5319,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5448,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5449,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5572,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5574,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5668,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5669,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5670,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5819,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5906,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 153,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5907,
+    "key": "2026-27-hse-final",
+    "name": "Заключительный этап (дата зависит от профиля)",
+    "kind": "competition",
+    "beginsOn": "2027-02-05",
+    "endsOn": "2027-02-15",
+    "sourceUrl": "https://olymp.hse.ru/mmo/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 372,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 373,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 375,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 376,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 377,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 378,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 379,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 380,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 382,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 383,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 384,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5608,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5609,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5610,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5611,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5612,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5613,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5664,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5755,
+    "key": "2026-27-kfu-qualifying",
+    "name": "Отборочный этап (дистанционно)",
+    "kind": "competition",
+    "beginsOn": "2026-10-26",
+    "endsOn": "2026-11-23",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 372,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 373,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 375,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 376,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 377,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 378,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 379,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 380,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 382,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 383,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 384,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5608,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5609,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5610,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5611,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5612,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5613,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5664,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5755,
+    "key": "2026-27-kfu-final",
+    "name": "Заключительный этап (очно, дата зависит от предмета)",
+    "kind": "competition",
+    "beginsOn": "2027-01-13",
+    "endsOn": "2027-02-07",
+    "sourceUrl": "https://malun.kpfu.ru/mpo",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5106,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5107,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5108,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5112,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5113,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5218,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5322,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5661,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5662,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5663,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 6954,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 6957,
+    "key": "2026-27-zvezda-internet-tour",
+    "name": "Интернет-тур отборочного этапа",
+    "kind": "competition",
+    "beginsOn": "2026-11-09",
+    "endsOn": "2026-12-09",
+    "sourceUrl": "https://zv.susu.ru/index.php/mnogoprofilnaya-inzhenernaya-olimpiada-zvezda/otborochnyj-etap",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 395,
+    "key": "2026-27-phystech-math-registration",
+    "name": "Регистрация на 1 тур отборочного этапа",
+    "kind": "registration",
+    "beginsOn": "2026-09-07",
+    "endsOn": "2026-10-10",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 395,
+    "key": "2026-27-phystech-math-round-1",
+    "name": "1 тур отборочного этапа (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-10-11",
+    "endsOn": "2026-10-11",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 395,
+    "key": "2026-27-phystech-math-round-2",
+    "name": "2 тур отборочного этапа (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-11-01",
+    "endsOn": "2026-11-01",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 395,
+    "key": "2026-27-phystech-math-round-3",
+    "name": "3 тур отборочного этапа (онлайн, только 11 класс)",
+    "kind": "competition",
+    "beginsOn": "2026-11-07",
+    "endsOn": "2026-11-07",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 395,
+    "key": "2026-27-phystech-math-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-14",
+    "endsOn": "2027-02-14",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 394,
+    "key": "2026-27-phystech-physics-registration",
+    "name": "Регистрация на 1 тур отборочного этапа",
+    "kind": "registration",
+    "beginsOn": "2026-09-07",
+    "endsOn": "2026-10-03",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 394,
+    "key": "2026-27-phystech-physics-round-1",
+    "name": "1 тур отборочного этапа (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-10-04",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 394,
+    "key": "2026-27-phystech-physics-round-2",
+    "name": "2 тур отборочного этапа (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-10-25",
+    "endsOn": "2026-10-25",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 394,
+    "key": "2026-27-phystech-physics-round-3",
+    "name": "3 тур отборочного этапа (онлайн, только 11 класс)",
+    "kind": "competition",
+    "beginsOn": "2026-11-08",
+    "endsOn": "2026-11-08",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 394,
+    "key": "2026-27-phystech-physics-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-13",
+    "endsOn": "2027-02-13",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5839,
+    "key": "2026-27-phystech-russian-registration",
+    "name": "Регистрация на отборочный этап",
+    "kind": "registration",
+    "beginsOn": "2026-09-07",
+    "endsOn": "2026-10-30",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5839,
+    "key": "2026-27-phystech-russian-round-1",
+    "name": "Отборочный этап (онлайн)",
+    "kind": "competition",
+    "beginsOn": "2026-11-08",
+    "endsOn": "2026-12-08",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5839,
+    "key": "2026-27-phystech-russian-final",
+    "name": "Заключительный этап",
+    "kind": "competition",
+    "beginsOn": "2027-02-13",
+    "endsOn": "2027-02-13",
+    "sourceUrl": "https://olymp-online.mipt.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 315,
+    "key": "2026-27-vsesib-math-registration",
+    "name": "Начало регистрации на площадки отборочного этапа",
+    "kind": "registration",
+    "beginsOn": "2026-09-28",
+    "endsOn": null,
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 315,
+    "key": "2026-27-vsesib-math-qualifying",
+    "name": "Отборочный этап (очно, 11:00 по Новосибирску)",
+    "kind": "competition",
+    "beginsOn": "2026-10-18",
+    "endsOn": "2026-10-18",
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 318,
+    "key": "2026-27-vsesib-biology-registration",
+    "name": "Начало регистрации на площадки отборочного этапа",
+    "kind": "registration",
+    "beginsOn": "2026-10-12",
+    "endsOn": null,
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 318,
+    "key": "2026-27-vsesib-biology-qualifying",
+    "name": "Отборочный этап (очно, 11:00 по Новосибирску)",
+    "kind": "competition",
+    "beginsOn": "2026-11-01",
+    "endsOn": "2026-11-01",
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 316,
+    "key": "2026-27-vsesib-informatics-registration",
+    "name": "Начало регистрации на площадки отборочного этапа",
+    "kind": "registration",
+    "beginsOn": "2026-10-19",
+    "endsOn": null,
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 316,
+    "key": "2026-27-vsesib-informatics-qualifying",
+    "name": "Отборочный этап (очно, 11:00 по Новосибирску)",
+    "kind": "competition",
+    "beginsOn": "2026-11-08",
+    "endsOn": "2026-11-08",
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 319,
+    "key": "2026-27-vsesib-physics-registration",
+    "name": "Начало регистрации на площадки отборочного этапа",
+    "kind": "registration",
+    "beginsOn": "2026-10-26",
+    "endsOn": null,
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 319,
+    "key": "2026-27-vsesib-physics-qualifying",
+    "name": "Отборочный этап (очно, 11:00 по Новосибирску)",
+    "kind": "competition",
+    "beginsOn": "2026-11-15",
+    "endsOn": "2026-11-15",
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 317,
+    "key": "2026-27-vsesib-chemistry-registration",
+    "name": "Начало регистрации на площадки отборочного этапа",
+    "kind": "registration",
+    "beginsOn": "2026-10-26",
+    "endsOn": null,
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 317,
+    "key": "2026-27-vsesib-chemistry-qualifying",
+    "name": "Отборочный этап (очно, 11:00 по Новосибирску)",
+    "kind": "competition",
+    "beginsOn": "2026-11-22",
+    "endsOn": "2026-11-22",
+    "sourceUrl": "https://sesc.nsu.ru/olymp-vsesib/stages/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5,
+    "key": "2026-27-tournament-autumn-basic",
+    "name": "Осенний тур, базовый вариант",
+    "kind": "competition",
+    "beginsOn": "2026-10-04",
+    "endsOn": "2026-10-04",
+    "sourceUrl": "https://t.me/s/turnirgorodov",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5,
+    "key": "2026-27-tournament-autumn-advanced",
+    "name": "Осенний тур, сложный вариант",
+    "kind": "competition",
+    "beginsOn": "2026-10-18",
+    "endsOn": "2026-10-18",
+    "sourceUrl": "https://t.me/s/turnirgorodov",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 5795,
+    "key": "2026-27-finsec-final",
+    "name": "Финальный этап",
+    "kind": "competition",
+    "beginsOn": "2026-09-27",
+    "endsOn": "2026-10-02",
+    "sourceUrl": "https://rosfinolymp.ru/",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  },
+  {
+    "olympiadId": 282,
+    "key": "2026-27-engineering-moscow-round",
+    "name": "Очный отборочный тур (Москва, НИЯУ МИФИ)",
+    "kind": "competition",
+    "beginsOn": "2026-10-11",
+    "endsOn": "2026-10-11",
+    "sourceUrl": "https://olymp.mephi.ru/engineering/about",
+    "verifiedAt": "2026-09-28T18:45:00+03:00"
+  }
+]

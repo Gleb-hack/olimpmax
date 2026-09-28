@@ -216,7 +216,7 @@ export const VerifiedStageInput = z.object({
   name: z.string().trim().min(1).max(500), kind: z.enum(['registration', 'competition', 'other']),
   beginsOn: IsoDay.nullable(), endsOn: IsoDay.nullable(),
   sourceUrl: z.url().refine(v => /^https?:\/\//.test(v), 'Нужна HTTP(S) ссылка на источник'),
-  verifiedAt: z.iso.datetime({ offset: true }), verifiedBy: z.string().trim().min(1).max(200),
+  verifiedAt: z.iso.datetime({ offset: true }),
 }).strict().refine(s => s.beginsOn !== null || s.endsOn !== null, 'Укажите хотя бы одну дату')
   .refine(s => !s.beginsOn || !s.endsOn || s.beginsOn <= s.endsOn, 'Начало позже окончания');
 export const VerifiedStagesFile = z.array(VerifiedStageInput).min(1).max(5000);

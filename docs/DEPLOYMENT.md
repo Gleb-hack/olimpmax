@@ -49,6 +49,7 @@ nano .env.production
 ```bash
 docker compose --env-file .env.production -f compose.production.yaml up -d --build
 docker compose --env-file .env.production -f compose.production.yaml run --rm --no-deps api pnpm db:import
+docker compose --env-file .env.production -f compose.production.yaml run --rm --no-deps api pnpm db:verified
 docker compose --env-file .env.production -f compose.production.yaml ps -a
 ```
 

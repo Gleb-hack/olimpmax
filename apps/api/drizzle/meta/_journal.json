@@ -50,6 +50,13 @@
       "when": 1790604845178,
       "tag": "0006_bot_reminders",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790611495283,
+      "tag": "0007_drop_verified_by",
+      "breakpoints": true
     }
   ]
 }

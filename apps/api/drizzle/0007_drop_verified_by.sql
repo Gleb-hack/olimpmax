@@ -1,0 +1,3 @@
+ALTER TABLE "olympiad_stages" DROP CONSTRAINT "stages_verified_evidence";--> statement-breakpoint
+ALTER TABLE "olympiad_stages" DROP COLUMN "verified_by";--> statement-breakpoint
+ALTER TABLE "olympiad_stages" ADD CONSTRAINT "stages_verified_evidence" CHECK ("olympiad_stages"."verification" <> 'verified' or ("olympiad_stages"."origin" = 'verified_import' and "olympiad_stages"."source_url" is not null and "olympiad_stages"."verified_at" is not null and ("olympiad_stages"."begins_on" is not null or "olympiad_stages"."ends_on" is not null)));

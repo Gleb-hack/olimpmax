@@ -8,6 +8,26 @@ export function primaryStages(item: Pick<Detail, 'stages' | 'scheduleSource'>) {
   const origin = item.scheduleSource === 'reference' ? 'reference' : 'csv';
   return item.stages.filter(stage => stage.origin === origin || stage.verification === 'verified');
 }
+/** Verified dates of one stage: «11 окт. 2026 г.», «с 25 сент. 2026 г. по 11 окт. 2026 г.», «до …», «с …». */
+export function verifiedStageDates(stage: Pick<z.infer<typeof Stage>, 'beginsOn' | 'endsOn'>) {
+  const { beginsOn, endsOn } = stage;
+  if (beginsOn && endsOn) return beginsOn === endsOn ? formatDay(beginsOn) : `с ${formatDay(beginsOn)} по ${formatDay(endsOn)}`;
+  if (endsOn) return `до ${formatDay(endsOn)}`;
+  return beginsOn ? `с ${formatDay(beginsOn)}` : 'Дата не указана';
+}
+/**
+ * The schedule list split in two: dates checked on the organizer's site (in date order) and the catalog schedule.
+ * The catalog list is shown as is: it may repeat a verified stage in words («до 1 ноя»).
+ */
+export function scheduleGroups(item: Pick<Detail, 'stages' | 'scheduleSource'>) {
+  const stages = primaryStages(item);
+  const verified = stages.filter(stage => stage.verification === 'verified')
+    .sort((a, b) => (a.beginsOn ?? a.endsOn ?? '').localeCompare(b.beginsOn ?? b.endsOn ?? ''));
+  // One link per site: several pages of one organizer read as one source.
+  const sources = [...new Map(verified.flatMap(stage => stage.sourceUrl ? [[new URL(stage.sourceUrl).hostname.replace(/^www\./, ''), stage.sourceUrl] as const] : [])).entries()]
+    .map(([host, url]) => ({ host, url }));
+  return { verified, catalog: stages.filter(stage => stage.verification !== 'verified'), sources };
+}
 /** Why the reference schedule is not shown although the series has one. */
 export function hiddenReferenceNote(item: Pick<Detail, 'stages' | 'scheduleSource' | 'seriesInfo'>) {
   if (item.scheduleSource === 'reference' || !item.stages.some(stage => stage.origin === 'reference')) return null;
