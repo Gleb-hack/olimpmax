@@ -72,12 +72,12 @@ export function DetailPage() {
       <Button className={`full-width olympiad-detail__track ${saved?.tracking ? 'tracking-button--saved' : ''}`} variant={saved ? 'secondary' : 'primary'} disabled={action.isPending || plan.isPending} onClick={() => saved ? navigate('/plan') : action.mutate({ id, action: 'save' })}>{saved?.tracking && <Icon name="check" size={15} />}{action.isPending ? 'Сохраняем…' : saved ? saved.tracking ? 'Отслеживается' : 'В плане · на паузе' : 'Отслеживать'}</Button>
       <button type="button" className={`text-button olympiad-detail__compare ${compared ? 'is-active' : ''}`} aria-pressed={compared} onClick={() => toggleComparison(id)}><Icon name={compared ? 'check' : 'compare'} size={15} />{compared ? 'В сравнении' : 'Добавить к сравнению'}</button>
       {action.isError && <Notice tone="error">{action.error.message}</Notice>}
-      {benefits && <UniversityBenefits groups={universityBenefits(benefits.items, item.organizers)} note={benefits.note} olympiadId={item.id} />}
       {hasSchedule && <details className="olympiad-schedule" open><summary>Расписание этапов<Icon name="chevron-down" size={16} /></summary><div className="olympiad-schedule__content">
         {stages.length ? <ol>{stages.map(stage => <li key={stage.id}><strong>{stage.name || 'Этап олимпиады'}</strong><span>{stage.verification === 'verified' ? [stage.beginsOn && `С ${formatDay(stage.beginsOn)}`, stage.endsOn && `до ${formatDay(stage.endsOn)}`].filter(Boolean).join(' ') || 'Дата не указана' : stage.rawDates || 'Дата не указана'}</span>{stage.mode && <small>{stageModeLabels[stage.mode]}</small>}</li>)}</ol> : <p className="preserve-lines">{item.calendarRaw}</p>}
         {item.scheduleSource !== 'reference' && item.scheduleUpdatedRaw && <p className="olympiad-schedule__hint">{item.scheduleUpdatedRaw}</p>}
         {referenceNote && <p className="olympiad-schedule__hint">{referenceNote}</p>}
       </div></details>}
+      {benefits && <UniversityBenefits groups={universityBenefits(benefits.items, item.organizers)} note={benefits.note} olympiadId={item.id} />}
       {contacts.length > 0 && <section className="olympiad-detail__about"><h2>Контакты</h2><ul className="contact-list">{contacts.map((contact, index) => <ContactItem key={index} contact={contact} />)}</ul></section>}
       <button className="olympiad-detail__source" onClick={() => max.openExternal(item.sourceUrl)}>Подробнее об олимпиаде<Icon name="external-link" size={14} /></button>
     </>}

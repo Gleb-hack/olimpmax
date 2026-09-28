@@ -2,7 +2,7 @@
 :root {
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #171a21;
-  background: #eef0f5;
+  background: #fff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -24,7 +24,7 @@
 }
 * { box-sizing: border-box; scrollbar-width: none; }
 *::-webkit-scrollbar { display: none; width: 0; height: 0; }
-body { margin: 0; min-width: 0; font-size: 14px; line-height: 1.45; }
+body { margin: 0; min-width: 0; background: #fff; font-size: 14px; line-height: 1.45; }
 /* The mini-app has a fixed mobile layout: no pinch or double-tap zoom (JS in lib/zoom.ts covers iOS). */
 html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* iOS zooms into focused fields smaller than 16px; enlarge them only on iOS. */
@@ -241,7 +241,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .pagination__jump:disabled { cursor: default; color: var(--olimp-muted); border-color: var(--olimp-border); }
 .pagination__jump:disabled svg { display: none; }
 .page-picker { width: min(calc(100% - 32px), 360px); }
-.page-picker__grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; max-height: min(412px, calc(100dvh - 170px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 2px; margin: -2px; }
+.page-picker__grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; max-height: min(412px, calc(100dvh - 170px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 4px; }
 .page-picker__grid::-webkit-scrollbar { display: none; }
 .page-picker__page { height: 44px; border: 0; border-radius: 12px; background: var(--olimp-blue-soft); color: var(--olimp-blue); font: inherit; font-size: 14px; font-weight: 550; font-variant-numeric: tabular-nums; cursor: pointer; transition: filter .15s; }
 .page-picker__page:hover { filter: brightness(.96); }
@@ -504,16 +504,18 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .subject-choice.is-selected .subject-choice__check { background: var(--olimp-blue); border-color: var(--olimp-blue); color: #fff; }
 .subject-choice:has(input:focus-visible) { outline: 2px solid #819cff; outline-offset: -2px; }
 .subjects-dialog .button { flex-shrink: 0; }
-@media (min-width: 600px) { .app-shell { box-shadow: 0 0 0 1px #e5e8ee, 0 12px 80px #253a7010; } .page { padding-top: 32px; } }
+@media (min-width: 600px) { .page { padding-top: 32px; } }
 @media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(160deg, #e6e4fb 0%, #efedfc 45%, #f9f9fd 100%); }
-.welcome-page::before { content: ''; position: absolute; z-index: -1; width: 430px; height: 430px; border-radius: 50%; background: #f7f5ff; opacity: .85; top: -152px; left: -170px; }
-.welcome-art { flex: 1; min-height: 420px; display: flex; align-items: center; justify-content: center; padding: max(40px, env(safe-area-inset-top)) 20px 12px; }
-.welcome-art img { width: min(100%, 327px); height: auto; max-height: 54dvh; object-fit: contain; }
-.welcome-actions { display: flex; flex-direction: column; gap: 8px; padding: 38px 28px max(28px, env(safe-area-inset-bottom)); }
+.welcome-page { width: 100%; max-width: 800px; min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
+.welcome-art { position: absolute; inset: 0; overflow: hidden; }
+/* Anchor the artwork above the actions so the mascot feet retain clearance on short screens. */
+.welcome-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center calc(100% - 48px); }
+.welcome-actions { position: relative; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 28px max(20px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #edf1fce6 45%, #edf1fc); }
+.welcome-actions > * { width: 100%; max-width: 420px; }
+@media (max-height: 640px) { .welcome-art img { object-position: center calc(100% - 32px); } .welcome-actions { padding-bottom: max(12px, env(safe-area-inset-bottom)); } }
 .auth-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 16px; background: var(--olimp-blue); color: #fff; font-size: 15px; font-weight: 600; text-align: center; }
 .auth-button--outline { background: white; color: var(--olimp-blue); border: 1.5px solid var(--olimp-blue); }
 .welcome-note { margin-top: 1px; min-height: 38px; padding: 1px 0; color: var(--olimp-muted); font-size: 11px; line-height: 1.4; }
@@ -554,7 +556,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .auth-optional { color: #858c9b; font-size: 11px; margin: -2px 0 8px; }
 .auth-demo { padding: 8px 10px; border-radius: 10px; font-size: 11px; background: #edf0ff; color: #6573a6; margin: -8px 0 16px; }
 .profile-signout { width: 100%; min-height: 44px; margin-top: 12px; color: #6f7787; font-size: 13px; }
-@media (max-height: 680px) { .welcome-art { min-height: 330px; padding-top: 24px; } .welcome-actions { padding-top: 20px; } }
+
 @media (min-width: 600px) { .auth-page { padding-top: 34px; } }
 
 /* «Мой план — Календарь» (Figma 1007:855): list/calendar switch, month grid, legend and events. */
@@ -641,13 +643,13 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 .university-series li a:hover { color: var(--olimp-blue); }
 .university-page .olympiad-detail-row dd .text-link { display: inline-flex; align-items: center; gap: 5px; }
 .university-page .button.button.olympiad-detail__track { margin-top: 20px; }
-/* Wide (tablet) layout on a desktop screen: the toggle sits in the free space beside the app. Phones never get it. */
+/* Desktop wide layout stays within 800px, including the width toggle. Phones never get it. */
 .width-toggle { display: none; }
 @media (min-width: 720px) {
-  .width-toggle { position: fixed; z-index: 7; top: 16px; right: 16px; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #4a5263; box-shadow: 0 0 0 1px #e3e7ee, 0 6px 20px #253a7014; }
+  .width-toggle { position: fixed; z-index: 7; top: 16px; right: max(16px, calc((100vw - 800px) / 2 + 16px)); display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #4a5263; box-shadow: 0 0 0 1px #e3e7ee, 0 6px 20px #253a7014; }
   .width-toggle:hover, .width-toggle[aria-pressed=true] { color: var(--olimp-blue); }
-  .app-shell--wide { max-width: min(880px, calc(100% - 144px)); }
-  .app-shell--wide .bottom-nav { width: min(880px, calc(100% - 144px)); }
+  .app-shell--wide { max-width: min(800px, 100%); }
+  .app-shell--wide .bottom-nav { width: min(800px, 100%); }
   .app-shell--wide .page { padding-inline: 28px; }
   .app-shell--wide .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .app-shell--wide .catalog-list, .app-shell--wide .plan-card-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
