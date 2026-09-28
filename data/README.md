@@ -9,4 +9,4 @@
 
 Приложение читает каталог из PostgreSQL после `pnpm db:import`. Порядок обновления описан в [инструкции](../docs/CATALOG.md).
 
-`pnpm db:audit`, `pnpm data:check` и `pnpm db:import` создают отчёты в этой папке. Они исключены из Git, поскольку описывают конкретный запуск. Исторические отчёты сохранены в `docs/archive/reports/`.
+`pnpm db:audit`, `pnpm data:check` и `pnpm db:import` создают отчёты в этой папке. Они исключены из Git, поскольку описывают конкретный запуск.
