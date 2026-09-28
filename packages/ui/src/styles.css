@@ -426,8 +426,6 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .contact-list__link { min-height: 36px; gap: 8px; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
 .contact-list__link svg { flex-shrink: 0; }
 .contact-list__text { display: block; padding: 8px 0; color: var(--olimp-muted); font-size: 13px; }
-.olympiad-detail__source { color: #7f8ca7; display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 44px; padding: 12px 0; margin-top: 5px; font-size: 11px; }
-.olympiad-detail__source:hover { color: var(--olimp-blue); }
 .olympiad-schedule { border: 1px solid var(--olimp-border); border-radius: 14px; background: white; margin-top: 20px; }
 .olympiad-schedule summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; list-style: none; padding: 14px; font-size: 12px; color: #596781; }
 .olympiad-schedule summary::-webkit-details-marker { display: none; }
@@ -474,6 +472,9 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .search-page__field input::placeholder { color: #939bab; }
 .search-page__field button { display: flex; align-items: center; justify-content: center; width: 28px; height: 32px; flex-shrink: 0; padding: 0; color: #9aa3b6; border-radius: 8px; }
 .search-start h2 { font-size: 13px; margin-bottom: 12px; }
+.search-history__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.search-history__head h2 { margin-bottom: 0; }
+.search-history__clear { min-height: 32px; }
 .search-start .section { margin-top: 25px; }
 .search-start .hint { margin-top: 0; }
 .search-history__row { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 9px 2px; color: #919bab; text-align: left; }
@@ -586,13 +587,27 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .calendar-grid__row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .calendar-grid__weekdays span { text-align: center; font-size: 11px; font-weight: 600; color: #a7adb9; padding: 2px 0 8px; }
 .calendar-grid__row > span { display: flex; justify-content: center; }
-.calendar-day { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 40px; height: 46px; padding-top: 3px; color: #1d2230; font-size: 14px; }
+.calendar-day { z-index: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 40px; height: 46px; padding-top: 3px; color: #1d2230; font-size: 14px; }
 .calendar-day__number { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; }
 .calendar-day--past { color: #a9afbb; }
 .calendar-day--today .calendar-day__number { box-shadow: inset 0 0 0 1.5px #c9d1e3; font-weight: 700; }
 .calendar-day--marked .calendar-day__number { background: var(--tone-soft); color: var(--tone-text); font-weight: 700; box-shadow: none; }
 .calendar-day--past.calendar-day--marked .calendar-day__number { opacity: .6; }
 .calendar-day--selected .calendar-day__number { background: var(--olimp-blue); color: #fff; box-shadow: none; opacity: 1; }
+/* A stage lasting several days: one soft band from its first to its last day, like a date-range picker. */
+.calendar-grid__row > .calendar-cell--range { position: relative; }
+.calendar-cell--range::before { content: ''; position: absolute; top: 3px; left: 0; right: 0; height: 32px; background: var(--tone-soft); }
+.calendar-cell--range-start::before { left: 50%; }
+.calendar-cell--range-end::before { right: 50%; }
+.calendar-cell--range-start.calendar-cell--range-end::before { display: none; }
+.calendar-grid__row > .calendar-cell--range:first-child:not(.calendar-cell--range-start)::before { left: 2px; border-radius: 16px 0 0 16px; }
+.calendar-grid__row > .calendar-cell--range:last-child:not(.calendar-cell--range-end)::before { right: 2px; border-radius: 0 16px 16px 0; }
+.calendar-cell--past::before { opacity: .6; }
+.calendar-day--in-range .calendar-day__number { color: var(--tone-text); font-weight: 600; }
+.calendar-day--past.calendar-day--in-range .calendar-day__number { opacity: .6; }
+.calendar-day--in-range.calendar-day--selected .calendar-day__number { color: #fff; opacity: 1; }
+.calendar-day--range-edge .calendar-day__number { background: var(--tone); color: #fff; }
+.calendar-day--range-edge.calendar-day--selected .calendar-day__number { background: var(--olimp-blue); }
 .calendar-day__dots { display: flex; gap: 3px; margin-top: 3px; }
 .calendar-day__dots i, .calendar-legend i { display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--tone); }
 .calendar-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 2px 0; font-size: 12px; color: #6f7787; }
