@@ -2,33 +2,22 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { Link } from 'react-router-dom';
 import { Dialog, Button, Notice, Icon } from '@olimp/ui';
 import { isMock, type Olympiad } from '../../lib/api';
-import { scheduleLabel, gradeLabel, levelLabel } from '../../lib/format';
-import { usePlan, usePlanActions } from '../../lib/queries';
 import { max } from '../../lib/max';
 import { useAssistant } from './AssistantProvider';
 import { MessageReveal } from './MessageReveal';
-import { StageCountdown } from '../catalog/OlympiadSummary';
+import { chatCardMeta } from './chat-card-format';
 import olimpLogo from '../../assets/olimp/logo.jpg';
 
 const sourceKinds = { page: 'страница прочитана', pdf: 'документ прочитан', faq: 'база «Вопросы по олимпиадам»' } as const;
 const sourceKind = (kind?: keyof typeof sourceKinds) => sourceKinds[kind ?? 'page'];
 
+/** Figma «Олимп» (177:309): title, «организатор · срок» and «Подробнее ›». Saving happens on the olympiad page. */
 function ChatCard({ item }: { item: Olympiad }) {
-  const plan = usePlan();
-  const action = usePlanActions();
-  const saved = plan.data?.items.some(entry => entry.olympiad.id === item.id);
+  const meta = chatCardMeta(item);
   return <article className="chat-card">
     <h2>{item.title}</h2>
-    <p className="chat-card__meta">{[item.organizers?.[0], gradeLabel(item)].filter(Boolean).join(' · ')}</p>
-    {levelLabel(item) !== 'Не указан' && <p className="chat-card__meta">{levelLabel(item)}</p>}
-    <p className="chat-card__date">{scheduleLabel(item)}</p>
-    <StageCountdown item={item} className="stage-countdown--compact" />
-    <div className="chat-card__actions"><Link to={`/olympiads/${item.id}`} state={{ backTo: '/olimp' }}>Подробнее<Icon name="chevron-right" size={14} /></Link>
-      <button type="button" disabled={saved || action.isPending || plan.isPending} onClick={() => action.mutate({ id: item.id, action: 'save' })} aria-label={saved ? `${item.title} уже в плане` : `Добавить в план: ${item.title}`}>
-        {saved ? <Icon name="check" size={14} /> : <Icon name="plus" size={14} />}{saved ? 'В плане' : action.isPending ? 'Сохраняем…' : 'В план'}
-      </button></div>
-    <button type="button" className="chat-card__source" onClick={() => max.openExternal(item.sourceUrl)}>Источник: {new URL(item.sourceUrl).hostname}</button>
-    {action.isError && <p className="chat-card__error" role="alert">{action.error.message}</p>}
+    {meta && <p className="chat-card__meta">{meta}</p>}
+    <Link className="chat-card__more" to={`/olympiads/${item.id}`} state={{ backTo: '/olimp' }} aria-label={`Подробнее: ${item.title}`}>Подробнее<Icon name="chevron-right" size={15} /></Link>
   </article>;
 }
 
@@ -94,7 +83,6 @@ export function OlimpPage() {
       </div>}
       {chat.pending && <div className="chat-pending" role="status" aria-label={chat.researching ? 'Олимп ищет информацию в интернете' : 'Олимп готовит ответ'}><div className="chat-typing" aria-hidden="true"><span /><span /><span /></div>{chat.researching && <small>Открываю сайты вузов и организаторов, читаю правила…</small>}</div>}
       {chat.error && <div className="chat-error" role="alert"><p>{chat.error}</p>{last?.role === 'user' && last.failed && <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.send(last.content, last.id); }}><Icon name="rotate-ccw" size={14} />Повторить</button>}</div>}
-      {!hasConversation && <p className="chat-intro-note">Подберём варианты из каталога.<br />Расскажу об участии, льготах и расписании. Если в базе чего-то нет — поищу на сайтах вузов и организаторов.</p>}
     </div>
     <footer className="chat-footer">
       {isMock && <Notice tone="info">Для общения с Олимпом нужен сервер с подключённым ИИ.</Notice>}

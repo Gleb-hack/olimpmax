@@ -62,9 +62,11 @@ export async function mockRequest(path: string, options: RequestInit = {}): Prom
         && (!query.levels || query.levels.some(level => level === (['', '—', '-'].includes(item.level?.trim() ?? '') ? 'unknown' : item.level?.trim())))
         && (!query.participation || query.participation.includes(item.participation))
         && (!query.scheduleStatus || query.scheduleStatus === item.scheduleStatus);
-    }).sort((a, b) => (query.sort === 'name' ? a.title.localeCompare(b.title, 'ru') : (b.rating ?? -Infinity) - (a.rating ?? -Infinity)) || a.id - b.id);
+    }).sort((a, b) => (query.sort === 'name' ? a.title.localeCompare(b.title, 'ru')
+      : (query.sort === 'complete' ? mockCompleteness(b) - mockCompleteness(a) : 0) || (b.rating ?? -Infinity) - (a.rating ?? -Infinity)) || a.id - b.id);
     return { items: items.slice((query.page - 1) * query.pageSize, query.page * query.pageSize), total: items.length, page: query.page, pageSize: query.pageSize };
   }
+  if (url.pathname.startsWith('/universities/')) return mockUniversity(decodeURIComponent(url.pathname.split('/').pop() ?? ''));
   if (url.pathname.startsWith('/olympiads/')) {
     const item = details.find(value => value.id === Number(url.pathname.split('/').pop()));
     if (!item) throw new Error('Олимпиада не найдена в демоверсии.');
@@ -92,4 +94,31 @@ export async function mockRequest(path: string, options: RequestInit = {}): Prom
   try { localStorage.setItem(key, JSON.stringify(c.PlanResponse.parse({ items: next, total: next.length }))); }
   catch { throw new Error('Не удалось сохранить демонстрационный план в браузере.'); }
   return undefined;
+}
+
+/** A university page from the benefits of the demo olympiads. «О вузе» (type, description, site) comes only from the API. */
+function mockUniversity(slug: string) {
+  const benefits = new Map<string, z.infer<typeof c.SeriesBenefit>>();
+  let university: z.infer<typeof c.Benefit>['university'] | null = null;
+  for (const detail of details) for (const benefit of detail.benefits?.items ?? []) {
+    if (benefit.university.slug !== slug) continue;
+    university = benefit.university;
+    const series = detail.series ?? { slug: `olympiad-${detail.id}`, name: detail.title };
+    const key = [series.slug, benefit.kind, benefit.diploma].join(':');
+    const entry = benefits.get(key) ?? { kind: benefit.kind, diploma: benefit.diploma, minScore: benefit.minScore, maxScore: benefit.maxScore,
+      requirement: benefit.requirement, series, olympiadIds: [], olympiads: [] };
+    if (!entry.olympiadIds.includes(detail.id)) { entry.olympiadIds.push(detail.id); entry.olympiads!.push({ id: detail.id, title: detail.title }); }
+    benefits.set(key, entry);
+  }
+  if (!university) throw new Error('Вуз не найден в демоверсии.');
+  return c.UniversityResponse.parse({ slug, name: university.name, city: university.city, fullName: university.fullName ?? null,
+    type: null, description: null, site: null, benefits: [...benefits.values()] });
+}
+
+/** The same idea as the API «complete» order, from what the demo cards carry. */
+function mockCompleteness(card: z.infer<typeof c.OlympiadCard>) {
+  const detail = details.find(item => item.id === card.id);
+  return (card.upcomingStage ? 4 : 0) + (detail?.stages.some(stage => stage.beginsOn || stage.endsOn) ? 3 : card.calendarRaw ? 1 : 0)
+    + (card.nextEvent ? 1 : 0) + (detail?.benefits?.items.length ? 3 : 0) + (card.level ? 1 : 0)
+    + ((card.description?.length ?? 0) >= 40 ? 1 : 0) + (card.organizers?.length ? 1 : 0) - (card.calendarState === 'not_held' ? 4 : 0);
 }

@@ -9,7 +9,15 @@ function readComparison(): number[] {
   } catch { return []; }
 }
 
-type UIState = { comparisonIds: number[]; toggleComparison: (id: number) => void; removeFromComparison: (id: number) => void; clearComparison: () => void };
+function readWide() {
+  try { return localStorage.getItem(localKeys.layout()) === 'wide'; } catch { return false; }
+}
+
+type UIState = {
+  comparisonIds: number[]; toggleComparison: (id: number) => void; removeFromComparison: (id: number) => void; clearComparison: () => void;
+  /** Tablet-width layout on a wide screen; phones keep the mobile layout whatever is stored. */
+  wide: boolean; toggleWide: () => void;
+};
 export const useUI = create<UIState>(set => {
   const save = (comparisonIds: number[]) => {
     try { localStorage.setItem(localKeys.comparison(), JSON.stringify(comparisonIds)); } catch { /* The choice still works until the app closes. */ }
@@ -20,5 +28,11 @@ export const useUI = create<UIState>(set => {
     toggleComparison: id => { const ids = useUI.getState().comparisonIds; save(ids.includes(id) ? ids.filter(value => value !== id) : [...ids, id]); },
     removeFromComparison: id => save(useUI.getState().comparisonIds.filter(value => value !== id)),
     clearComparison: () => { if (useUI.getState().comparisonIds.length) save([]); },
+    wide: readWide(),
+    toggleWide: () => {
+      const wide = !useUI.getState().wide;
+      try { localStorage.setItem(localKeys.layout(), wide ? 'wide' : 'narrow'); } catch { /* The layout still changes until the app closes. */ }
+      set({ wide });
+    },
   };
 });

@@ -7,11 +7,11 @@ export const calendarLabels = {
 };
 // One label for the user's own grade, shared by the profile card and the grade chip.
 export function profileGradeLabel(grade: number | null) { return grade ? `${grade} класс` : null; }
-export function levelLabel(item: Pick<Olympiad, 'level' | 'levelStatus'>) {
+/** «III уровень», «II–III уровни», «ВсОШ». Only the level itself: the RSOSH list status is not appended. */
+export function levelLabel(item: Pick<Olympiad, 'level'>) {
   const level = item.level?.trim();
   if (!level || level === '—' || level === '-') return 'Не указан';
-  const label = level === 'ВсОШ' ? 'ВсОШ' : level.includes('–') ? `${level} уровни` : `${level} уровень`;
-  return /проект/i.test(item.levelStatus ?? '') ? `${label} · проект РСОШ 2026/27` : label;
+  return level === 'ВсОШ' ? 'ВсОШ' : level.includes('–') ? `${level} уровни` : `${level} уровень`;
 }
 export function scheduleLabel(item: Pick<Olympiad, 'calendarRaw' | 'calendarState' | 'statusRaw' | 'nextEvent'>) {
   if (item.calendarState === 'not_held') return calendarLabels.not_held;

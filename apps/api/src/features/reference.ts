@@ -1,7 +1,8 @@
 // Read side of the reference layer: series, RSOSH profiles, universities and admission benefits.
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { olympiads, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesProfiles, seriesBenefits, universities, referenceSources } from '../db/schema.js';
+import { universityProfiles } from '../reference/university-profiles.js';
 
 async function currentSeason(db: Database) {
   const [row] = await db.select({ season: referenceSources.season }).from(referenceSources).where(eq(referenceSources.key, 'rsosh'));
@@ -52,15 +53,29 @@ export async function universityDetail(db: Database, slug: string) {
   const rows = await db.select({ ...benefitColumns, seriesId: olympiadSeries.id, seriesSlug: olympiadSeries.slug, seriesName: olympiadSeries.name })
     .from(seriesBenefits).innerJoin(olympiadSeries, eq(olympiadSeries.id, seriesBenefits.seriesId))
     .where(eq(seriesBenefits.universityId, university.id)).orderBy(olympiadSeries.name, seriesBenefits.kind, seriesBenefits.diploma);
-  const members = await db.select({ seriesId: olympiadSeriesLinks.seriesId, id: olympiads.id }).from(olympiadSeriesLinks)
+  const seriesIds = [...new Set(rows.map(r => r.seriesId))];
+  // A benefit applies only to catalog cards with a level, the same rule as the catalog filter.
+  const members = seriesIds.length ? await db.select({ seriesId: olympiadSeriesLinks.seriesId, id: olympiads.id, title: olympiads.title, organizers: olympiads.organizers }).from(olympiadSeriesLinks)
     .innerJoin(olympiads, eq(olympiads.id, olympiadSeriesLinks.olympiadId))
-    .where(and(eq(olympiads.inCatalog, true), sql`${olympiads.level} is not null`)).orderBy(olympiads.id);
-  const bySeries = new Map<number, number[]>();
-  for (const m of members) bySeries.set(m.seriesId, [...bySeries.get(m.seriesId) ?? [], m.id]);
+    .where(and(inArray(olympiadSeriesLinks.seriesId, seriesIds), eq(olympiads.inCatalog, true), sql`${olympiads.level} is not null`)).orderBy(olympiads.id) : [];
+  const bySeries = new Map<number, { id: number; title: string }[]>();
+  const organizersBySeries = new Map<number, Set<string>>();
+  for (const m of members) {
+    bySeries.set(m.seriesId, [...bySeries.get(m.seriesId) ?? [], { id: m.id, title: m.title }]);
+    const set = organizersBySeries.get(m.seriesId) ?? new Set<string>();
+    for (const organizer of m.organizers) if (organizer.trim()) set.add(organizer.trim());
+    organizersBySeries.set(m.seriesId, set);
+  }
+  const profile = universityProfiles().get(university.slug);
   return {
     slug: university.slug, name: university.name, fullName: university.fullName, city: university.city,
-    benefits: rows.map(({ seriesId, seriesSlug, seriesName, ...benefit }) => ({ ...benefit,
-      series: { slug: seriesSlug, name: seriesName }, olympiadIds: bySeries.get(seriesId) ?? [] })),
+    type: profile?.type ?? null, description: profile?.description ?? null, site: profile?.site ?? null,
+    benefits: rows.map(({ seriesId, seriesSlug, seriesName, ...benefit }) => {
+      const list = bySeries.get(seriesId) ?? [];
+      return { ...benefit, series: { slug: seriesSlug, name: seriesName }, olympiadIds: list.map(o => o.id),
+        olympiads: [...list].sort((a, b) => a.title.localeCompare(b.title, 'ru') || a.id - b.id),
+        organizers: [...organizersBySeries.get(seriesId) ?? []].slice(0, 10) };
+    }),
   };
 }
 

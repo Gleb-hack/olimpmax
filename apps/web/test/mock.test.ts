@@ -82,3 +82,15 @@ test('deleting the demo account removes its profile and plan from the browser', 
   assert.equal(c.PlanResponse.parse(await mockRequest('/me/plan')).total, 0);
   assert.equal([...storage.keys()].filter(key => key.startsWith('olimp.demo.')).length, 0);
 });
+
+test('demo university page is built from the benefits of the demo olympiads', async () => {
+  const catalog = c.CatalogResponse.parse(await mockRequest('/olympiads?pageSize=100'));
+  const details = await Promise.all(catalog.items.map(async item => c.OlympiadDetail.parse(await mockRequest(`/olympiads/${item.id}`))));
+  const withBenefit = details.find(item => item.benefits?.items.length);
+  if (!withBenefit) return;
+  const slug = withBenefit.benefits!.items[0]!.university.slug;
+  const university = c.UniversityResponse.parse(await mockRequest(`/universities/${slug}`));
+  assert.equal(university.slug, slug);
+  assert.ok(university.benefits.some(b => b.olympiadIds.includes(withBenefit.id)));
+  await assert.rejects(mockRequest('/universities/unknown'));
+});

@@ -113,11 +113,69 @@ export function catalogConditions(db: Database, query: CatalogQuery, options: { 
   ));
   return and(...conditions);
 }
+/** What a card shows, for the «most complete first» order. */
+export type CompletenessFacts = {
+  countdown: boolean; datedSchedule: boolean; scheduleText: boolean; verifiedEvent: boolean;
+  benefits: boolean; level: boolean; description: boolean; organizers: boolean; notHeld: boolean;
+};
+/**
+ * How much a card can tell: days to the next stage and dated stages weigh most, then admission benefits of universities;
+ * level, description and organizer add a little. An olympiad that is not held goes down.
+ */
+export function completenessScore(f: CompletenessFacts) {
+  return (f.countdown ? 4 : 0) + (f.datedSchedule ? 3 : f.scheduleText ? 1 : 0) + (f.verifiedEvent ? 1 : 0) + (f.benefits ? 3 : 0)
+    + (f.level ? 1 : 0) + (f.description ? 1 : 0) + (f.organizers ? 1 : 0) - (f.notHeld ? 4 : 0);
+}
+
+// Scores need the same schedule logic as the cards, so they are computed for the whole catalog at once and kept
+// for ten minutes (and never across a day change: the countdown depends on today).
+const SCORE_TTL = 10 * 60_000;
+let scoreCache: { today: string; at: number; value: Promise<Map<number, number>> } | null = null;
+export function resetCompletenessCache() { scoreCache = null; }
+async function computeScores(db: Database, today: string) {
+  const [rows, benefitSeries] = await Promise.all([
+    db.select().from(olympiads).where(eq(olympiads.inCatalog, true)),
+    db.selectDistinct({ seriesId: seriesBenefits.seriesId }).from(seriesBenefits),
+  ]);
+  const withBenefits = new Set(benefitSeries.map(b => b.seriesId));
+  const scores = new Map<number, number>();
+  for (const { row, card, link, events } of await enrich(db, rows, today)) {
+    scores.set(row.id, completenessScore({
+      countdown: !!card.upcomingStage, datedSchedule: events().length > 0, scheduleText: !!card.calendarRaw?.trim(), verifiedEvent: !!card.nextEvent,
+      benefits: !!link && withBenefits.has(link.seriesId) && !!card.level, level: !!card.level,
+      description: (card.description?.trim().length ?? 0) >= 40, organizers: (card.organizers?.length ?? 0) > 0, notHeld: card.calendarState === 'not_held',
+    }));
+  }
+  return scores;
+}
+export function completenessScores(db: Database, today = moscowToday()) {
+  if (!scoreCache || scoreCache.today !== today || Date.now() - scoreCache.at > SCORE_TTL) {
+    const value = computeScores(db, today);
+    scoreCache = { today, at: Date.now(), value };
+    value.catch(() => { if (scoreCache?.value === value) scoreCache = null; });
+  }
+  return scoreCache.value;
+}
+
 export async function catalog(db: Database, query: CatalogQuery, today = moscowToday(), options: { excludeNotHeld?: boolean; requireSchedule?: boolean } = {}) {
   const where = catalogConditions(db, query, options);
+  const offset = (query.page - 1) * query.pageSize;
+  if (query.sort === 'complete') {
+    const [matches, scores] = await Promise.all([
+      db.select({ id: olympiads.id, rating: olympiads.rating }).from(olympiads).where(where),
+      completenessScores(db, today),
+    ]);
+    const ordered = matches.sort((a, b) => (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0)
+      || (b.rating ?? -Infinity) - (a.rating ?? -Infinity) || a.id - b.id);
+    const pageIds = ordered.slice(offset, offset + query.pageSize).map(match => match.id);
+    const rows = pageIds.length ? await db.select().from(olympiads).where(inArray(olympiads.id, pageIds)) : [];
+    const byId = new Map(rows.map(row => [row.id, row]));
+    const pageRows = pageIds.flatMap(id => byId.get(id) ?? []);
+    return { items: (await enrich(db, pageRows, today)).map(r => r.card), total: ordered.length, page: query.page, pageSize: query.pageSize };
+  }
   const [rows, total] = await Promise.all([
     db.select().from(olympiads).where(where).orderBy(...(query.sort === 'name' ? [asc(olympiads.title), asc(olympiads.id)] : [sql`${olympiads.rating} desc nulls last`, asc(olympiads.id)]))
-      .limit(query.pageSize).offset((query.page - 1) * query.pageSize),
+      .limit(query.pageSize).offset(offset),
     db.select({ value: count() }).from(olympiads).where(where),
   ]);
   return { items: (await enrich(db, rows, today)).map(r => r.card), total: total[0]!.value, page: query.page, pageSize: query.pageSize };
