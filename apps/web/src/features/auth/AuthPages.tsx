@@ -7,7 +7,6 @@ import { max } from '../../lib/max';
 import { useSession } from '../../lib/session';
 import { useFilters } from '../../lib/queries';
 import { SubjectsDialog } from '../profile/SubjectsDialog';
-import welcome from '../../assets/olimp/welcome.png';
 
 function useAuthNavigation(title: string, back: string | null) {
   const navigate = useNavigate();
@@ -27,7 +26,7 @@ export function WelcomePage() {
   if (user) return <Navigate to="/catalog" replace />;
   return <main className="app-shell welcome-page">
     <h1 className="sr-only">Добро пожаловать в Олимп</h1>
-    <div className="welcome-art"><img src={welcome} width={327} height={436} alt="Олимп — твой проводник в мир олимпиад" /></div>
+    <div className="welcome-art"><img src="/main_photo.jpg" width={875} height={1798} alt="Олимп — твой проводник в мир олимпиад" /></div>
     <div className="welcome-actions">
       {error && <Notice tone="error">{error}</Notice>}
       <Link className="auth-button" to="/login" state={state}>Войти</Link>

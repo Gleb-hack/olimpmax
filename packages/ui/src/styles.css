@@ -241,7 +241,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .pagination__jump:disabled { cursor: default; color: var(--olimp-muted); border-color: var(--olimp-border); }
 .pagination__jump:disabled svg { display: none; }
 .page-picker { width: min(calc(100% - 32px), 360px); }
-.page-picker__grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; max-height: min(412px, calc(100dvh - 170px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 2px; margin: -2px; }
+.page-picker__grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; max-height: min(412px, calc(100dvh - 170px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 4px; }
 .page-picker__grid::-webkit-scrollbar { display: none; }
 .page-picker__page { height: 44px; border: 0; border-radius: 12px; background: var(--olimp-blue-soft); color: var(--olimp-blue); font: inherit; font-size: 14px; font-weight: 550; font-variant-numeric: tabular-nums; cursor: pointer; transition: filter .15s; }
 .page-picker__page:hover { filter: brightness(.96); }
@@ -509,11 +509,10 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(160deg, #e6e4fb 0%, #efedfc 45%, #f9f9fd 100%); }
-.welcome-page::before { content: ''; position: absolute; z-index: -1; width: 430px; height: 430px; border-radius: 50%; background: #f7f5ff; opacity: .85; top: -152px; left: -170px; }
-.welcome-art { flex: 1; min-height: 420px; display: flex; align-items: center; justify-content: center; padding: max(40px, env(safe-area-inset-top)) 20px 12px; }
-.welcome-art img { width: min(100%, 327px); height: auto; max-height: 54dvh; object-fit: contain; }
-.welcome-actions { display: flex; flex-direction: column; gap: 8px; padding: 38px 28px max(28px, env(safe-area-inset-bottom)); }
+.welcome-page { min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
+.welcome-art { flex: 1; display: flex; align-items: center; justify-content: center; padding-top: env(safe-area-inset-top); }
+.welcome-art img { display: block; width: 100%; height: auto; max-height: max(360px, calc(100dvh - 200px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); object-fit: contain; }
+.welcome-actions { display: flex; flex-direction: column; gap: 8px; padding: 12px 28px max(20px, env(safe-area-inset-bottom)); }
 .auth-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 16px; background: var(--olimp-blue); color: #fff; font-size: 15px; font-weight: 600; text-align: center; }
 .auth-button--outline { background: white; color: var(--olimp-blue); border: 1.5px solid var(--olimp-blue); }
 .welcome-note { margin-top: 1px; min-height: 38px; padding: 1px 0; color: var(--olimp-muted); font-size: 11px; line-height: 1.4; }
@@ -554,7 +553,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .auth-optional { color: #858c9b; font-size: 11px; margin: -2px 0 8px; }
 .auth-demo { padding: 8px 10px; border-radius: 10px; font-size: 11px; background: #edf0ff; color: #6573a6; margin: -8px 0 16px; }
 .profile-signout { width: 100%; min-height: 44px; margin-top: 12px; color: #6f7787; font-size: 13px; }
-@media (max-height: 680px) { .welcome-art { min-height: 330px; padding-top: 24px; } .welcome-actions { padding-top: 20px; } }
+
 @media (min-width: 600px) { .auth-page { padding-top: 34px; } }
 
 /* «Мой план — Календарь» (Figma 1007:855): list/calendar switch, month grid, legend and events. */
