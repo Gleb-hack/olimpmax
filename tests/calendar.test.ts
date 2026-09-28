@@ -126,3 +126,16 @@ test('a verified date replaces the catalog estimate of the same moment; other ca
     ['Финал', 'day', '2027-02-14', true],
   ]);
 });
+
+test('the verified schedule covers the season up to its last date: older catalog rounds there are dropped', () => {
+  const verified = (name: string, beginsOn: string, endsOn: string) => ({ ...stage, id: randomUUID(), name, kind: 'competition' as const, beginsOn, endsOn });
+  const events = (stages: ReturnType<typeof csv>[]) =>
+    scheduleEvents(stages, { scheduleSource: 'catalog', statusRaw: 'Этап запланирован', calendarState: 'verified', anchor: '2026-09-24' })
+      .map(e => [e.name, e.date, e.estimated]);
+  // Another profile's round copied to the whole series (18 Oct) and an «other» round are before the verified 14 Nov — gone;
+  // the catalog final after the last verified round stays.
+  assert.deepEqual(events([
+    csv('Отборочный этап, 1-й тур', '18 окт'), csv('Отборочный этап для 8-10 классов', '1 ноя', 'other'),
+    verified('1-й отборочный тур', '2026-11-14', '2026-11-15'), csv('Заключительный этап', '26 фев'),
+  ]), [['1-й отборочный тур', '2026-11-14', false], ['1-й отборочный тур', '2026-11-15', false], ['Заключительный этап', '2027-02-26', true]]);
+});
