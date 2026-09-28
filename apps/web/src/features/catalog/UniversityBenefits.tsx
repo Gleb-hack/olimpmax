@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '@olimp/ui';
 import type { UniversityBenefits as Group } from './detail-format';
+import { UniversityLogo } from '../university/UniversityLogo';
 
 const COLLAPSED = 5;
 /** A university of «Вузы с льготами»: opens its page (Figma «Вуз — МФТИ»), where this olympiad is listed first. */
 function UniversityCard({ group, olympiadId }: { group: Group; olympiadId: number }) {
   return <li className="university-benefit">
     <Link className="university-benefit__head" to={`/universities/${group.slug}`} state={{ fromOlympiad: olympiadId }}>
-      <span className="university-benefit__avatar" aria-hidden="true">{group.initials}</span>
+      <UniversityLogo className="university-benefit__avatar" slug={group.slug} initials={group.initials} />
       <span className="university-benefit__copy"><strong>{group.name}{group.organizer && <em className="university-benefit__badge">организатор</em>}</strong><span>{group.summary}</span></span>
       <Icon name="chevron-right" size={18} className="university-benefit__chevron" />
     </Link>

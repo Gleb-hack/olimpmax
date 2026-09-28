@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { completenessScore, type CompletenessFacts } from '../apps/api/src/features/catalog.js';
 import { parseUniversityProfiles } from '../apps/api/src/reference/university-profiles.js';
 import { parseDelimited } from '../packages/contracts/src/index.js';
@@ -28,4 +28,10 @@ test('every university of the reference has a profile for its page', () => {
   assert.equal(profiles.get('innopolis')?.type, 'private');
   // Tracking parameters are not part of the address.
   assert.equal(profiles.get('mgimo')?.rules, 'https://abiturient.mgimo.ru/pravila-priema');
+});
+
+test('every university has a logo tile; a university without one falls back to its initials', () => {
+  const slugs = parseDelimited(readFileSync(new URL('../data/reference/universities.csv', import.meta.url), 'utf8')).map(row => row.slug!);
+  const missing = slugs.filter(slug => !existsSync(new URL(`../apps/web/public/logos/universities/${slug}.webp`, import.meta.url)));
+  assert.deepEqual(missing, []);
 });

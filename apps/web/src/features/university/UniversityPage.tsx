@@ -7,6 +7,7 @@ import { max } from '../../lib/max';
 import { canGoBack } from '../../lib/history';
 import { DetailRow } from '../catalog/DetailRow';
 import { universityInitials } from '../catalog/detail-format';
+import { UniversityLogo } from './UniversityLogo';
 import { benefitOverview, commonRequirement, rulesLabel, siteLabel, universitySeries, universityTypes, type UniversitySeries } from './university-format';
 
 const COLLAPSED = 8;
@@ -65,7 +66,7 @@ export function UniversityPage() {
       : university.isError ? <Notice tone="error">{university.error.message}<Button variant="secondary" onClick={() => university.refetch()}>Повторить</Button></Notice>
       : item && <>
         <header className="university-hero">
-          <span className="university-hero__avatar" aria-hidden="true">{universityInitials(item.name)}</span>
+          <UniversityLogo className="university-hero__avatar" slug={item.slug} initials={universityInitials(item.name)} />
           <div><h1 ref={heading} tabIndex={-1}>{item.name}</h1><p>{item.city}</p></div>
         </header>
         {(item.description || item.fullName) && <section className="olympiad-detail__about"><h2>О вузе</h2><p>{item.description ?? item.fullName}</p></section>}
