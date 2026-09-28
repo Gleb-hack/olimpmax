@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { Stage, NextEvent, CalendarState, ScheduleStatus, UpcomingStage } from '../../../../packages/contracts/src/index.js';
+import type { Stage, NextEvent, CalendarState, ScheduleStatus, UpcomingStage, CalendarEvent } from '../../../../packages/contracts/src/index.js';
 import { parseRuDates, type DayMonth } from '../reference/model.js';
 type CalendarStage = z.infer<typeof Stage>;
 export function moscowToday(now = new Date()) {
@@ -50,43 +50,54 @@ function stageTitle(stage: CalendarStage, list: CalendarStage[]) {
 }
 // The catalog status says the published calendar is a finished or future cycle, not the current one.
 const staleStatus = /следующ\S* цикл|итоги опубликованы|нет ближайших|не проводится|информация ожидается|расписание не опубликовано/i;
+type ScheduleOptions = { scheduleSource: 'catalog' | 'reference'; statusRaw: string; calendarState: z.infer<typeof CalendarState>; anchor: string };
 /**
- * The next stage that has not started yet, for the «N дней до этапа» counter.
- * Calendars from olimpiada.ru and olympiads_clean usually omit the year: it is taken from the school season the schedule
- * was checked in (1 August — 31 July), and the result is marked `estimated`. Verified stages keep their exact dates.
- * Stages given only as a deadline («До 1 ноя») have no known start and are skipped; null — nothing reliable to count.
+ * Every dated moment of the card's schedule for the plan calendar: the start and the end of each stage, or the day
+ * of a one-day stage. Calendars from olimpiada.ru and olympiads_clean usually omit the year: it is taken from the school
+ * season the schedule was checked in (1 August — 31 July), and such events are marked `estimated`.
+ * Verified stages keep their exact dates. A closed cycle («итоги опубликованы») or a not-held olympiad gives no guesses.
  */
-export function upcomingStage(stages: CalendarStage[], options: {
-  scheduleSource: 'catalog' | 'reference'; statusRaw: string; calendarState: z.infer<typeof CalendarState>; anchor: string; today: string;
-}): z.infer<typeof UpcomingStage> | null {
-  if (options.calendarState === 'not_held') return null;
+export function scheduleEvents(stages: CalendarStage[], options: ScheduleOptions): z.infer<typeof CalendarEvent>[] {
+  if (options.calendarState === 'not_held') return [];
   const origin = options.scheduleSource === 'reference' ? 'reference' : 'csv';
   const inferYears = options.scheduleSource === 'reference' || !staleStatus.test(options.statusRaw);
   const [anchorYear, anchorMonth] = options.anchor.split('-').map(Number) as [number, number];
   const seasonYear = anchorMonth >= 8 ? anchorYear : anchorYear - 1;
-  const iso = (d: DayMonth, year: number) => {
+  const iso = (d: DayMonth) => {
+    const year = d.year ?? (d.month >= 8 ? seasonYear : seasonYear + 1);
     const date = new Date(Date.UTC(year, d.month - 1, d.day));
     return date.getUTCMonth() === d.month - 1 ? date.toISOString().slice(0, 10) : null;
   };
-  // Nothing more than eleven months ahead: such a date belongs to another season.
-  const horizon = addDays(options.today, 335);
-  const found: z.infer<typeof UpcomingStage>[] = [];
   const own = stages.filter(stage => stage.origin === origin);
+  const events: z.infer<typeof CalendarEvent>[] = [];
+  const push = (stage: CalendarStage, name: string | null, kind: 'starts' | 'ends' | 'day', date: string | null, estimated: boolean) => {
+    if (date) events.push({ stageId: stage.id, name, stageKind: stage.kind, kind, date, estimated });
+  };
   for (const stage of stages) {
     if (stage.verification === 'verified') {
-      if (stage.beginsOn) found.push({ name: stage.name, kind: stage.kind, startsOn: stage.beginsOn, estimated: false });
+      if (stage.beginsOn && stage.beginsOn === stage.endsOn) push(stage, stage.name, 'day', stage.beginsOn, false);
+      else { push(stage, stage.name, 'starts', stage.beginsOn, false); push(stage, stage.name, 'ends', stage.endsOn, false); }
       continue;
     }
     if (stage.origin !== origin || stage.verification === 'needs_review' || !stage.rawDates) continue;
     const dates = parseRuDates(stage.rawDates);
-    const start = dates ? dates.from ?? (dates.open ? null : dates.to) : null;
-    if (!start) continue;
+    if (!dates) continue;
+    const yearless = dates.to.year === null || (dates.from !== null && dates.from.year === null);
+    if (yearless && !inferYears) continue;
     const name = stageTitle(stage, own);
-    if (start.year !== null) { const day = iso(start, start.year); if (day) found.push({ name, kind: stage.kind, startsOn: day, estimated: false }); continue; }
-    if (!inferYears) continue;
-    const day = iso(start, start.month >= 8 ? seasonYear : seasonYear + 1);
-    if (day) found.push({ name, kind: stage.kind, startsOn: day, estimated: true });
+    if (dates.from) { push(stage, name, 'starts', iso(dates.from), dates.from.year === null); push(stage, name, 'ends', iso(dates.to), dates.to.year === null); }
+    else push(stage, name, dates.open ? 'ends' : 'day', iso(dates.to), dates.to.year === null);
   }
-  return found.filter(s => s.startsOn >= options.today && s.startsOn <= horizon)
-    .sort((a, b) => a.startsOn.localeCompare(b.startsOn))[0] ?? null;
+  return events.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * The next stage that has not started yet, for the «N дней до этапа» counter: the earliest start or one-day stage
+ * from today on. Stages given only as a deadline («До 1 ноя») have no known start and are skipped; null — nothing reliable.
+ */
+export function upcomingStage(stages: CalendarStage[], options: ScheduleOptions & { today: string }): z.infer<typeof UpcomingStage> | null {
+  // Nothing more than eleven months ahead: such a date belongs to another season.
+  const horizon = addDays(options.today, 335);
+  const next = scheduleEvents(stages, options).find(event => event.kind !== 'ends' && event.date >= options.today && event.date <= horizon);
+  return next ? { name: next.name, kind: next.stageKind, startsOn: next.date, estimated: next.estimated } : null;
 }

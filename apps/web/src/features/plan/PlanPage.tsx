@@ -4,6 +4,9 @@ import { Switch } from '@maxhub/max-ui';
 import { Button, Dialog, EmptyState, Header, Loading, Notice, Icon } from '@olimp/ui';
 import { useEvents, usePlan, usePlanActions } from '../../lib/queries';
 import { PlanCard } from './PlanCard';
+import { PlanCalendar } from './PlanCalendar';
+import { soonCount } from './calendar-model';
+import { moscowToday } from '../../lib/format';
 import type { PlanEntry } from '../../lib/api';
 
 function EditPlanItem({ entry, onClose, backTo }: { entry: PlanEntry; onClose: () => void; backTo?: string }) {
@@ -31,6 +34,13 @@ export function PlanPage() {
   const events = useEvents();
   const [subject, setSubject] = useState<number | null>(null);
   const editingId = Number(params.get('olympiad')) || null;
+  // The view is part of the URL, so returning from an olympiad page keeps the calendar open.
+  const view = params.get('view') === 'calendar' ? 'calendar' : 'list';
+  const setView = (value: 'list' | 'calendar') => {
+    const next = new URLSearchParams(params);
+    if (value === 'list') next.delete('view'); else next.set('view', value);
+    setParams(next, { replace: true, state });
+  };
   const setEditingId = (id: number | null) => {
     const next = new URLSearchParams(params);
     if (id === null) next.delete('olympiad'); else next.set('olympiad', String(id));
@@ -45,9 +55,16 @@ export function PlanPage() {
   const editing = entries.find(entry => entry.olympiad.id === editingId);
   useEffect(() => { if (subject !== null && !subjects.some(value => value.id === subject)) setSubject(null); }, [subject, subjects]);
   return <><Header title="Мой план" />
+    <div className="segmented plan-view-switch" role="tablist" aria-label="Вид плана">
+      <button type="button" role="tab" aria-selected={view === 'list'} className={view === 'list' ? 'is-active' : ''} onClick={() => setView('list')}>Список</button>
+      <button type="button" role="tab" aria-selected={view === 'calendar'} className={view === 'calendar' ? 'is-active' : ''} onClick={() => setView('calendar')}>Календарь</button>
+    </div>
+    {view === 'calendar' ? plan.isPending ? <Loading label="Загружаем ваш план…" /> : plan.isError
+      ? <EmptyState icon="clipboard-list" title="План пока недоступен" action={<Button onClick={() => plan.refetch()}>Попробовать снова</Button>}>{plan.error.message}</EmptyState>
+      : <PlanCalendar entries={entries} onOpen={setEditingId} /> : <>
     <div className="subject-tabs" aria-label="Предметы в плане"><button className={`chip ${subject === null ? 'chip--active' : ''}`} aria-pressed={subject === null} onClick={() => setSubject(null)}>Все</button>{subjects.map(value => <button key={value.id} className={`chip ${subject === value.id ? 'chip--active' : ''}`} aria-pressed={subject === value.id} onClick={() => setSubject(value.id)}>{value.name}</button>)}</div>
     {plan.isPending ? <Loading label="Загружаем ваш план…" /> : plan.isError ? <EmptyState icon="clipboard-list" title="План пока недоступен" action={<Button onClick={() => { plan.refetch(); events.refetch(); }}>Попробовать снова</Button>}>{plan.error.message}</EmptyState> : <>
-      <div className="stats"><div className="stat"><span className="stat-icon tone-blue"><Icon name="book" size={14} /></span><strong>{entries.length}</strong><span>в плане</span></div><div className="stat"><span className="stat-icon tone-green"><Icon name="check" size={14} /></span><strong>{entries.filter(entry => entry.tracking).length}</strong><span>отслеживаются</span></div><div className="stat"><span className="stat-icon tone-amber"><Icon name="bell" size={14} /></span><strong>{events.data ? new Set(events.data.items.map(event => event.olympiadId)).size : '—'}</strong><span>скоро</span></div></div>
+      <div className="stats"><div className="stat"><span className="stat-icon tone-blue"><Icon name="book" size={14} /></span><strong>{entries.length}</strong><span>в плане</span></div><div className="stat"><span className="stat-icon tone-green"><Icon name="check" size={14} /></span><strong>{entries.filter(entry => entry.tracking).length}</strong><span>отслеживаются</span></div><div className="stat"><span className="stat-icon tone-amber"><Icon name="bell" size={14} /></span><strong>{soonCount(entries, moscowToday())}</strong><span>скоро</span></div></div>
       {!entries.length ? <EmptyState icon="calendar" title="Большие планы начинаются здесь" action={<Link className="button-link" to="/catalog">Найти олимпиаду</Link>}>Сохраните интересные олимпиады из каталога — они появятся в вашем плане.</EmptyState> : <>
         {events.isError && <Notice tone="warning">Не удалось загрузить ближайшие события. <button className="text-button" onClick={() => events.refetch()}>Повторить</button></Notice>}
         {(events.isPending || shownEvents.length > 0) && <section className="section"><h2 className="section-caption">Ближайшие этапы · 90 дней</h2>
@@ -55,5 +72,5 @@ export function PlanPage() {
         </section>}
         <section className="section"><h2 className="section-caption">{withoutEvent.length === shownEntries.length ? 'Сохранённые олимпиады' : 'Все олимпиады в плане'}</h2><div className="plan-card-list">{shownEntries.map(entry => <PlanCard key={entry.olympiad.id} entry={entry} onOpen={() => setEditingId(entry.olympiad.id)} />)}</div></section>
       </>}
-    </>}{editing && <EditPlanItem key={editing.olympiad.id} entry={editing} backTo={backTo} onClose={() => setEditingId(null)} />}</>;
+    </>}</>}{editing && <EditPlanItem key={editing.olympiad.id} entry={editing} backTo={backTo} onClose={() => setEditingId(null)} />}</>;
 }

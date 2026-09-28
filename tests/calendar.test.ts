@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { stageEvents, calendarSummary, moscowToday, addDays, upcomingStage, anchorDay } from '../apps/api/src/features/calendar.js';
+import { stageEvents, calendarSummary, moscowToday, addDays, upcomingStage, anchorDay, scheduleEvents } from '../apps/api/src/features/calendar.js';
 import { Stage, VerifiedStagesFile, CatalogQuery } from '../packages/contracts/src/index.js';
 const stage = Stage.parse({ id: randomUUID(), name: 'Отборочный этап', kind: 'competition',
   rawDates: null, beginsOn: '2026-09-20', endsOn: '2026-09-22', timezone: 'Europe/Moscow',
@@ -75,4 +75,22 @@ test('paired «Дополнительная дата» lines keep the stage titl
   assert.equal(anchorDay(undefined, '2026-09-27T22:30:00Z'), '2026-09-28');
   // A schedule checked in spring belongs to the season that started the previous August.
   assert.equal(next([csv('Финал', '6 мар')], { anchor: '2027-03-01', today: '2027-03-01' })!.startsOn, '2027-03-06');
+});
+
+test('plan calendar: starts and ends of ranges, deadlines and one-day stages, with the season year', () => {
+  const events = (stages: ReturnType<typeof csv>[], options: Partial<Parameters<typeof scheduleEvents>[1]> = {}) =>
+    scheduleEvents(stages, { scheduleSource: 'catalog', statusRaw: 'Этап запланирован', calendarState: 'unverified', anchor: '2026-09-24', ...options })
+      .map(e => [e.name, e.stageKind, e.kind, e.date, e.estimated]);
+  assert.deepEqual(events([csv('Регистрация', 'До 30 ноя', 'registration'), csv('Отборочный этап', '1—2 дек'), csv('Финал', '14 фев')]), [
+    ['Регистрация', 'registration', 'ends', '2026-11-30', true],
+    ['Отборочный этап', 'competition', 'starts', '2026-12-01', true], ['Отборочный этап', 'competition', 'ends', '2026-12-02', true],
+    ['Финал', 'competition', 'day', '2027-02-14', true]]);
+  // Past stages stay: the calendar shows the whole season, not only what is ahead.
+  assert.equal(events([csv('Первый тур', '27 сен')])[0]![3], '2026-09-27');
+  // A closed cycle gives no guessed dates; an explicit year is kept anyway.
+  assert.deepEqual(events([csv('Финал', '6 мар'), csv('Итоги', '16 декабря 2025 — 20 января 2026')], { statusRaw: 'Итоги опубликованы' }).map(e => e[3]), ['2025-12-16', '2026-01-20']);
+  assert.deepEqual(events([csv('Финал', '6 мар')], { calendarState: 'not_held' }), []);
+  // Verified stages keep exact dates: one day or start and end.
+  assert.deepEqual(scheduleEvents([{ ...stage, beginsOn: '2026-10-05', endsOn: '2026-10-05' }], { scheduleSource: 'catalog', statusRaw: '', calendarState: 'verified', anchor: '2026-09-24' })
+    .map(e => [e.kind, e.date, e.estimated]), [['day', '2026-10-05', false]]);
 });

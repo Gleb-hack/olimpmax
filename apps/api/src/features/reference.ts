@@ -23,10 +23,10 @@ export async function seriesInfo(db: Database, seriesId: number) {
 
 /** Benefits are stored per series; they apply to a card only when the card itself has a level. */
 export async function olympiadBenefits(db: Database, seriesId: number, seriesName: string, level: string | null) {
-  const rows = await db.select({ ...benefitColumns, slug: universities.slug, name: universities.name, city: universities.city })
+  const rows = await db.select({ ...benefitColumns, slug: universities.slug, name: universities.name, city: universities.city, fullName: universities.fullName })
     .from(seriesBenefits).innerJoin(universities, eq(universities.id, seriesBenefits.universityId))
     .where(eq(seriesBenefits.seriesId, seriesId)).orderBy(universities.name, seriesBenefits.kind, seriesBenefits.diploma);
-  const items = rows.map(({ slug, name, city, ...benefit }) => ({ university: { slug, name, city }, ...benefit }));
+  const items = rows.map(({ slug, name, city, fullName, ...benefit }) => ({ university: { slug, name, city, fullName }, ...benefit }));
   const applicable = level !== null;
   const season = items.length && !applicable ? await currentSeason(db) : null;
   const note = !items.length ? null : applicable

@@ -182,7 +182,7 @@ test('normalized question avoids repeating long official titles already identifi
 
 test('fresh server preferences and plan reach both model calls and supply missing search filters', async () => {
   const userContext = { profile: { grade: 10, subjects: [{ id: 8, name: 'Информатика' }], online: true, onsite: false },
-    plan: { total: 1, truncated: false, items: [{ id: item.id, title: item.title, tracking: false, note: 'Подготовиться к финалу' }] } };
+    plan: { total: 1, truncated: false, items: [{ id: item.id, title: item.title, tracking: false }] } };
   let calls = 0;
   await answerAssistant(request(), { ...data, userContext: async () => userContext, search: async query => {
     assert.deepEqual(query.grades, [10]); assert.deepEqual(query.subjectIds, [8]); assert.deepEqual(query.formats, ['online']);
