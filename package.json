@@ -25,6 +25,7 @@
     "db:import": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/import.ts",
     "db:audit": "node --import tsx apps/api/src/scripts/audit.ts",
     "db:stages": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/stages.ts",
+    "db:verified": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/stages.ts data/verified/stages-2026-27.json",
     "db:reference": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/reference.ts",
     "data:check": "node --import tsx apps/api/src/scripts/check-reference.ts",
     "db:local": "node --env-file-if-exists=.env scripts/local-db.mjs",

@@ -443,6 +443,12 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .olympiad-schedule li span, .olympiad-schedule li small { display: block; white-space: pre-line; }
 .olympiad-schedule li small { margin-top: 2px; color: #9aa2b1; font-size: 11px; }
 .olympiad-schedule ol + .olympiad-schedule__hint { margin: 14px 0 0; }
+.olympiad-schedule__group { font-size: 12px; font-weight: 600; color: #4e5d77; margin: 4px 0 12px; }
+.olympiad-schedule__hint + .olympiad-schedule__group { margin-top: 18px; }
+.olympiad-schedule__source { font-size: 11px; padding: 0; }
+.olympiad-schedule .olympiad-schedule__catalog > summary { padding: 0; margin: 18px 0 12px; font-weight: 600; color: #4e5d77; justify-content: flex-start; }
+.olympiad-schedule__catalog > summary::after { content: ' ›'; font-weight: 400; }
+.olympiad-schedule__catalog[open] > summary::after { content: ' ⌄'; }
 .preserve-lines { white-space: pre-wrap; }
 .comparison-dialog { width: min(calc(100% - 32px), 430px); }
 .comparison-wrap { overflow-x: auto; overscroll-behavior-x: contain; margin-bottom: 16px; border: 1px solid var(--olimp-border); border-radius: 14px; }

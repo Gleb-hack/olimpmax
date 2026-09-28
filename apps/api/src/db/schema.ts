@@ -57,14 +57,14 @@ export const stages = pgTable('olympiad_stages', {
   beginsOn: date('begins_on'), endsOn: date('ends_on'), timezone: text('timezone').notNull().default('Europe/Moscow'),
   verification: verificationEnum('verification').notNull().default('unverified'),
   sourceUrl: text('source_url'), verifiedAt: timestamp('verified_at', { withTimezone: true, mode: 'string' }),
-  verifiedBy: text('verified_by'), calendarHash: text('calendar_hash').notNull(),
+  calendarHash: text('calendar_hash').notNull(),
   updatedAt: timestampNow('updated_at'),
 }, t => [
   uniqueIndex('stages_source_key_unique').on(t.olympiadId, t.origin, t.sourceKey),
   index('stages_next_event_idx').on(t.verification, t.beginsOn, t.endsOn),
   check('stages_dates_ordered', sql`${t.beginsOn} is null or ${t.endsOn} is null or ${t.beginsOn} <= ${t.endsOn}`),
   check('stages_timezone_valid', sql`${t.timezone} = 'Europe/Moscow'`),
-  check('stages_verified_evidence', sql`${t.verification} <> 'verified' or (${t.origin} = 'verified_import' and ${t.sourceUrl} is not null and ${t.verifiedAt} is not null and ${t.verifiedBy} is not null and (${t.beginsOn} is not null or ${t.endsOn} is not null))`),
+  check('stages_verified_evidence', sql`${t.verification} <> 'verified' or (${t.origin} = 'verified_import' and ${t.sourceUrl} is not null and ${t.verifiedAt} is not null and (${t.beginsOn} is not null or ${t.endsOn} is not null))`),
   check('stages_csv_no_dates', sql`${t.origin} <> 'csv' or (${t.beginsOn} is null and ${t.endsOn} is null and ${t.verification} = 'unverified')`),
 ]);
 export const users = pgTable('user_profiles', {

@@ -150,7 +150,7 @@ test('personal plans require verified identity, are isolated and idempotent', as
 });
 test('verified stage events, tracking switch, re-import preservation and invalidation', async () => {
   const verified = [{ olympiadId: 88, key: 'test-season-school', name: 'Проверка тестового события', kind: 'competition',
-    beginsOn: '2026-09-20', endsOn: '2026-09-25', sourceUrl: 'https://example.org/test-only', verifiedAt: now.toISOString(), verifiedBy: 'Integration test' }];
+    beginsOn: '2026-09-20', endsOn: '2026-09-25', sourceUrl: 'https://example.org/test-only', verifiedAt: now.toISOString() }];
   await importVerifiedStages(connection.db, verified, now);
   await importVerifiedStages(connection.db, verified, now);
   let events = contracts.PlanEventsResponse.parse((await app.inject({ url: '/me/plan/events?days=10', headers: auth(tokenA) })).json());
@@ -175,7 +175,7 @@ test('verified stage events, tracking switch, re-import preservation and invalid
 });
 test('invalid verified batch rolls back, unknown IDs cannot be saved, database constraints hold', async () => {
   const valid = { olympiadId: 88, key: 'rollback-test', name: 'Тест', kind: 'competition', beginsOn: '2026-09-23', endsOn: null,
-    sourceUrl: 'https://example.org/test-only', verifiedAt: now.toISOString(), verifiedBy: 'Integration test' };
+    sourceUrl: 'https://example.org/test-only', verifiedAt: now.toISOString() };
   await assert.rejects(importVerifiedStages(connection.db, [valid, { ...valid, olympiadId: 2147483647 }], now), /не найдена/);
   const check = await connection.pool.query("select count(*) from olympiad_stages where source_key = 'rollback-test'");
   assert.equal(Number(check.rows[0].count), 0);
@@ -243,7 +243,7 @@ test('assistant deadline lookup applies subject, grade and verified-date filters
   const reader = databaseAssistantData(connection.db, '', '2026-09-23');
   assert.deepEqual(await reader.deadlineIds(contracts.CatalogQuery.parse({})), []);
   await importVerifiedStages(connection.db, [{ olympiadId: 4357, key: 'assistant-test-only', name: 'Регистрация', kind: 'registration',
-    beginsOn: '2026-09-23', endsOn: '2026-10-10', sourceUrl: 'https://example.org/test-only', verifiedAt: now.toISOString(), verifiedBy: 'Integration test' }], now);
+    beginsOn: '2026-09-23', endsOn: '2026-10-10', sourceUrl: 'https://example.org/test-only', verifiedAt: now.toISOString() }], now);
   const filters = contracts.FiltersResponse.parse((await app.inject('/olympiads/filters')).json());
   const informaticsId = filters.subjects.find(subject => subject.name === 'Информатика')!.id;
   const chemistryId = filters.subjects.find(subject => subject.name === 'Химия')!.id;

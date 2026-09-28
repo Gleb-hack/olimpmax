@@ -11,7 +11,7 @@ import { canGoBack } from '../../lib/history';
 import { useUI } from '../../lib/ui-store';
 import { OlympiadMeta, OlympiadStatus, OlympiadTags } from './OlympiadSummary';
 import { stageModeLabels } from '@olimp/contracts';
-import { hiddenReferenceNote, primaryStages, registrationLabel, stageSummary, universityBenefits } from './detail-format';
+import { hiddenReferenceNote, primaryStages, registrationLabel, scheduleGroups, stageSummary, universityBenefits, verifiedStageDates } from './detail-format';
 import { UniversityBenefits } from './UniversityBenefits';
 import { DetailRow } from './DetailRow';
 
@@ -46,6 +46,8 @@ export function DetailPage() {
   useEffect(() => { if (item) { document.title = `${item.title} · Olimp`; heading.current?.focus({ preventScroll: true }); } }, [item]);
   const stages = item ? primaryStages(item) : [];
   const hasSchedule = stages.length > 0 || !!item?.calendarRaw;
+  const groups = item ? scheduleGroups(item) : { verified: [], catalog: [], sources: [] };
+  const catalogList = <ol>{groups.catalog.map(stage => <li key={stage.id}><strong>{stage.name || 'Этап олимпиады'}</strong><span>{stage.rawDates || 'Дата не указана'}</span>{stage.mode && <small>{stageModeLabels[stage.mode]}</small>}</li>)}</ol>;
   const referenceNote = item ? hiddenReferenceNote(item) : null;
   const benefits = item?.benefits;
   // A profile outside the RSOSH list has no level; say why instead of a bare «Не указан».
@@ -64,7 +66,7 @@ export function DetailPage() {
         <DetailRow icon="calendar" label="Статус по источнику" value={item.rawSource['Статус исходный'] || item.statusRaw || 'Не указан'} />
         <DetailRow icon="bar-chart" label="Уровень олимпиады" value={levelLabel(item)} hint={levelHint} />
         <DetailRow icon="bell" label="Сроки регистрации" value={registrationLabel(item)} />
-        <DetailRow icon="calendar" label="Этапы" value={stageSummary(stages)} />
+        <DetailRow icon="calendar" label="Этапы" value={stageSummary(groups.verified.length ? groups.verified : stages)} />
         {countdown && <DetailRow icon="calendar" label={countdown.label} value={`${countdown.value} · ${countdown.stage}`} hint={countdown.hint} />}
         <DetailRow icon="book" label="Организатор" value={item.organizers.join(', ') || 'Не указан'} />
       </dl></section>
@@ -72,7 +74,12 @@ export function DetailPage() {
       <button type="button" className={`text-button olympiad-detail__compare ${compared ? 'is-active' : ''}`} aria-pressed={compared} onClick={() => toggleComparison(id)}><Icon name={compared ? 'check' : 'compare'} size={15} />{compared ? 'В сравнении' : 'Добавить к сравнению'}</button>
       {action.isError && <Notice tone="error">{action.error.message}</Notice>}
       {hasSchedule && <details className="olympiad-schedule" open><summary>Расписание этапов<Icon name="chevron-down" size={16} /></summary><div className="olympiad-schedule__content">
-        {stages.length ? <ol>{stages.map(stage => <li key={stage.id}><strong>{stage.name || 'Этап олимпиады'}</strong><span>{stage.verification === 'verified' ? [stage.beginsOn && `С ${formatDay(stage.beginsOn)}`, stage.endsOn && `до ${formatDay(stage.endsOn)}`].filter(Boolean).join(' ') || 'Дата не указана' : stage.rawDates || 'Дата не указана'}</span>{stage.mode && <small>{stageModeLabels[stage.mode]}</small>}</li>)}</ol> : <p className="preserve-lines">{item.calendarRaw}</p>}
+        {groups.verified.length > 0 && <><h3 className="olympiad-schedule__group">Сроки с сайта организатора</h3>
+          <ol>{groups.verified.map(stage => <li key={stage.id}><strong>{stage.name || 'Этап олимпиады'}</strong><span>{verifiedStageDates(stage)}</span></li>)}</ol>
+          <p className="olympiad-schedule__hint">Проверено {groups.verified[0]?.verifiedAt ? formatDay(groups.verified[0].verifiedAt.slice(0, 10)) : ''} · {groups.sources.map(({ host, url }, index) => <span key={url}>{index > 0 && ', '}<button type="button" className="text-button olympiad-schedule__source" onClick={() => max.openExternal(url)}>{host}</button></span>)}</p></>}
+        {groups.catalog.length > 0 && groups.verified.length > 0 && <details className="olympiad-schedule__catalog"><summary>Расписание из каталога</summary>{catalogList}</details>}
+        {groups.catalog.length > 0 && !groups.verified.length && catalogList}
+        {!groups.catalog.length && !groups.verified.length && <p className="preserve-lines">{item.calendarRaw}</p>}
         {item.scheduleSource !== 'reference' && item.scheduleUpdatedRaw && <p className="olympiad-schedule__hint">{item.scheduleUpdatedRaw}</p>}
         {referenceNote && <p className="olympiad-schedule__hint">{referenceNote}</p>}
       </div></details>}

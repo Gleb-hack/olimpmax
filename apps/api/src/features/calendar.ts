@@ -88,7 +88,31 @@ export function scheduleEvents(stages: CalendarStage[], options: ScheduleOptions
     if (dates.from) { push(stage, name, 'starts', iso(dates.from), dates.from.year === null); push(stage, name, 'ends', iso(dates.to), dates.to.year === null); }
     else push(stage, name, dates.open ? 'ends' : 'day', iso(dates.to), dates.to.year === null);
   }
-  return events.sort((a, b) => a.date.localeCompare(b.date));
+  return withoutVerifiedDuplicates(events, new Set(stages.filter(s => s.verification === 'verified').map(s => s.id)))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * How far apart a catalog date and a verified date of the same kind of stage may be and still be the same moment.
+ * Registration gets a wider window: catalog texts often keep last season's deadline, and there is usually one registration.
+ */
+export const DUPLICATE_WINDOW_DAYS = { registration: 60, competition: 14, other: 14 } as const;
+const startLike = (kind: string) => kind === 'starts' || kind === 'day';
+const endLike = (kind: string) => kind === 'ends' || kind === 'day';
+const stageName = (name: string | null) => name?.toLocaleLowerCase('ru').replace(/ё/g, 'е').replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim() || null;
+/**
+ * A verified stage and the catalog text usually describe the same moment («до 1 ноя» and the organizer's 31 October).
+ * A catalog event is dropped when a verified event of the same kind of stage and the same kind of moment (start or end)
+ * lies within DUPLICATE_WINDOW_DAYS or carries the same stage name, so the calendar, the counter and bot reminders
+ * show one date — the verified one. Catalog stages without a verified counterpart (a final not yet announced) stay.
+ */
+function withoutVerifiedDuplicates(events: z.infer<typeof CalendarEvent>[], verifiedIds: Set<string>) {
+  if (!verifiedIds.size) return events;
+  const verified = events.filter(e => verifiedIds.has(e.stageId));
+  const days = (a: string, b: string) => Math.abs(Date.parse(a) - Date.parse(b)) / 86_400_000;
+  return events.filter(event => verifiedIds.has(event.stageId) || !verified.some(v => v.stageKind === event.stageKind
+    && ((startLike(event.kind) && startLike(v.kind)) || (endLike(event.kind) && endLike(v.kind)))
+    && (days(v.date, event.date) <= DUPLICATE_WINDOW_DAYS[v.stageKind] || (stageName(v.name) !== null && stageName(v.name) === stageName(event.name)))));
 }
 
 /**

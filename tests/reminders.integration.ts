@@ -43,8 +43,8 @@ test('reminders: due today, once per threshold, retries and refusals, settings A
   await importCsv(connection.db, readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url)), 'test.csv');
   const { db, pool } = connection;
   // A verified registration deadline three days after «today» (1 October, 10:00 Moscow).
-  await pool.query(`insert into olympiad_stages (olympiad_id, source_key, origin, name, kind, ends_on, verification, source_url, verified_at, verified_by, calendar_hash)
-    select 88, 'test-registration', 'verified_import', 'Регистрация', 'registration', '2026-10-04', 'verified', 'https://example.org/rules', now(), 'Тест', calendar_hash from olympiads where id = 88`);
+  await pool.query(`insert into olympiad_stages (olympiad_id, source_key, origin, name, kind, ends_on, verification, source_url, verified_at, calendar_hash)
+    select 88, 'test-registration', 'verified_import', 'Регистрация', 'registration', '2026-10-04', 'verified', 'https://example.org/rules', now(), calendar_hash from olympiads where id = 88`);
   const now = new Date('2026-10-01T07:00:00Z');
   const transient = new Set<number>([905]);
   const messenger = fakeMessenger(userId => userId === 904 ? new DeliveryError('MAX 403 chat.denied', true)
