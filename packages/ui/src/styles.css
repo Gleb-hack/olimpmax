@@ -653,3 +653,6 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
   .chat-bubble { max-width: min(86%, 520px); }
   .chat-web-sources { width: min(92%, 440px); }
 }
+/* University logos (public/logos/universities): a square tile clipped by the avatar's rounded corners. */
+.university-benefit__avatar.has-logo, .university-hero__avatar.has-logo { overflow: hidden; background: #fff; box-shadow: 0 0 0 1px #e3e7ee; }
+.university-benefit__avatar.has-logo img, .university-hero__avatar.has-logo img { display: block; width: 100%; height: 100%; object-fit: cover; }
