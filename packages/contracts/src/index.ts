@@ -40,7 +40,8 @@ export const CatalogQuery = z.object({
   /** Only olympiads of these series (slugs from /series/:slug). */
   series: list(Slug),
   scheduleStatus: ScheduleStatus.optional(),
-  sort: z.enum(['rating', 'name']).default('rating'),
+  /** complete — cards with the most data first (dated stages, days to the next stage, university benefits); then by rating. */
+  sort: z.enum(['complete', 'rating', 'name']).default('complete'),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 }).strict();
@@ -129,8 +130,20 @@ export const SlugParams = z.object({ slug: Slug });
 export const UniversityListResponse = z.object({
   items: z.array(UniversityRef.extend({ fullName: z.string().nullable(), seriesCount: z.number().int(), olympiadCount: z.number().int() })),
 });
-export const SeriesBenefit = Benefit.omit({ university: true }).extend({ series: SeriesRef, olympiadIds: z.array(z.number().int()) });
-export const UniversityResponse = UniversityRef.extend({ fullName: z.string().nullable(), benefits: z.array(SeriesBenefit) });
+export const SeriesBenefit = Benefit.omit({ university: true }).extend({
+  series: SeriesRef, olympiadIds: z.array(z.number().int()),
+  /** Catalog cards of the series the benefit applies to (they have a level). */
+  olympiads: z.array(z.object({ id: z.number().int(), title: z.string() })).optional(),
+  /** Organizers of those cards: tells the university's own olympiads apart. */
+  organizers: z.array(z.string()).optional(),
+});
+export const UniversityType = z.enum(['state', 'private']);
+export const UniversityResponse = UniversityRef.extend({
+  fullName: z.string().nullable(),
+  /** «О вузе» from data/reference/university-profiles.csv. */
+  type: UniversityType.nullable().optional(), description: z.string().nullable().optional(), site: z.string().url().nullable().optional(),
+  benefits: z.array(SeriesBenefit),
+});
 export const SeriesStage = z.object({
   id: z.string().uuid(), position: z.number().int(), name: z.string(), kind: z.enum(['registration', 'competition', 'other']),
   rawDates: z.string(), mode: StageMode.nullable(), beginsOn: IsoDay.nullable(), endsOn: IsoDay.nullable(),

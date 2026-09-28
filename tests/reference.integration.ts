@@ -110,6 +110,11 @@ test('university and series endpoints', async () => {
   const innopolis = mipt.benefits.find(b => b.series.slug === 'innopolis-open')!;
   assert.deepEqual([innopolis.kind, innopolis.diploma, innopolis.minScore, innopolis.maxScore], ['bvi', 'winner', 75, 85]);
   assert.deepEqual(innopolis.olympiadIds, [5283, 5284, 5367, 5698, 5770]);
+  // The page lists the cards by title and shows «О вузе» from data/reference/university-profiles.csv.
+  assert.deepEqual(innopolis.olympiads!.map(o => o.id).sort(), [5283, 5284, 5367, 5698, 5770]);
+  assert.match(innopolis.olympiads![0]!.title, /Innopolis Open по информатике/);
+  assert.equal(mipt.type, 'state'); assert.equal(mipt.site, 'https://mipt.ru/'); assert.ok(mipt.description);
+  assert.ok(mipt.benefits.find(b => b.series.slug === 'phystech')?.organizers?.some(o => /физико-технический/i.test(o)));
   const series = await get(contracts.SeriesResponse, '/series/ranepa');
   assert.equal(series.olympiads.length, 8);
   assert.equal(series.stages.length, 3);

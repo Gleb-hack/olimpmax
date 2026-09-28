@@ -108,6 +108,7 @@ export const api = {
   async catalog(query: string, signal?: AbortSignal) { return c.CatalogResponse.parse(await request(`/olympiads?${query}`, { signal })); },
   async filters() { return c.FiltersResponse.parse(await request('/olympiads/filters')); },
   async detail(id: number) { return c.OlympiadDetail.parse(await request(`/olympiads/${id}`)); },
+  async university(slug: string) { return c.UniversityResponse.parse(await request(`/universities/${encodeURIComponent(slug)}`)); },
   async plan() { return c.PlanResponse.parse(await request('/me/plan', {}, true)); },
   async events() { return c.PlanEventsResponse.parse(await request('/me/plan/events?days=90', {}, true)); },
   async save(id: number) { await request(`/me/plan/${id}`, { method: 'PUT' }, true); },

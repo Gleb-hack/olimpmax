@@ -23,10 +23,10 @@ test('source schedules and registration text are visible without manufacturing d
   assert.equal(registrationLabel({ ...item, stages: [stage({ kind: 'competition' })] }), 'В расписании не указан');
 });
 
-test('level labels preserve draft status, distinguish ВсОШ and do not infer a missing level', () => {
-  assert.equal(levelLabel({ level: 'III', levelStatus: 'Проект РСОШ 2026/27; не утвержден на 24.09.2026' }), 'III уровень · проект РСОШ 2026/27');
+test('level labels show only the level, distinguish ВсОШ and do not infer a missing level', () => {
+  assert.equal(levelLabel({ level: 'III', levelStatus: 'Проект РСОШ 2026/27; не утвержден на 24.09.2026' }), 'III уровень');
   assert.equal(levelLabel({ level: 'ВсОШ' }), 'ВсОШ');
-  assert.equal(levelLabel({ level: 'II–III', levelStatus: 'Проект РСОШ 2026/27' }), 'II–III уровни · проект РСОШ 2026/27');
+  assert.equal(levelLabel({ level: 'II–III', levelStatus: 'Проект РСОШ 2026/27' }), 'II–III уровни');
   assert.equal(levelLabel({ level: null, levelStatus: 'Профиль не входит в перечень РСОШ 2026/27' }), 'Не указан');
   assert.equal(levelLabel({ level: '—' }), 'Не указан');
   assert.equal(levelLabel({}), 'Не указан');

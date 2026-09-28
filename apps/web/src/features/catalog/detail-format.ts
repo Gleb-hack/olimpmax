@@ -49,19 +49,21 @@ export function universityInitials(name: string) {
   if (abbreviation) return abbreviation.slice(0, 2);
   return words.slice(0, 2).map(word => word.charAt(0).toLocaleUpperCase('ru')).join('') || '?';
 }
-const shortBenefit = (b: Pick<Benefit, 'kind' | 'diploma'>) => `${b.kind === 'bvi' ? 'БВИ' : '100 баллов ЕГЭ'}${b.diploma === 'winner' ? ' победителям' : ''}`;
+export const shortBenefit = (b: Pick<Benefit, 'kind' | 'diploma'>) => `${b.kind === 'bvi' ? 'БВИ' : '100 баллов ЕГЭ'}${b.diploma === 'winner' ? ' победителям' : ''}`;
 export function requirementText(b: Pick<Benefit, 'requirement' | 'minScore'>) {
   if (!b.requirement) return 'Минимальный балл ЕГЭ для подтверждения не указан';
   return b.minScore === null ? b.requirement : `Подтвердить: ${b.requirement}`;
 }
 const words = (value: string) => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').match(/[\p{L}\p{N}]+/gu) ?? [];
+// Words every other university has in its full name: they say nothing about which university it is.
+const genericWords = new Set(['национальный', 'исследовательский', 'университет', 'государственный', 'федеральный', 'российский', 'имени', 'институт', 'академия']);
 /** The olympiad's own university: «МГИМО (У) МИД России» ↔ «МГИМО», or most words of the full name among the organizer's. */
 export function isOrganizer(university: Benefit['university'], organizers: string[]) {
   return organizers.some(organizer => {
     const own = new Set(words(organizer));
     if (/^[А-ЯЁA-Z]{3,}$/u.test(university.name) && own.has(university.name.toLocaleLowerCase('ru'))) return true;
     // «(национальный исследовательский университет)» is a status, not part of the name.
-    const full = words((university.fullName ?? '').replace(/\([^)]*\)/g, ' ')).filter(word => word.length >= 4);
+    const full = words((university.fullName ?? '').replace(/\([^)]*\)/g, ' ')).filter(word => word.length >= 4 && !genericWords.has(word));
     return full.length >= 2 && full.filter(word => own.has(word)).length / full.length >= 0.7;
   });
 }
