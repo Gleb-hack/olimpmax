@@ -38,12 +38,11 @@ export function OlympiadTags({ item, compact = false }: { item: Olympiad; compac
   return <div className="tags olympiad-tags">{subjects.map(subject => <span className="tag tag--blue" key={subject.id}>{subject.name}</span>)}{compact && item.subjects.length > 3 && <span className="tag">+{item.subjects.length - 3}</span>}<span className="tag">{gradeLabel(item)}</span>{levelLabel(item) !== 'Не указан' && <span className="tag">{levelLabel(item)}</span>}</div>;
 }
 
-/** «35 дней до этапа «…»». Hidden when the next stage start is unknown or has passed. */
+/** «35 дней до этапа «…»» or «13 дней до конца этапа «…»». Hidden when nothing is ahead. */
 export function StageCountdown({ item, className }: { item: Olympiad; className?: string }) {
   const countdown = stageCountdown(item);
   if (!countdown) return null;
-  const title = `Начало — ${countdown.date}`;
-  return <p className={['stage-countdown', countdown.days <= 3 ? 'stage-countdown--soon' : '', className].filter(Boolean).join(' ')} title={title}>
+  return <p className={['stage-countdown', countdown.days <= 3 ? 'stage-countdown--soon' : '', className].filter(Boolean).join(' ')} title={countdown.hint}>
     <Icon name="calendar" size={13} /><strong>{countdown.value}</strong><span>{countdown.text}</span>
   </p>;
 }

@@ -80,14 +80,17 @@ test('deadline requests pass existing source schedules to the model instead of r
   let calls = 0;
   const result = await answerAssistant(request('Ближайшие дедлайны'), { ...data, scheduleIds: async query => {
     assert.deepEqual(query.subjectIds, [8]); assert.deepEqual(query.grades, [9]); assert.equal(query.q, 'Наше наследие'); return [item.id];
-  } }, async (_system, payload) => {
+  } }, async (system, payload) => {
     if (++calls === 1) return { intent: 'deadlines', queries: ['Наше наследие'], subjectIds: [8], grade: 9 };
     const input = payload as { scheduleMode: string; evidence: ReturnType<typeof evidenceFor>[] };
     assert.equal(input.scheduleMode, 'source_text');
+    // Short answers: no «сроки из источника / сезон нужно уточнить» disclaimer is asked for.
+    assert.doesNotMatch(system, /сезон нужно уточнить|порядок не гарантирует/);
+    assert.match(system, /ЛАКОНИЧНО и только на заданный вопрос/);
     assert.equal(input.evidence[0]!.calendarText, item.calendarRaw);
     assert(input.evidence[0]!.sourceStages.length > 0);
     assert.equal(input.evidence[0]!.verifiedStages.length, 0);
-    return { message: 'По расписанию: школьный тур — 1–19 сен. Сезон нужно уточнить.', olympiadIds: [item.id] };
+    return { message: 'По расписанию: школьный тур — 1–19 сен.', olympiadIds: [item.id] };
   }, '2026-09-23', signal);
   assert.equal(calls, 2); assert.equal(result.olympiads[0]!.id, item.id);
   assert.match(result.message, /1–19 сен/); assert.equal(result.research, undefined);

@@ -63,3 +63,9 @@ export function commonRequirement(university: Pick<University, 'benefits'>) {
 export function siteLabel(url: string) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
 }
+
+/** «Документ PDF на pk.mipt.ru» / «Страница на hse.ru»: what the admission-rules link opens. */
+export function rulesLabel(url: string) {
+  const pdf = /\.pdf$/i.test((() => { try { return decodeURIComponent(new URL(url).pathname); } catch { return url; } })());
+  return `${pdf ? 'Документ PDF' : 'Страница'} на ${siteLabel(url)}`;
+}

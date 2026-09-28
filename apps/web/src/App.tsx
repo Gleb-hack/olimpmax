@@ -1,6 +1,6 @@
 import { Component, useEffect, type ErrorInfo, type ReactNode } from 'react';
 import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { BottomNav, Button, EmptyState, Icon } from '@olimp/ui';
+import { BottomNav, Button, EmptyState } from '@olimp/ui';
 import { StartupScreen } from './features/auth/StartupScreen';
 import { CatalogPage } from './features/catalog/CatalogPage';
 import { SearchPage } from './features/catalog/SearchPage';
@@ -42,8 +42,6 @@ function Layout() {
   const historyBack = (university || state?.historyBack === true) && canGoBack();
   const planItem = pathname === '/plan' && new URLSearchParams(queryString).has('olympiad');
   const chat = pathname === '/olimp';
-  const wide = useUI(state => state.wide);
-  const toggleWide = useUI(state => state.toggleWide);
   const comparing = useUI(state => state.comparisonIds.length >= 2) && (olympiad || search || pathname === '/catalog');
   const backTo = typeof state?.backTo === 'string' && /^\/(?:catalog|search|olimp|universities\/[a-z0-9-]+)(?:\?|$)/.test(state.backTo) ? state.backTo : '/catalog';
   const subpage = pathname.startsWith('/profile/');
@@ -54,10 +52,8 @@ function Layout() {
     heading?.focus({ preventScroll: true });
     return max.backButton(subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : historyBack ? () => navigate(-1) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null);
   }, [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo, historyBack]);
-  // The width toggle stays outside the shell: the chat shell is transformed, which would pin the button inside it.
-  return <><div className={`app-shell ${wide ? 'app-shell--wide' : ''} ${chat ? 'app-shell--chat' : ''} ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />
-    {!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}</div>
-    <button type="button" className="width-toggle" aria-pressed={wide} aria-label={wide ? 'Обычная ширина' : 'Широкий режим'} title={wide ? 'Обычная ширина' : 'Широкий режим — как на планшете'} onClick={toggleWide}><Icon name={wide ? 'minimize' : 'maximize'} size={16} /></button></>;
+  return <div className={`app-shell ${chat ? 'app-shell--chat' : ''} ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />
+    {!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}</div>;
 }
 function ProtectedApp() {
   const { user } = useSession();

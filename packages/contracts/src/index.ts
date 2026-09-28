@@ -63,7 +63,6 @@ export const NextEvent = z.object({
   sourceUrl: z.string().url(),
 });
 export const CalendarState = z.enum(['unknown', 'unverified', 'verified', 'needs_review', 'no_upcoming', 'not_held']);
-/** Start of the next stage for the «N дней до этапа» counter; `estimated` — the source gave no year, it comes from the season. */
 /**
  * A dated moment of a plan olympiad for the calendar: `starts`/`ends` of a stage or a one-day stage (`day`).
  * `estimated` — the source gave no year, it comes from the season of the schedule.
@@ -72,7 +71,14 @@ export const CalendarEvent = z.object({
   stageId: z.string().uuid(), name: z.string().nullable(), stageKind: z.enum(['registration', 'competition', 'other']),
   kind: z.enum(['starts', 'ends', 'day']), date: IsoDay, estimated: z.boolean(),
 });
-export const UpcomingStage = z.object({ name: z.string().nullable(), kind: z.enum(['registration', 'competition', 'other']), startsOn: IsoDay, estimated: z.boolean() });
+/**
+ * The nearest stage for the «N дней» counter. `event: starts` — the stage has not begun, `date` is its start;
+ * `event: ends` — the stage is running or only its deadline is known («до 11 октября»), `date` is its end.
+ */
+export const UpcomingStage = z.object({
+  name: z.string().nullable(), kind: z.enum(['registration', 'competition', 'other']),
+  event: z.enum(['starts', 'ends']), date: IsoDay, estimated: z.boolean(),
+});
 export const SeriesRef = z.object({ slug: Slug, name: z.string() });
 export const UniversityRef = z.object({ slug: Slug, name: z.string(), city: z.string() });
 export const Benefit = z.object({
@@ -142,6 +148,8 @@ export const UniversityResponse = UniversityRef.extend({
   fullName: z.string().nullable(),
   /** «О вузе» from data/reference/university-profiles.csv. */
   type: UniversityType.nullable().optional(), description: z.string().nullable().optional(), site: z.string().url().nullable().optional(),
+  /** Admission rules (a page or a PDF) of the university. */
+  rules: z.string().url().nullable().optional(),
   benefits: z.array(SeriesBenefit),
 });
 export const SeriesStage = z.object({

@@ -26,7 +26,7 @@ test('plan does not label competition dates as registration deadlines', () => {
 });
 
 test('stage countdown counts Moscow calendar days and disappears once the stage has started', () => {
-  const upcomingStage = { name: 'Муниципальный этап', kind: 'competition' as const, startsOn: '2026-11-02', estimated: true };
+  const upcomingStage = { name: 'Муниципальный этап', kind: 'competition' as const, event: 'starts' as const, date: '2026-11-02', estimated: true };
   const countdown = stageCountdown({ upcomingStage }, '2026-09-28')!;
   assert.equal(countdown.value, '35 дней');
   assert.equal(countdown.text, 'до этапа «Муниципальный этап»');
@@ -38,4 +38,16 @@ test('stage countdown counts Moscow calendar days and disappears once the stage 
   assert.equal(stageCountdown({ upcomingStage: null }, '2026-09-28'), null);
   assert.equal(stageCountdown({ upcomingStage: { ...upcomingStage, name: 'Регистрация', kind: 'registration' } }, '2026-09-28')!.text, 'до начала регистрации');
   assert.equal(stageCountdown({ upcomingStage: { ...upcomingStage, name: null } }, '2026-09-28')!.text, 'до следующего этапа');
+  assert.equal(countdown.label, 'До следующего этапа');
+  assert.equal(countdown.hint, 'Начало — 2 нояб. 2026 г.');
+});
+
+test('a running stage or a deadline counts to its end', () => {
+  const upcomingStage = { name: 'Отборочный этап, 1 тур', kind: 'competition' as const, event: 'ends' as const, date: '2026-10-11', estimated: true };
+  const countdown = stageCountdown({ upcomingStage }, '2026-09-28')!;
+  assert.deepEqual([countdown.value, countdown.text, countdown.label, countdown.stage], ['13 дней', 'до конца этапа «Отборочный этап, 1 тур»', 'До конца этапа', 'Отборочный этап, 1 тур']);
+  assert.equal(countdown.hint, 'Окончание — 11 окт. 2026 г.');
+  assert.equal(stageCountdown({ upcomingStage }, '2026-10-11')!.text, 'последний день этапа «Отборочный этап, 1 тур»');
+  const registration = stageCountdown({ upcomingStage: { ...upcomingStage, name: 'Регистрация', kind: 'registration' } }, '2026-10-01')!;
+  assert.deepEqual([registration.value, registration.text, registration.label], ['10 дней', 'до конца регистрации', 'До конца регистрации']);
 });

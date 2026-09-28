@@ -21,6 +21,8 @@
   --olimp-icon-warning: #d9781a;
   --olimp-icon-danger: #d13838;
   --olimp-radius: 16px;
+  /* Every page grows with the screen up to this width; wider screens get white margins. */
+  --app-width: 700px;
 }
 * { box-sizing: border-box; scrollbar-width: none; }
 *::-webkit-scrollbar { display: none; width: 0; height: 0; }
@@ -44,7 +46,7 @@ h1:focus { outline: none; }
 h2 { font-size: 15px; font-weight: 650; line-height: 1.4; }
 h3 { font-size: 14px; line-height: 1.45; }
 :focus-visible { outline: 3px solid #8ba2ff; outline-offset: 3px; }
-.app-shell { --controls-active: var(--olimp-blue); min-height: 100dvh; max-width: 480px; margin-inline: auto; background: var(--olimp-bg); position: relative; isolation: isolate; }
+.app-shell { --controls-active: var(--olimp-blue); min-height: 100dvh; max-width: var(--app-width); margin-inline: auto; background: var(--olimp-bg); position: relative; isolation: isolate; }
 .page { padding: max(24px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom)); }
 .page--detail { padding-bottom: max(32px, env(safe-area-inset-bottom)); }
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
@@ -70,7 +72,7 @@ h3 { font-size: 14px; line-height: 1.45; }
 .text-button:hover, .text-link:hover { text-decoration: underline; }
 .centered { display: flex; width: fit-content; margin: 16px auto; }
 .centered-text { text-align: center; }
-.bottom-nav { position: fixed; z-index: 5; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, 480px); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 8px max(16px, env(safe-area-inset-bottom)); background: rgb(255 255 255 / 96%); border-top: 1px solid var(--olimp-border); backdrop-filter: blur(12px); }
+.bottom-nav { position: fixed; z-index: 5; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, var(--app-width)); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 8px max(16px, env(safe-area-inset-bottom)); background: rgb(255 255 255 / 96%); border-top: 1px solid var(--olimp-border); backdrop-filter: blur(12px); }
 .nav-item { display: flex; min-height: 44px; flex-direction: column; align-items: center; justify-content: center; gap: 5px; color: var(--olimp-icon-inactive); font-size: 10px; transition: color .15s; }
 .nav-item.is-active { color: var(--olimp-blue); }
 .nav-item:hover { color: var(--olimp-blue); }
@@ -509,7 +511,7 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { width: 100%; max-width: 800px; min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
+.welcome-page { width: 100%; max-width: var(--app-width); min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
 .welcome-art { position: absolute; inset: 0; overflow: hidden; }
 /* Anchor the artwork above the actions so the mascot feet retain clearance on short screens. */
 .welcome-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center calc(100% - 48px); }
@@ -643,19 +645,11 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 .university-series li a:hover { color: var(--olimp-blue); }
 .university-page .olympiad-detail-row dd .text-link { display: inline-flex; align-items: center; gap: 5px; }
 .university-page .button.button.olympiad-detail__track { margin-top: 20px; }
-/* Desktop wide layout stays within 800px, including the width toggle. Phones never get it. */
-.width-toggle { display: none; }
-@media (min-width: 720px) {
-  .width-toggle { position: fixed; z-index: 7; top: 16px; right: max(16px, calc((100vw - 800px) / 2 + 16px)); display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: #4a5263; box-shadow: 0 0 0 1px #e3e7ee, 0 6px 20px #253a7014; }
-  .width-toggle:hover, .width-toggle[aria-pressed=true] { color: var(--olimp-blue); }
-  .app-shell--wide { max-width: min(800px, 100%); }
-  .app-shell--wide .bottom-nav { width: min(800px, 100%); }
-  .app-shell--wide .page { padding-inline: 28px; }
-  .app-shell--wide .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .app-shell--wide .catalog-list, .app-shell--wide .plan-card-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
-  .app-shell--wide .page--detail > * { max-width: 720px; margin-inline: auto; }
-  .app-shell--wide .chat-bubble { max-width: min(86%, 560px); }
-  .app-shell--wide .chat-web-sources { width: min(92%, 440px); }
+/* Wider screens (tablet, desktop): the app fills up to --app-width; filters in one row, cards in two columns. */
+@media (min-width: 640px) {
+  .page { padding-inline: 24px; }
+  .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .catalog-list, .plan-card-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  .chat-bubble { max-width: min(86%, 520px); }
+  .chat-web-sources { width: min(92%, 440px); }
 }
-.university-series li a[aria-current=page] { color: var(--olimp-blue); font-weight: 650; }
-@media (min-width: 720px) { .app-shell--wide.app-shell--chat .bottom-nav { width: 100%; } }

@@ -1,4 +1,4 @@
-// «О вузе» for the university page: type, a short description and the official site.
+// «О вузе» for the university page: type, a description, the official site and the admission rules.
 // A plain CSV in data/reference, read once per process; edit the file and restart the API to update it.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -6,7 +6,12 @@ import { parseDelimited } from '../../../../packages/contracts/src/index.js';
 import { dataDir } from '../features/assistant/knowledge.js';
 
 export const universityProfilesFile = 'reference/university-profiles.csv';
-export type UniversityProfile = { type: 'state' | 'private' | null; description: string | null; site: string | null };
+export type UniversityProfile = { type: 'state' | 'private' | null; description: string | null; site: string | null; rules: string | null };
+
+function webAddress(value: string | undefined) {
+  if (!value?.trim()) return null;
+  try { return /^https?:$/.test(new URL(value).protocol) ? new URL(value).href : null; } catch { return null; }
+}
 
 export function parseUniversityProfiles(text: string) {
   const profiles = new Map<string, UniversityProfile>();
@@ -14,9 +19,7 @@ export function parseUniversityProfiles(text: string) {
     const slug = row.slug?.trim();
     if (!slug) continue;
     const type = row.type === 'state' || row.type === 'private' ? row.type : null;
-    let site: string | null = null;
-    try { if (row.site && /^https?:$/.test(new URL(row.site).protocol)) site = new URL(row.site).href; } catch { site = null; }
-    profiles.set(slug, { type, description: row.description?.trim() || null, site });
+    profiles.set(slug, { type, description: row.description?.trim() || null, site: webAddress(row.site), rules: webAddress(row.rules) });
   }
   return profiles;
 }

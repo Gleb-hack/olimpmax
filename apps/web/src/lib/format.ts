@@ -41,21 +41,31 @@ export function daysWord(count: number) {
   return plural === 'one' ? 'день' : plural === 'few' ? 'дня' : 'дней';
 }
 /**
- * «35 дней до этапа «Муниципальный этап»» for the next stage that has not started yet. Counted from today in Moscow,
- * so a cached card never shows a stale number; null when the API found nothing to count or the stage has already begun.
+ * The «N дней» counter for the nearest stage: «35 дней до этапа «Муниципальный этап»» before it begins,
+ * «13 дней до конца этапа «Отборочный этап»» while it runs or when only its deadline is known.
+ * Counted from today in Moscow, so a cached card never shows a stale number; null when there is nothing ahead.
  */
 export function stageCountdown(item: Pick<Olympiad, 'upcomingStage'>, today = moscowToday()) {
   const stage = item.upcomingStage;
   if (!stage) return null;
-  const days = daysBetween(today, stage.startsOn);
+  const days = daysBetween(today, stage.date);
   if (days < 0) return null;
   const registration = stage.kind === 'registration' && (!stage.name || /^регистрац/i.test(stage.name.trim()));
-  const target = registration ? 'начала регистрации' : stage.name ? `этапа «${stage.name}»` : 'следующего этапа';
+  const value = days === 0 ? 'Сегодня' : `${days} ${daysWord(days)}`;
+  const date = formatDay(stage.date);
+  if (stage.event === 'ends') return {
+    days, estimated: stage.estimated, date, ending: true, value,
+    label: registration ? 'До конца регистрации' : 'До конца этапа', hint: `Окончание — ${date}`,
+    /** The stage alone, for places that already say what is counted. */
+    stage: registration ? 'регистрация' : stage.name ?? 'текущий этап',
+    text: days === 0 ? (registration ? 'последний день регистрации' : stage.name ? `последний день этапа «${stage.name}»` : 'последний день этапа')
+      : `до конца ${registration ? 'регистрации' : stage.name ? `этапа «${stage.name}»` : 'текущего этапа'}`,
+  };
   return {
-    days, estimated: stage.estimated, date: formatDay(stage.startsOn),
-    /** The stage alone, for places that already say «до следующего этапа». */
+    days, estimated: stage.estimated, date, ending: false, value,
+    label: 'До следующего этапа', hint: `Начало — ${date}`,
     stage: registration ? 'начало регистрации' : stage.name ?? 'следующий этап',
-    value: days === 0 ? 'Сегодня' : `${days} ${daysWord(days)}`,
-    text: days === 0 ? (registration ? 'открывается регистрация' : stage.name ? `начинается этап «${stage.name}»` : 'начинается следующий этап') : `до ${target}`,
+    text: days === 0 ? (registration ? 'открывается регистрация' : stage.name ? `начинается этап «${stage.name}»` : 'начинается следующий этап')
+      : `до ${registration ? 'начала регистрации' : stage.name ? `этапа «${stage.name}»` : 'следующего этапа'}`,
   };
 }

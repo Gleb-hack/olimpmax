@@ -3,12 +3,12 @@ import { gradeLabel, moscowToday } from '../../lib/format';
 
 const dayMonth = (day: string) => new Date(`${day}T12:00:00+03:00`).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' });
 
-/** «до 20 мая», «с 3 октября», «регистрация с 1 ноября»: the nearest date of the olympiad for the chat card. */
+/** «до 20 мая», «этап с 3 октября», «регистрация до 1 ноября»: the nearest date of the olympiad for the chat card. */
 export function chatCardDate(item: Pick<Olympiad, 'calendarState' | 'nextEvent' | 'upcomingStage'>, today = moscowToday()) {
   if (item.calendarState === 'not_held') return 'не проводится';
   if (item.nextEvent && item.nextEvent.date >= today) return `${item.nextEvent.kind === 'ends' ? 'до' : 'с'} ${dayMonth(item.nextEvent.date)}`;
   const stage = item.upcomingStage;
-  if (stage && stage.startsOn >= today) return `${stage.kind === 'registration' ? 'регистрация' : 'этап'} с ${dayMonth(stage.startsOn)}`;
+  if (stage && stage.date >= today) return `${stage.kind === 'registration' ? 'регистрация' : 'этап'} ${stage.event === 'ends' ? 'до' : 'с'} ${dayMonth(stage.date)}`;
   return null;
 }
 

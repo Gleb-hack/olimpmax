@@ -69,7 +69,7 @@ export async function universityDetail(db: Database, slug: string) {
   const profile = universityProfiles().get(university.slug);
   return {
     slug: university.slug, name: university.name, fullName: university.fullName, city: university.city,
-    type: profile?.type ?? null, description: profile?.description ?? null, site: profile?.site ?? null,
+    type: profile?.type ?? null, description: profile?.description ?? null, site: profile?.site ?? null, rules: profile?.rules ?? null,
     benefits: rows.map(({ seriesId, seriesSlug, seriesName, ...benefit }) => {
       const list = bySeries.get(seriesId) ?? [];
       return { ...benefit, series: { slug: seriesSlug, name: seriesName }, olympiadIds: list.map(o => o.id),

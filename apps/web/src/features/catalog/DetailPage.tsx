@@ -65,8 +65,7 @@ export function DetailPage() {
         <DetailRow icon="bar-chart" label="Уровень олимпиады" value={levelLabel(item)} hint={levelHint} />
         <DetailRow icon="bell" label="Сроки регистрации" value={registrationLabel(item)} />
         <DetailRow icon="calendar" label="Этапы" value={stageSummary(stages)} />
-        {countdown && <DetailRow icon="calendar" label="До следующего этапа" value={`${countdown.value} · ${countdown.stage}`}
-          hint={`Начало — ${countdown.date}`} />}
+        {countdown && <DetailRow icon="calendar" label={countdown.label} value={`${countdown.value} · ${countdown.stage}`} hint={countdown.hint} />}
         <DetailRow icon="book" label="Организатор" value={item.organizers.join(', ') || 'Не указан'} />
       </dl></section>
       <Button className={`full-width olympiad-detail__track ${saved?.tracking ? 'tracking-button--saved' : ''}`} variant={saved ? 'secondary' : 'primary'} disabled={action.isPending || plan.isPending} onClick={() => saved ? navigate('/plan') : action.mutate({ id, action: 'save' })}>{saved?.tracking && <Icon name="check" size={15} />}{action.isPending ? 'Сохраняем…' : saved ? saved.tracking ? 'Отслеживается' : 'В плане · на паузе' : 'Отслеживать'}</Button>

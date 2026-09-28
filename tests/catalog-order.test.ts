@@ -23,7 +23,9 @@ test('every university of the reference has a profile for its page', () => {
   for (const slug of slugs) {
     const profile = profiles.get(slug);
     assert.ok(profile, `нет профиля для ${slug}`);
-    assert.ok(profile.type && profile.description && profile.site?.startsWith('https://'), slug);
+    assert.ok(profile.type && profile.description && profile.site?.startsWith('https://') && /^https?:\/\//.test(profile.rules ?? ''), slug);
   }
   assert.equal(profiles.get('innopolis')?.type, 'private');
+  // Tracking parameters are not part of the address.
+  assert.equal(profiles.get('mgimo')?.rules, 'https://abiturient.mgimo.ru/pravila-priema');
 });
