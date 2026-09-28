@@ -8,7 +8,7 @@ import { referenceSummary } from '../reference/summary.js';
 import { moscowToday } from '../features/calendar.js';
 
 const bundle = buildReference(readReferenceDir(), { today: moscowToday() });
-const main = parseCsv(readFileSync(new URL('../../../../olimpiady.csv', import.meta.url)));
+const main = parseCsv(readFileSync(new URL('../../../../data/catalog/olimpiady.csv', import.meta.url)));
 const additionsPath = fileURLToPath(new URL(referenceFiles.additions, defaultReferenceDir));
 const extra = existsSync(additionsPath) ? parseCsv(readFileSync(additionsPath)) : [];
 const ids = new Set(main.map(r => r.olympiad.id));

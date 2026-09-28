@@ -23,7 +23,7 @@ test('account deletion removes personal data and preserves other accounts', asyn
   await admin.pool.query(`CREATE DATABASE "${name}"`);
   const folder = new URL('../apps/api/drizzle/', import.meta.url);
   for (const file of readdirSync(folder).filter(f => f.endsWith('.sql')).sort()) await connection.pool.query(readFileSync(new URL(file, folder), 'utf8'));
-  await importCsv(connection.db, readFileSync(new URL('../olimpiady.csv', import.meta.url)), 'test.csv');
+  await importCsv(connection.db, readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url)), 'test.csv');
   app = await buildApp({ db: connection.db, botToken: testBotToken, jwtSecret: 'account-test'.repeat(5) });
   const signIn = async (id: number) => {
     const data = c.AuthResponse.parse((await app!.inject({ method: 'POST', url: '/auth/max', payload: { initData: signedInitData(id) } })).json());

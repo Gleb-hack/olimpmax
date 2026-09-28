@@ -40,7 +40,7 @@ test('reminders: due today, once per threshold, retries and refusals, settings A
   await admin.pool.query(`CREATE DATABASE "${name}"`);
   const folder = new URL('../apps/api/drizzle/', import.meta.url);
   for (const file of readdirSync(folder).filter(f => f.endsWith('.sql')).sort()) await connection.pool.query(readFileSync(new URL(file, folder), 'utf8'));
-  await importCsv(connection.db, readFileSync(new URL('../olimpiady.csv', import.meta.url)), 'test.csv');
+  await importCsv(connection.db, readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url)), 'test.csv');
   const { db, pool } = connection;
   // A verified registration deadline three days after «today» (1 October, 10:00 Moscow).
   await pool.query(`insert into olympiad_stages (olympiad_id, source_key, origin, name, kind, ends_on, verification, source_url, verified_at, verified_by, calendar_hash)

@@ -21,7 +21,7 @@ const testUrl = new URL(process.env.DATABASE_URL); testUrl.pathname = '/' + data
 const connection = connectDatabase(testUrl.toString());
 let app: Awaited<ReturnType<typeof buildApp>>;
 const now = new Date('2026-09-22T10:00:00Z');
-const source = readFileSync(new URL('../olimpiady.csv', import.meta.url));
+const source = readFileSync(new URL('../data/catalog/olimpiady.csv', import.meta.url));
 const rows = parseCsv(source);
 let tokenA: string, tokenB: string;
 const auth = (token: string) => ({ authorization: `Bearer ${token}` });

@@ -28,3 +28,12 @@ backups/
 *.dump
 *.log
 .DS_Store
+
+# Generated validation and import reports (recreate with pnpm commands).
+data/*-report.json
+data/source-audit.json
+data/verification.json
+coverage/
+__pycache__/
+*.py[cod]
+.venv/
