@@ -23,7 +23,7 @@
   "missingFromFile": [],
   "hiddenFromCatalog": 0,
   "reference": {
-    "referenceSha256": "f1a1c35fe4cf7daf9ed9792ec4e297f2c11358feb0b1f55e19ed4eaf7800d36e",
+    "referenceSha256": "0c9b4d972703700043f2513c806c877185714115642853d5786a9cfff2c119b7",
     "season": "2026/27",
     "series": 95,
     "seriesWithSchedule": 64,
@@ -58,8 +58,8 @@
     "levels": {
       "bySource": {
         "catalog": 35,
-        "none": 338,
         "rsosh_list": 317,
+        "none": 338,
         "series": 8
       },
       "changed": 325

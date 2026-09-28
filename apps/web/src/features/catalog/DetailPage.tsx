@@ -9,13 +9,10 @@ import { parseContact, type Contact } from '../../lib/contacts';
 import { max } from '../../lib/max';
 import { useUI } from '../../lib/ui-store';
 import { OlympiadMeta, OlympiadStatus, OlympiadTags } from './OlympiadSummary';
-import { benefitLabel, stageModeLabels } from '@olimp/contracts';
-import { hiddenReferenceNote, primaryStages, registrationLabel, stageSummary } from './detail-format';
+import { stageModeLabels } from '@olimp/contracts';
+import { hiddenReferenceNote, primaryStages, registrationLabel, stageSummary, universityBenefits } from './detail-format';
+import { UniversityBenefits } from './UniversityBenefits';
 
-function plural(n: number, one: string, few: string, many: string) {
-  const mod10 = n % 10, mod100 = n % 100;
-  return mod10 === 1 && mod100 !== 11 ? one : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? few : many;
-}
 function DetailRow({ icon, label, value, hint }: { icon: IconName; label: string; value: string; hint?: string }) {
   return <div className="olympiad-detail-row"><span className="olympiad-detail-row__icon"><Icon name={icon} size={17} /></span><div><dt>{label}</dt><dd>{value}</dd>{hint && <p>{hint}</p>}</div></div>;
 }
@@ -50,7 +47,6 @@ export function DetailPage() {
   const hasSchedule = stages.length > 0 || !!item?.calendarRaw;
   const referenceNote = item ? hiddenReferenceNote(item) : null;
   const benefits = item?.benefits;
-  const universityCount = new Set(benefits?.items.map(b => b.university.slug)).size;
   // A profile outside the RSOSH list has no level; say why instead of a bare «Не указан».
   const levelHint = item?.levelProfile ? `Профиль: ${item.levelProfile}` : item?.levelSource === 'rsosh_list' ? item.levelStatus ?? undefined : undefined;
   const contacts = (item?.contacts ?? []).filter(value => value.trim()).map(parseContact);
@@ -73,15 +69,12 @@ export function DetailPage() {
       <Button className={`full-width olympiad-detail__track ${saved?.tracking ? 'tracking-button--saved' : ''}`} variant={saved ? 'secondary' : 'primary'} disabled={action.isPending || plan.isPending} onClick={() => saved ? navigate('/plan') : action.mutate({ id, action: 'save' })}>{saved?.tracking && <Icon name="check" size={15} />}{action.isPending ? 'Сохраняем…' : saved ? saved.tracking ? 'Отслеживается' : 'В плане · на паузе' : 'Отслеживать'}</Button>
       <button type="button" className={`text-button olympiad-detail__compare ${compared ? 'is-active' : ''}`} aria-pressed={compared} onClick={() => toggleComparison(id)}><Icon name={compared ? 'check' : 'compare'} size={15} />{compared ? 'В сравнении' : 'Добавить к сравнению'}</button>
       {action.isError && <Notice tone="error">{action.error.message}</Notice>}
+      {benefits && <UniversityBenefits groups={universityBenefits(benefits.items, item.organizers)} note={benefits.note} />}
       {hasSchedule && <details className="olympiad-schedule" open><summary>Расписание этапов<Icon name="chevron-down" size={16} /></summary><div className="olympiad-schedule__content">
         {item.scheduleSource === 'reference' && <p className="olympiad-schedule__hint">По справочнику проекта{item.series ? ` для олимпиады «${item.series.name}»` : ''}. Год не указан в источнике — сверяйте сезон на сайте организатора.</p>}
         {stages.length ? <ol>{stages.map(stage => <li key={stage.id}><strong>{stage.name || 'Этап олимпиады'}</strong><span>{stage.verification === 'verified' ? [stage.beginsOn && `С ${formatDay(stage.beginsOn)}`, stage.endsOn && `до ${formatDay(stage.endsOn)}`].filter(Boolean).join(' ') || 'Дата не указана' : stage.rawDates || 'Дата не указана'}</span>{stage.mode && <small>{stageModeLabels[stage.mode]}</small>}</li>)}</ol> : <p className="preserve-lines">{item.calendarRaw}</p>}
         {item.scheduleSource !== 'reference' && item.scheduleUpdatedRaw && <p className="olympiad-schedule__hint">{item.scheduleUpdatedRaw}</p>}
         {referenceNote && <p className="olympiad-schedule__hint">{referenceNote}</p>}
-      </div></details>}
-      {benefits && (benefits.items.length > 0 || benefits.note) && <details className="olympiad-schedule olympiad-benefits"><summary>Льготы при поступлении{universityCount ? ` · ${universityCount} ${plural(universityCount, 'вуз', 'вуза', 'вузов')}` : ''}<Icon name="chevron-down" size={16} /></summary><div className="olympiad-schedule__content">
-        {benefits.items.length > 0 && <ol>{benefits.items.map(b => <li key={`${b.university.slug}-${b.kind}-${b.diploma}`}><strong>{b.university.name} · {b.university.city}</strong><span>{benefitLabel(b)}</span><small>{!b.requirement ? 'Минимальный балл ЕГЭ для подтверждения не указан' : b.minScore === null ? b.requirement : `Подтвердить: ${b.requirement}`}</small></li>)}</ol>}
-        {benefits.note && <p className="olympiad-schedule__hint">{benefits.note}</p>}
       </div></details>}
       {contacts.length > 0 && <section className="olympiad-detail__about"><h2>Контакты</h2><ul className="contact-list">{contacts.map((contact, index) => <ContactItem key={index} contact={contact} />)}</ul></section>}
       <button className="olympiad-detail__source" onClick={() => max.openExternal(item.sourceUrl)}>Подробнее об олимпиаде<Icon name="external-link" size={14} /></button>

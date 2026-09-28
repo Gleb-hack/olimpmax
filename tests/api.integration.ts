@@ -133,6 +133,9 @@ test('personal plans require verified identity, are isolated and idempotent', as
   for (let i = 0; i < 2; i++) assert.equal((await app.inject({ method: 'PUT', url: '/me/plan/88', headers: auth(tokenA) })).statusCode, 204);
   let plan = contracts.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: auth(tokenA) })).json());
   assert.equal(plan.total, 1);
+  // The plan calendar gets the card's stages; the year comes from the 2026/27 season of the checked schedule.
+  assert.deepEqual(plan.items[0]!.calendarEvents!.map(e => [e.name, e.kind, e.date, e.estimated]), [
+    ['Школьный этап', 'ends', '2026-11-01', true], ['Муниципальный этап', 'starts', '2026-11-02', true], ['Муниципальный этап', 'ends', '2026-12-25', true]]);
   assert.equal((await app.inject({ url: '/me/plan', headers: auth(tokenB) })).json().total, 0);
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenB), payload: { note: 'чужая' } })).statusCode, 404);
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenA), payload: { note: 'Мой план' } })).statusCode, 204);

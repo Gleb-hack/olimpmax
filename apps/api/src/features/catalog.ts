@@ -4,7 +4,7 @@ import type { Database } from '../db/client.js';
 import { olympiads, olympiadSubjects, subjects, stages, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesBenefits, universities } from '../db/schema.js';
 import { olympiadLevelOptions, type CatalogQuery, type Stage, type OlympiadCard } from '../../../../packages/contracts/src/index.js';
 import { normalizeSearch } from '../import/csv.js';
-import { anchorDay, calendarSummary, moscowToday, upcomingStage } from './calendar.js';
+import { anchorDay, calendarSummary, moscowToday, scheduleEvents, upcomingStage } from './calendar.js';
 import { olympiadBenefits, seriesInfo } from './reference.js';
 
 type Olympiad = typeof olympiads.$inferSelect;
@@ -75,7 +75,9 @@ export async function enrich(db: Database, rows: Olympiad[], today = moscowToday
       upcomingStage: upcomingStage(rowStages, { scheduleSource, statusRaw: row.statusRaw, calendarState: summary.calendarState,
         anchor: anchorDay(row.rawSource['Дата проверки'], row.importedAt), today }),
     };
-    return { row, card, stages: rowStages, link: link ?? null };
+    const events = () => scheduleEvents(rowStages, { scheduleSource, statusRaw: row.statusRaw, calendarState: summary.calendarState,
+      anchor: anchorDay(row.rawSource['Дата проверки'], row.importedAt) });
+    return { row, card, stages: rowStages, link: link ?? null, events };
   });
 }
 

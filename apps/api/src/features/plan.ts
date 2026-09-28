@@ -9,7 +9,7 @@ export async function readPlan(db: Database, userId: string, today = moscowToday
     .innerJoin(olympiads, eq(planItems.olympiadId, olympiads.id)).where(eq(planItems.userId, userId)).orderBy(desc(planItems.savedAt), planItems.olympiadId);
   const enriched = await enrich(db, rows.map(r => r.olympiad), today);
   const items = enriched.map((r, i) => ({ olympiad: r.card, tracking: rows[i]!.plan.tracking,
-    note: rows[i]!.plan.note, savedAt: rows[i]!.plan.savedAt, stages: r.stages, calendarRaw: r.card.calendarRaw ?? null }));
+    note: rows[i]!.plan.note, savedAt: rows[i]!.plan.savedAt, stages: r.stages, calendarRaw: r.card.calendarRaw ?? null, calendarEvents: r.events() }));
   items.sort((a, b) => (a.tracking ? a.olympiad.nextEvent?.date ?? '9999' : '9999').localeCompare(b.tracking ? b.olympiad.nextEvent?.date ?? '9999' : '9999'));
   return { items, total: items.length };
 }

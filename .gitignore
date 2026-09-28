@@ -1,9 +1,24 @@
 node_modules/
 dist/
+# Secrets: environment files at any level (examples stay tracked), keys and certificates.
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
 !.env.production.example
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.secret
+secrets/
+.secrets/
+id_rsa*
+id_ed25519*
+.npmrc
 .local/
 .pnpm-store/
 .codex/
