@@ -75,6 +75,11 @@ export const users = pgTable('user_profiles', {
   online: boolean('online').notNull().default(true), onsite: boolean('onsite').notNull().default(true),
   registeredAt: timestamp('registered_at', { withTimezone: true, mode: 'string' }),
   updatedAt: timestampNow('updated_at'),
+  // MAX bot: reminders on/off; when the user pressed «Начать» in the bot dialog; when MAX last refused
+  // a message to this user (stopped bot, never started it). A later bot start re-enables delivery.
+  notificationsEnabled: boolean('notifications_enabled').notNull().default(true),
+  botStartedAt: timestamp('bot_started_at', { withTimezone: true, mode: 'string' }),
+  botBlockedAt: timestamp('bot_blocked_at', { withTimezone: true, mode: 'string' }),
 }, t => [
   check('profile_avatar_length', sql`${t.avatar} is null or length(${t.avatar}) <= 1400000`),
   check('profile_name_length', sql`${t.profileName} is null or length(trim(${t.profileName})) between 1 and 80`),
@@ -90,6 +95,28 @@ export const planItems = pgTable('plan_items', {
   olympiadId: integer('olympiad_id').notNull().references(() => olympiads.id, { onDelete: 'cascade' }),
   tracking: boolean('tracking').notNull().default(true), note: text('note'), savedAt: timestampNow('saved_at'),
 }, t => [primaryKey({ columns: [t.userId, t.olympiadId] }), check('plan_note_length', sql`${t.note} is null or length(${t.note}) <= 2000`)]);
+export const reminderStatusEnum = pgEnum('reminder_status', ['pending', 'sent', 'failed']);
+/**
+ * One row per reminder the bot decided to send: the unique key makes the daily run idempotent
+ * (restarts, several workers). event_key is built from the stage kind, event kind and date, not from a stage id:
+ * reference stages get new ids on every `db:reference`, and a new id must not repeat a reminder.
+ */
+export const reminders = pgTable('reminders', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  olympiadId: integer('olympiad_id').notNull().references(() => olympiads.id, { onDelete: 'cascade' }),
+  eventKey: text('event_key').notNull(), eventDate: date('event_date').notNull(),
+  // Days-before threshold that fired: 7, 3, 1 or 0.
+  bucket: smallint('bucket').notNull(),
+  status: reminderStatusEnum('status').notNull().default('pending'),
+  attempts: smallint('attempts').notNull().default(1), error: text('error'),
+  createdAt: timestampNow('created_at'), updatedAt: timestampNow('updated_at'),
+  sentAt: timestamp('sent_at', { withTimezone: true, mode: 'string' }),
+}, t => [
+  uniqueIndex('reminders_unique').on(t.userId, t.olympiadId, t.eventKey, t.bucket),
+  index('reminders_status_idx').on(t.status, t.updatedAt),
+  check('reminders_bucket_valid', sql`${t.bucket} between 0 and 30`),
+]);
 export const importRuns = pgTable('import_runs', {
   id: uuid('id').primaryKey().defaultRandom(), sourceFile: text('source_file').notNull(),
   sha256: text('sha256').notNull(), rowCount: integer('row_count').notNull(),

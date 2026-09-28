@@ -16,7 +16,7 @@ function EditPlanItem({ entry, onClose, backTo }: { entry: PlanEntry; onClose: (
   const mutation = usePlanActions();
   return <Dialog title="В моём плане" onClose={onClose}>
     <h3 className="dialog-item-title">{entry.olympiad.title}</h3>
-    <label className="switch-row"><span><strong>Отслеживать этапы</strong><small>Показывать ближайшие события в плане</small></span><Switch checked={tracking} onChange={event => setTracking(event.target.checked)} aria-label="Отслеживать этапы" /></label>
+    <label className="switch-row"><span><strong>Отслеживать этапы</strong><small>Ближайшие события в плане и напоминания от бота</small></span><Switch checked={tracking} onChange={event => setTracking(event.target.checked)} aria-label="Отслеживать этапы" /></label>
     <label className="field"><span>Моя заметка</span><textarea value={note} onChange={event => setNote(event.target.value)} maxLength={2000} rows={4} placeholder="Например, подготовить документы" /><small>{note.length} / 2000</small></label>
     {mutation.isError && <Notice tone="error">{mutation.error.message}</Notice>}
     <Button className="full-width" disabled={mutation.isPending} onClick={() => mutation.mutate({ id: entry.olympiad.id, action: 'patch', patch: { tracking, note: note.trim() || null } }, { onSuccess: onClose })}>{mutation.isPending ? 'Сохраняем…' : 'Сохранить'}</Button>

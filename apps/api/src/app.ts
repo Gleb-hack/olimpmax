@@ -21,6 +21,8 @@ import { webResearchTickets, WebTaskError } from './features/assistant/web-task.
 import { researchOnWeb } from './features/assistant/web-research.js';
 import type { ReadPublicPage } from './features/assistant/public-page.js';
 import type { LinkEntry } from './features/assistant/knowledge.js';
+import { maxMessenger, type Messenger } from './features/reminders/max.js';
+import { NotificationError, readNotificationSettings, sendTestReminder, setNotificationsEnabled } from './features/reminders/delivery.js';
 
 declare module '@fastify/jwt' {
   interface FastifyJWT { payload: { sub: string }; user: { sub: string } }
@@ -31,6 +33,8 @@ type AppOptions = {
   deepseekApiKey?: string; deepseekModel?: string; assistantCompletion?: CompleteJson;
   /** Test seams: page reader and the list of links Olimp may open (default: data/assistant/*.csv). */
   readPublicPage?: ReadPublicPage; researchLinks?: LinkEntry[];
+  /** MAX bot client for the test reminder; default: built from botToken. Tests pass a fake. */
+  messenger?: Messenger | null; remindEstimated?: boolean;
 };
 export async function buildApp(options: AppOptions) {
   const { db } = options;
@@ -48,7 +52,7 @@ export async function buildApp(options: AppOptions) {
   await app.register(jwt, { secret: options.jwtSecret, sign: { expiresIn: '1h', iss: 'olimp-api', aud: 'olimp-mini-app' },
     verify: { allowedIss: 'olimp-api', allowedAud: 'olimp-mini-app', algorithms: ['HS256'] } });
   app.setErrorHandler((error, request, reply) => {
-    if (error instanceof ProfileError) return reply.code(error.statusCode).send({ error: error.code, message: error.message });
+    if (error instanceof ProfileError || error instanceof NotificationError) return reply.code(error.statusCode).send({ error: error.code, message: error.message });
     const status = typeof error === 'object' && error !== null && 'statusCode' in error && typeof error.statusCode === 'number' ? error.statusCode : 500;
     if (status >= 500) request.log.error({ err: error }, 'Request failed');
     reply.status(status).send({ error: status >= 500 ? 'INTERNAL_ERROR' : status === 401 ? 'UNAUTHORIZED' : status === 429 ? 'RATE_LIMITED' : 'BAD_REQUEST',
@@ -60,6 +64,8 @@ export async function buildApp(options: AppOptions) {
   const complete = options.assistantCompletion ?? deepseekCompletion(options.deepseekApiKey, options.deepseekModel);
   const activeChats = new Set<string>();
   const tickets = webResearchTickets(options.jwtSecret, () => now().getTime());
+  const messenger = options.messenger !== undefined ? options.messenger : options.botToken ? maxMessenger(options.botToken) : null;
+  const remindEstimated = options.remindEstimated ?? true;
   api.get('/health', { schema: { response: { 200: z.object({ status: z.literal('ok') }) } } }, async () => {
     await db.execute(sql`select 1`); return { status: 'ok' as const };
   });
@@ -166,6 +172,19 @@ export async function buildApp(options: AppOptions) {
         if (error instanceof AssistantError) return reply.code(error.status).send({ error: error.code, message: error.message });
         throw error;
       } finally { activeChats.delete(userId); reply.raw.off('close', onClose); }
+    });
+    routes.get('/me/notifications', { schema: { response: { 200: c.NotificationSettings } } }, request =>
+      readNotificationSettings(db, request.user.sub, messenger));
+    routes.patch('/me/notifications', { schema: { body: c.NotificationSettingsPatch, response: { 200: c.NotificationSettings } } }, async request => {
+      await setNotificationsEnabled(db, request.user.sub, request.body.enabled, now());
+      return readNotificationSettings(db, request.user.sub, messenger);
+    });
+    routes.post('/me/notifications/test', {
+      config: { rateLimit: { max: 3, timeWindow: '1 minute', hook: 'preHandler', keyGenerator: request => request.user.sub } },
+      schema: { body: z.object({}).strict().nullish(), response: { 200: c.NotificationTestResponse, 409: c.ErrorResponse, 502: c.ErrorResponse, 503: c.ErrorResponse } },
+    }, async (request, reply) => {
+      if (!messenger) return reply.code(503).send({ error: 'BOT_NOT_CONFIGURED', message: 'Бот MAX на сервере не подключён: нужен MAX_BOT_TOKEN.' });
+      return sendTestReminder(db, messenger, request.user.sub, { includeEstimated: remindEstimated, now: now() });
     });
     routes.get('/me/plan', { schema: { response: { 200: c.PlanResponse } } }, request => readPlan(db, request.user.sub, today()));
     routes.get('/me/plan/events', { schema: { querystring: c.PlanEventsQuery, response: { 200: c.PlanEventsResponse } } }, request => planEvents(db, request.user.sub, request.query.days, today()));

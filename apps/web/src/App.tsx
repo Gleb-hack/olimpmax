@@ -23,6 +23,7 @@ import { useSession } from './lib/session';
 import { ProfileProvider } from './lib/profile';
 import { AuthPage, WelcomePage } from './features/auth/AuthPages';
 import { useCatalogNavigation } from './lib/catalog-navigation';
+import { startRoute } from './lib/start-param';
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -55,9 +56,21 @@ function Layout() {
   return <div className={`app-shell ${chat ? 'app-shell--chat' : ''} ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />
     {!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}</div>;
 }
+// A bot button («Открыть карточку») launches the app with start_param; follow it once per launch, after sign-in.
+let startParamHandled = false;
+function useStartParam(signedIn: boolean) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!signedIn || startParamHandled) return;
+    startParamHandled = true;
+    const route = startRoute(max.startParam);
+    if (route && window.location.pathname !== route) navigate(route);
+  }, [signedIn, navigate]);
+}
 function ProtectedApp() {
   const { user } = useSession();
   const location = useLocation();
+  useStartParam(Boolean(user));
   if (!user) return <Navigate to="/welcome" replace state={{ from: location.pathname + location.search }} />;
   return <ProfileProvider key={user.id}><AssistantProvider><Outlet /></AssistantProvider></ProfileProvider>;
 }

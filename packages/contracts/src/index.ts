@@ -175,6 +175,13 @@ export const PlanEventsResponse = z.object({
   from: IsoDay, through: IsoDay,
   items: z.array(NextEvent.extend({ olympiadId: z.number().int(), olympiadTitle: z.string() })),
 });
+/**
+ * MAX bot reminders. `botConnected` — the user pressed «Начать» in the bot and has not stopped it since;
+ * `botUrl` — link to the bot dialog (null while the bot is not configured on the server).
+ */
+export const NotificationSettings = z.object({ enabled: z.boolean(), botConnected: z.boolean(), botUrl: z.string().url().nullable() });
+export const NotificationSettingsPatch = z.object({ enabled: z.boolean() }).strict();
+export const NotificationTestResponse = z.object({ sent: z.literal(true), message: z.string() });
 export const AuthBody = z.object({ initData: z.string().min(1).max(16384) }).strict();
 export const ErrorResponse = z.object({ error: z.string(), message: z.string() });
 export const ProfilePreferences = z.object({
