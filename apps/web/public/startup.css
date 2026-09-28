@@ -1,10 +1,10 @@
 /* Also loaded before React to avoid an empty screen while the app bundle loads. */
 body { margin: 0; }
-.startup-screen { box-sizing: border-box; position: relative; width: 100%; max-width: 480px; height: 100svh; height: 100dvh; min-height: 320px; margin: 0 auto; background: #edf1fc; overflow: hidden; }
-.startup-screen > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.startup-screen { box-sizing: border-box; position: relative; width: 100%; height: 100svh; height: 100dvh; min-height: 320px; margin: 0 auto; background: #edf1fc; overflow: hidden; }
+.startup-screen > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .startup-screen__footer { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 32px max(24px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #edf1fc 50%); text-align: center; }
 .startup-screen__footer p { margin: 10px 0 0; color: #334b94; font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-.startup-screen__progress { height: 6px; overflow: hidden; border-radius: 999px; background: #d7def9; }
+.startup-screen__progress { max-width: 420px; margin-inline: auto; height: 6px; overflow: hidden; border-radius: 999px; background: #d7def9; }
 .startup-screen__progress::after { content: ''; display: block; width: 40%; height: 100%; border-radius: inherit; background: #315bff; animation: startup-progress 1.4s ease-in-out infinite alternate; }
 @keyframes startup-progress { from { transform: translateX(0); } to { transform: translateX(150%); } }
 @media (prefers-reduced-motion: reduce) { .startup-screen__progress::after { animation: none; width: 100%; opacity: .65; } }

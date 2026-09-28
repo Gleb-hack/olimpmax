@@ -509,10 +509,11 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
-.welcome-art { flex: 1; display: flex; align-items: center; justify-content: center; padding-top: env(safe-area-inset-top); }
-.welcome-art img { display: block; width: 100%; height: auto; max-height: max(360px, calc(100dvh - 200px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); object-fit: contain; }
-.welcome-actions { display: flex; flex-direction: column; gap: 8px; padding: 12px 28px max(20px, env(safe-area-inset-bottom)); }
+.welcome-page { width: 100%; max-width: none; min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: #edf1fc; }
+.welcome-art { position: absolute; inset: 0; overflow: hidden; }
+.welcome-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.welcome-actions { position: relative; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 28px max(20px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #edf1fce6 45%, #edf1fc); }
+.welcome-actions > * { width: 100%; max-width: 420px; }
 .auth-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 16px; background: var(--olimp-blue); color: #fff; font-size: 15px; font-weight: 600; text-align: center; }
 .auth-button--outline { background: white; color: var(--olimp-blue); border: 1.5px solid var(--olimp-blue); }
 .welcome-note { margin-top: 1px; min-height: 38px; padding: 1px 0; color: var(--olimp-muted); font-size: 11px; line-height: 1.4; }
