@@ -1,6 +1,6 @@
 type MaxWebApp = {
   initData?: string;
-  initDataUnsafe?: { user?: { id?: number; first_name?: string; last_name?: string; photo_url?: string | null } };
+  initDataUnsafe?: { user?: { id?: number; first_name?: string; last_name?: string; photo_url?: string | null }; start_param?: string };
   ready?: () => void;
   openLink?: (url: string) => void;
   BackButton?: { show: () => void; hide: () => void; onClick: (callback: () => void) => void; offClick: (callback: () => void) => void };
@@ -21,6 +21,8 @@ export const max = {
       return url.protocol === 'https:' ? url.href : null;
     } catch { return null; }
   },
+  /** Launch parameter from a bot button or a max.ru/<bot>?startapp= link: where to open the app (see start-param.ts). */
+  get startParam() { return this.isEmbedded ? window.WebApp?.initDataUnsafe?.start_param ?? null : null; },
   get preferenceScope() { return this.isEmbedded ? String(window.WebApp?.initDataUnsafe?.user?.id ?? 'max') : 'browser'; },
   ready() { if (this.isEmbedded) window.WebApp?.ready?.(); },
   // One way to leave the mini-app: web pages, mail and phone links. MAX documents openLink for web links only,

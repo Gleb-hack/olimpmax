@@ -3,6 +3,7 @@ WORKDIR /app
 RUN npm install --global pnpm@11.25.0
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/package.json
+COPY apps/bot/package.json apps/bot/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/ui/package.json packages/ui/package.json
@@ -17,6 +18,12 @@ RUN mkdir -p /app/data && chown -R node:node /app/data
 USER node
 EXPOSE 3001
 CMD ["node", "apps/api/dist/server.js"]
+
+# MAX bot: commands, buttons and the daily reminder mailing. Long polling, no public port.
+FROM build AS bot
+ENV NODE_ENV=production
+USER node
+CMD ["node", "apps/bot/dist/main.js"]
 
 FROM caddy:2-alpine AS web
 COPY --from=build /app/apps/web/dist /srv/olimp

@@ -110,6 +110,11 @@ export const api = {
   async detail(id: number) { return c.OlympiadDetail.parse(await request(`/olympiads/${id}`)); },
   async university(slug: string) { return c.UniversityResponse.parse(await request(`/universities/${encodeURIComponent(slug)}`)); },
   async plan() { return c.PlanResponse.parse(await request('/me/plan', {}, true)); },
+  async notifications() { return c.NotificationSettings.parse(await request('/me/notifications', {}, true)); },
+  async setNotifications(enabled: boolean) {
+    return c.NotificationSettings.parse(await request('/me/notifications', { method: 'PATCH', body: JSON.stringify(c.NotificationSettingsPatch.parse({ enabled })) }, true));
+  },
+  async testNotification() { return c.NotificationTestResponse.parse(await request('/me/notifications/test', { method: 'POST' }, true)); },
   async events() { return c.PlanEventsResponse.parse(await request('/me/plan/events?days=90', {}, true)); },
   async save(id: number) { await request(`/me/plan/${id}`, { method: 'PUT' }, true); },
   async remove(id: number) { await request(`/me/plan/${id}`, { method: 'DELETE' }, true); },

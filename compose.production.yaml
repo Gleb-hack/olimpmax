@@ -47,6 +47,7 @@ services:
       MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:?Set MAX_BOT_TOKEN}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
+      BOT_REMIND_ESTIMATED: ${BOT_REMIND_ESTIMATED:-true}
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,6 +59,26 @@ services:
       timeout: 5s
       retries: 6
       start_period: 15s
+
+  # One instance only: MAX delivers each update to a single long-polling client.
+  bot:
+    image: olimp-bot:local
+    build:
+      context: .
+      target: bot
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://olimp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/olimp
+      NODE_ENV: production
+      MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:?Set MAX_BOT_TOKEN}
+      BOT_REMINDER_HOUR: ${BOT_REMINDER_HOUR:-10}
+      BOT_REMINDER_UNTIL_HOUR: ${BOT_REMINDER_UNTIL_HOUR:-21}
+      BOT_REMIND_ESTIMATED: ${BOT_REMIND_ESTIMATED:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   web:
     image: olimp-web:local

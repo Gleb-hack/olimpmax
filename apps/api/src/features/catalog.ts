@@ -47,7 +47,8 @@ export async function enrich(db: Database, rows: Olympiad[], today = moscowToday
   }
   for (const stage of referenceRows) {
     const list = referenceMap.get(stage.seriesId) ?? [];
-    // Reference stages are never «verified»: they have no source link, so they never produce reminders.
+    // Reference stages are never «verified»: they have no source link, so they never become the verified «next event».
+    // Their dated events still reach the plan calendar and bot reminders as `estimated` (see reminders/schedule.ts).
     list.push({ id: stage.id, name: stage.name, kind: stage.kind, rawDates: stage.rawDates, beginsOn: stage.beginsOn, endsOn: stage.endsOn,
       timezone: 'Europe/Moscow', verification: 'unverified', sourceUrl: null, verifiedAt: null, origin: 'reference', mode: stage.mode });
     referenceMap.set(stage.seriesId, list);
