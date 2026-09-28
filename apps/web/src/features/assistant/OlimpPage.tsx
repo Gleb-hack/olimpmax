@@ -7,7 +7,11 @@ import { usePlan, usePlanActions } from '../../lib/queries';
 import { max } from '../../lib/max';
 import { useAssistant } from './AssistantProvider';
 import { MessageReveal } from './MessageReveal';
+import { StageCountdown } from '../catalog/OlympiadSummary';
 import olimpLogo from '../../assets/olimp/logo.jpg';
+
+const sourceKinds = { page: 'страница прочитана', pdf: 'документ прочитан', faq: 'база «Вопросы по олимпиадам»' } as const;
+const sourceKind = (kind?: keyof typeof sourceKinds) => sourceKinds[kind ?? 'page'];
 
 function ChatCard({ item }: { item: Olympiad }) {
   const plan = usePlan();
@@ -18,6 +22,7 @@ function ChatCard({ item }: { item: Olympiad }) {
     <p className="chat-card__meta">{[item.organizers?.[0], gradeLabel(item)].filter(Boolean).join(' · ')}</p>
     {levelLabel(item) !== 'Не указан' && <p className="chat-card__meta">{levelLabel(item)}</p>}
     <p className="chat-card__date">{scheduleLabel(item)}</p>
+    <StageCountdown item={item} className="stage-countdown--compact" />
     <div className="chat-card__actions"><Link to={`/olympiads/${item.id}`} state={{ backTo: '/olimp' }}>Подробнее<Icon name="chevron-right" size={14} /></Link>
       <button type="button" disabled={saved || action.isPending || plan.isPending} onClick={() => action.mutate({ id: item.id, action: 'save' })} aria-label={saved ? `${item.title} уже в плане` : `Добавить в план: ${item.title}`}>
         {saved ? <Icon name="check" size={14} /> : <Icon name="plus" size={14} />}{saved ? 'В плане' : action.isPending ? 'Сохраняем…' : 'В план'}
@@ -66,7 +71,7 @@ export function OlimpPage() {
 
   return <section className="olimp-chat" aria-label="Чат с Олимпом">
     <header className="chat-header"><span className="chat-avatar"><img src={olimpLogo} alt="" width={42} height={42} /></span>
-      <div><h1 tabIndex={-1}>Олимп</h1><p><span className={chat.error || isMock ? 'chat-status chat-status--away' : 'chat-status'} />{chat.researching ? 'Проверяет сайты…' : chat.pending ? 'Подбирает ответ…' : isMock ? 'Чат недоступен в деморежиме' : chat.error ? 'Не удалось получить ответ' : 'ИИ-помощник по олимпиадам'}</p></div>
+      <div><h1 tabIndex={-1}>Олимп</h1><p><span className={chat.error || isMock ? 'chat-status chat-status--away' : 'chat-status'} />{chat.researching ? 'Ищет в интернете…' : chat.pending ? 'Подбирает ответ…' : isMock ? 'Чат недоступен в деморежиме' : chat.error ? 'Не удалось получить ответ' : 'ИИ-помощник по олимпиадам'}</p></div>
       {hasConversation && <button type="button" className="chat-reset" aria-label="Новый диалог" title="Новый диалог" onClick={() => setConfirmReset(true)}><Icon name="rotate-ccw" size={18} /></button>}
     </header>
     <div className="chat-log" ref={log} role="log" aria-label="Переписка" aria-live="polite" aria-relevant="additions text" onScroll={event => {
@@ -76,13 +81,9 @@ export function OlimpPage() {
       {chat.messages.map(message => <div key={message.id} className={`chat-turn chat-turn--${message.role}`}>
         {message.role === 'assistant' ? <MessageReveal message={message} active={last?.id === message.id} onProgress={scrollWithReply}
           renderCard={index => <ChatCard item={message.olympiads[index]!} />}>
-          {message.webSearchOffer && <div className="chat-web-offer">
-            <div className="chat-web-offer__title"><Icon name="globe" size={17} /><strong>Поискать в интернете?</strong></div>
-            <p className="chat-web-offer__question">«{message.webSearchOffer.question}»</p>
-            {message.webSearchState ? <small>{message.webSearchState === 'accepted' ? 'Поиск разрешён' : 'Поиск не запускался'}</small>
-              : <div className="chat-web-offer__actions"><button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.research(message.id); }}>Да</button><button type="button" disabled={chat.pending} onClick={() => chat.decline(message.id)}>Нет</button></div>}
-          </div>}
-          {!!message.webSources?.length && <div className="chat-web-sources"><strong><Icon name="globe" size={14} />Источники из интернета</strong><ol>{message.webSources.map((source, index) => <li key={source.url}><button type="button" onClick={() => max.openExternal(source.url)}><span>{index + 1}. {source.title}</span><Icon name="external-link" size={13} /></button><small>{new URL(source.url).hostname} · {source.kind === 'search_result' ? 'выдержка из поиска' : 'страница прочитана'} · {new Date(source.checkedAt).toLocaleDateString('ru-RU')}</small></li>)}</ol></div>}
+          {message.webSearch && message.webSearchState === 'failed' && <div className="chat-web-status"><Icon name="globe" size={15} /><span>Поиск в интернете не завершился</span>
+            <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.retryResearch(message.id); }}><Icon name="rotate-ccw" size={13} />Повторить поиск</button></div>}
+          {!!message.webSources?.length && <div className="chat-web-sources"><strong><Icon name={message.webSources.every(s => s.kind === 'faq') ? 'book' : 'globe'} size={14} />{message.webSources.every(s => s.kind === 'faq') ? 'Источники' : 'Источники из интернета'}</strong><ol>{message.webSources.map((source, index) => <li key={source.url}><button type="button" onClick={() => max.openExternal(source.url)}><span>{index + 1}. {source.title}</span><Icon name="external-link" size={13} /></button><small>{new URL(source.url).hostname} · {sourceKind(source.kind)} · {new Date(source.checkedAt).toLocaleDateString('ru-RU')}</small></li>)}</ol></div>}
           {message.webDisclaimer && <p className="chat-web-disclaimer">{message.webDisclaimer}</p>}
         </MessageReveal>
           : <div className="chat-bubble chat-bubble--user"><span className="sr-only">Вы: </span>{message.content}</div>}
@@ -91,9 +92,9 @@ export function OlimpPage() {
       {!hasConversation && <div className="chat-suggestions" aria-label="Подсказки для начала разговора">
         {['Математика', 'Информатика', 'Ближайшие дедлайны'].map(text => <button type="button" key={text} onClick={() => send(text)} disabled={isMock}><Icon name="sparkle" size={13} />{text}</button>)}
       </div>}
-      {chat.pending && <div className="chat-pending" role="status" aria-label={chat.researching ? 'Олимп ищет информацию на сайтах' : 'Олимп готовит ответ'}><div className="chat-typing" aria-hidden="true"><span /><span /><span /></div>{chat.researching && <small>Ищу в интернете и проверяю источники…</small>}</div>}
-      {chat.error && <div className="chat-error" role="alert"><p>{chat.error}</p>{last?.failed && <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.send(last.content, last.id); }}><Icon name="rotate-ccw" size={14} />Повторить</button>}</div>}
-      {!hasConversation && <p className="chat-intro-note">Подберём варианты из каталога.<br />Расскажу об участии, уровнях и расписании.</p>}
+      {chat.pending && <div className="chat-pending" role="status" aria-label={chat.researching ? 'Олимп ищет информацию в интернете' : 'Олимп готовит ответ'}><div className="chat-typing" aria-hidden="true"><span /><span /><span /></div>{chat.researching && <small>Открываю сайты вузов и организаторов, читаю правила…</small>}</div>}
+      {chat.error && <div className="chat-error" role="alert"><p>{chat.error}</p>{last?.role === 'user' && last.failed && <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.send(last.content, last.id); }}><Icon name="rotate-ccw" size={14} />Повторить</button>}</div>}
+      {!hasConversation && <p className="chat-intro-note">Подберём варианты из каталога.<br />Расскажу об участии, льготах и расписании. Если в базе чего-то нет — поищу на сайтах вузов и организаторов.</p>}
     </div>
     <footer className="chat-footer">
       {isMock && <Notice tone="info">Для общения с Олимпом нужен сервер с подключённым ИИ.</Notice>}

@@ -41,11 +41,14 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
   const sha = new Map(bundle.files.map(f => [f.path, f.sha256]));
 
   await tx.delete(referenceSources);
-  await tx.insert(referenceSources).values((['schedule', 'rsosh', 'benefits'] as const).map(key => {
-    const source = manifest.sources[key];
-    return { key, file: source.file, description: source.description ?? null, sha256: sha.get(source.file) ?? '', season: manifest.season,
-      status: key === 'rsosh' ? manifest.sources.rsosh.status : null, url: key === 'rsosh' ? manifest.sources.rsosh.url : null, importedAt: now };
-  }));
+  const sources = [
+    { key: 'schedule', ...manifest.sources.schedule, status: null, url: null },
+    { key: 'rsosh', ...manifest.sources.rsosh },
+    // The first benefits file keeps the historical key «benefits»; later deliveries get «benefits-2», «benefits-3», …
+    ...manifest.sources.benefits.map((source, index) => ({ key: index ? `benefits-${index + 1}` : 'benefits', ...source, status: null, url: null })),
+  ];
+  await tx.insert(referenceSources).values(sources.map(source => ({ key: source.key, file: source.file, description: source.description ?? null,
+    sha256: sha.get(source.file) ?? '', season: manifest.season, status: source.status, url: source.url, importedAt: now })));
 
   // Universities and series: delete what left the files, upsert the rest (ids stay stable between runs).
   const universitySlugs = bundle.universities.map(u => u.slug);

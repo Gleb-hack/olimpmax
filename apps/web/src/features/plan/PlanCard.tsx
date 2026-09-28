@@ -1,7 +1,7 @@
 import { Icon } from '@olimp/ui';
 import type { PlanEntry } from '../../lib/api';
 import { dateParts, formatDay, formats, scheduleLabel } from '../../lib/format';
-import { OlympiadTags } from '../catalog/OlympiadSummary';
+import { OlympiadTags, StageCountdown } from '../catalog/OlympiadSummary';
 import { eventLabel, eventTiming, type PlanCardEvent } from './plan-card-format';
 
 export function PlanCard({ entry, event, onOpen }: { entry: PlanEntry; event?: PlanCardEvent; onOpen: () => void }) {
@@ -18,7 +18,7 @@ export function PlanCard({ entry, event, onOpen }: { entry: PlanEntry; event?: P
       <Icon name="chevron-right" className="plan-card__chevron" size={18} />
     </div>
     <OlympiadTags item={item} compact />
-    <div className="plan-card__schedule"><span className="plan-card__caption">{next ? eventLabel(entry, next) : 'Расписание'}</span><p className={next ? '' : 'plan-card__unconfirmed'}><Icon name="bell" size={15} /><span>{next ? `${next.kind === 'ends' ? 'до' : 'с'} ${formatDay(next.date)} · ${timing?.relative}` : entry.tracking ? noDate : 'Отслеживание на паузе'}</span></p></div>
+    <div className="plan-card__schedule"><span className="plan-card__caption">{next ? eventLabel(entry, next) : 'Расписание'}</span><p className={next ? '' : 'plan-card__unconfirmed'}><Icon name="bell" size={15} /><span>{next ? `${next.kind === 'ends' ? 'до' : 'с'} ${formatDay(next.date)} · ${timing?.relative}` : entry.tracking ? noDate : 'Отслеживание на паузе'}</span></p>{!next && entry.tracking && <StageCountdown item={item} />}</div>
     {next?.kind === 'ends' && timing?.urgency && <span className="plan-card__urgency">{timing.urgency}</span>}
     {entry.note && <p className="plan-card__note"><Icon name="message-square" size={12} /><span>{entry.note}</span></p>}
   </article>;

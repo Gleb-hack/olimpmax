@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { hash } from '../import/csv.js';
 import {
   ALL_PROFILES, nameKey, parseGeneralLevel, parseRuDates, isoDay, stageKind, stageMode, scheduleSignature, scheduleQuality,
-  parseBenefit, parseRequirement, type Level, type StageKind, type StageMode, type ScheduleQuality, type ScheduleStage,
+  parseBenefits, parseRequirement, type Level, type StageKind, type StageMode, type ScheduleQuality, type ScheduleStage,
   type BenefitKind, type BenefitDiploma,
 } from './model.js';
 
@@ -31,12 +31,17 @@ export type ReferenceBundle = {
 };
 
 const Source = z.object({ file: z.string().min(1), description: z.string().optional() });
+/**
+ * Benefits may come from several files (one per delivery). `skipUnknownOlympiads`: an olympiad that is not in the
+ * project's catalog is skipped with a warning instead of failing the check — used for third-party lists.
+ */
+const BenefitSource = Source.extend({ skipUnknownOlympiads: z.boolean().default(false) });
 export const Manifest = z.object({
   season: z.string().regex(/^\d{4}\/\d{2}$/),
   sources: z.object({
     schedule: Source,
     rsosh: Source.extend({ status: z.string().min(1), url: z.url().nullable() }),
-    benefits: Source,
+    benefits: z.union([BenefitSource, z.array(BenefitSource).min(1)]).transform(v => Array.isArray(v) ? v : [v]),
   }),
 });
 export type Manifest = z.infer<typeof Manifest>;
@@ -65,7 +70,7 @@ export function readReferenceDir(dir: string | URL = defaultReferenceDir): Refer
   const parsed = Manifest.parse(manifest);
   const files: Record<string, Buffer> = {};
   for (const path of [referenceFiles.series, referenceFiles.universities, referenceFiles.links,
-    parsed.sources.schedule.file, parsed.sources.rsosh.file, parsed.sources.benefits.file]) {
+    parsed.sources.schedule.file, parsed.sources.rsosh.file, ...parsed.sources.benefits.map(b => b.file)]) {
     const full = join(base, path);
     if (!existsSync(full)) throw new Error(`Нет файла справочника: ${path}`);
     files[path] = readFileSync(full);
@@ -191,29 +196,37 @@ export function buildReference(input: ReferenceInput, options: { today: string }
     }
   }
 
-  // --- benefits ---
-  const benefitsPath = manifest.sources.benefits.file;
+  // --- benefits (several files; the first row for a university+olympiad+benefit wins) ---
   const benefits = new Map<string, BenefitEntry>();
-  for (const [i, row] of readCsv(file(benefitsPath), benefitsPath, ['university', 'city', 'olympiad', 'benefit', 'confirmation_requirement']).entries()) {
-    const where = `${benefitsPath}:${i + 2}`;
-    const university = universityByName.get(nameKey(row.university!));
-    if (!university) { error('unknown_university', `${where}: вуз «${row.university}» не найден в universities.csv`); continue; }
-    if (row.city!.trim() && nameKey(row.city!) !== nameKey(universities.get(university)!.city)) warn('city_mismatch', `${where}: город «${row.city}» отличается от universities.csv`);
-    const slug = resolve(row.olympiad!, where);
-    if (!slug) continue;
-    const benefit = parseBenefit(row.benefit!);
-    if (!benefit) { error('unknown_benefit', `${where}: неизвестная льгота «${row.benefit}» (ожидается БВИ, БВИ победителям, 100 баллов)`); continue; }
-    const requirement = parseRequirement(row.confirmation_requirement!);
-    if (!requirement.known) warn('unparsed_requirement', `${where}: условие «${row.confirmation_requirement}» сохранено только текстом`);
-    const key = [university, slug, benefit.kind, benefit.diploma].join(':');
-    const value: BenefitEntry = { university, series: slug, ...benefit, minScore: requirement.minScore, maxScore: requirement.maxScore,
-      requirement: requirement.text, requirementRaw: text(row.confirmation_requirement) };
-    const previous = benefits.get(key);
-    if (previous) {
-      if (previous.requirementRaw !== value.requirementRaw) warn('duplicate_benefit', `${where}: повтор льготы ${key} с другим условием — оставлена первая строка`);
-      continue;
+  for (const source of manifest.sources.benefits) {
+    const benefitsPath = source.file;
+    const skipped = new Map<string, number>();
+    for (const [i, row] of readCsv(file(benefitsPath), benefitsPath, ['university', 'city', 'olympiad', 'benefit', 'confirmation_requirement']).entries()) {
+      const where = `${benefitsPath}:${i + 2}`;
+      const university = universityByName.get(nameKey(row.university!));
+      if (!university) { error('unknown_university', `${where}: вуз «${row.university}» не найден в universities.csv`); continue; }
+      if (row.city!.trim() && nameKey(row.city!) !== nameKey(universities.get(university)!.city)) warn('city_mismatch', `${where}: город «${row.city}» отличается от universities.csv`);
+      const known = byName.get(nameKey(row.olympiad!));
+      if (!known && source.skipUnknownOlympiads) { skipped.set(row.olympiad!.trim(), (skipped.get(row.olympiad!.trim()) ?? 0) + 1); continue; }
+      const slug = resolve(row.olympiad!, where);
+      if (!slug) continue;
+      const parsed = parseBenefits(row.benefit!);
+      if (!parsed) { error('unknown_benefit', `${where}: неизвестная льгота «${row.benefit}» (ожидается БВИ, БВИ победителям, 100 баллов или их сочетание через «/»)`); continue; }
+      const requirement = parseRequirement(row.confirmation_requirement!);
+      if (!requirement.known) warn('unparsed_requirement', `${where}: условие «${row.confirmation_requirement}» сохранено только текстом`);
+      for (const benefit of parsed) {
+        const key = [university, slug, benefit.kind, benefit.diploma].join(':');
+        const value: BenefitEntry = { university, series: slug, ...benefit, minScore: requirement.minScore, maxScore: requirement.maxScore,
+          requirement: requirement.text, requirementRaw: text(row.confirmation_requirement) };
+        const previous = benefits.get(key);
+        if (previous) {
+          if (previous.requirementRaw !== value.requirementRaw) warn('duplicate_benefit', `${where}: повтор льготы ${key} с другим условием — оставлена первая строка`);
+          continue;
+        }
+        benefits.set(key, value);
+      }
     }
-    benefits.set(key, value);
+    for (const [name, rows] of skipped) warn('skipped_olympiad', `${benefitsPath}: олимпиады «${name}» нет в базе проекта — ${rows} строк(и) пропущено`);
   }
 
   // --- catalog-links.csv: which catalog card belongs to which series and profile ---

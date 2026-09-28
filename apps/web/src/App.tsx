@@ -11,6 +11,7 @@ import { PlanPage } from './features/plan/PlanPage';
 import { ProfilePage } from './features/profile/ProfilePage';
 import { PrivacyPage } from './features/profile/PrivacyPage';
 import { HelpPage } from './features/profile/HelpPage';
+import { OlympiadFaqPage } from './features/profile/OlympiadFaqPage';
 import { OlimpPage } from './features/assistant/OlimpPage';
 import { AssistantProvider } from './features/assistant/AssistantProvider';
 import { max } from './lib/max';
@@ -53,6 +54,6 @@ function ProtectedApp() {
   return <ProfileProvider key={user.id}><AssistantProvider><Outlet /></AssistantProvider></ProfileProvider>;
 }
 function AppRoutes() {
-  return <Routes><Route path="welcome" element={<WelcomePage />} /><Route path="login" element={<AuthPage key="login" mode="login" />} /><Route path="register" element={<AuthPage key="register" mode="register" />} /><Route element={<ProtectedApp />}><Route element={<Layout />}><Route index element={<Navigate to="/catalog" replace />} /><Route path="catalog" element={<CatalogPage />} /><Route path="search" element={<SearchPage />} /><Route path="profile/edit" element={<EditProfilePage />} /><Route path="olympiads/:id" element={<DetailPage />} /><Route path="plan" element={<PlanPage />} /><Route path="profile" element={<ProfilePage />} /><Route path="profile/privacy" element={<PrivacyPage />} /><Route path="profile/help" element={<HelpPage />} /><Route path="olimp" element={<OlimpPage />} /><Route path="bot" element={<Navigate to="/olimp" replace />} /><Route path="*" element={<EmptyState title="Страница не найдена" action={<Link className="button-link" to="/catalog">Перейти в каталог</Link>}>Такой страницы нет, но в каталоге есть много интересного.</EmptyState>} /></Route></Route></Routes>;
+  return <Routes><Route path="welcome" element={<WelcomePage />} /><Route path="login" element={<AuthPage key="login" mode="login" />} /><Route path="register" element={<AuthPage key="register" mode="register" />} /><Route element={<ProtectedApp />}><Route element={<Layout />}><Route index element={<Navigate to="/catalog" replace />} /><Route path="catalog" element={<CatalogPage />} /><Route path="search" element={<SearchPage />} /><Route path="profile/edit" element={<EditProfilePage />} /><Route path="olympiads/:id" element={<DetailPage />} /><Route path="plan" element={<PlanPage />} /><Route path="profile" element={<ProfilePage />} /><Route path="profile/privacy" element={<PrivacyPage />} /><Route path="profile/help" element={<HelpPage />} /><Route path="profile/olympiad-faq" element={<OlympiadFaqPage />} /><Route path="olimp" element={<OlimpPage />} /><Route path="bot" element={<Navigate to="/olimp" replace />} /><Route path="*" element={<EmptyState title="Страница не найдена" action={<Link className="button-link" to="/catalog">Перейти в каталог</Link>}>Такой страницы нет, но в каталоге есть много интересного.</EmptyState>} /></Route></Route></Routes>;
 }
 export default function App() { const { starting } = useSession(); return starting ? <div className="app-shell"><Loading label="Восстанавливаем вход…" /></div> : <AppRoutes />; }

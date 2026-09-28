@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button, EmptyState, Loading, Notice, Icon, type IconName } from '@olimp/ui';
 import { api } from '../../lib/api';
 import { usePlan, usePlanActions } from '../../lib/queries';
-import { formats, formatDay, levelLabel } from '../../lib/format';
+import { formats, formatDay, levelLabel, stageCountdown } from '../../lib/format';
 import { parseContact, type Contact } from '../../lib/contacts';
 import { max } from '../../lib/max';
 import { useUI } from '../../lib/ui-store';
@@ -54,6 +54,7 @@ export function DetailPage() {
   // A profile outside the RSOSH list has no level; say why instead of a bare «Не указан».
   const levelHint = item?.levelProfile ? `Профиль: ${item.levelProfile}` : item?.levelSource === 'rsosh_list' ? item.levelStatus ?? undefined : undefined;
   const contacts = (item?.contacts ?? []).filter(value => value.trim()).map(parseContact);
+  const countdown = item ? stageCountdown(item) : null;
   return <div className="olympiad-detail">
     <div className="olympiad-detail__navigation"><Link to={backTo} state={{ backTo: returnTo }} className="icon-button back-button" aria-label={backTo === '/olimp' ? 'Назад к Олимпу' : backTo.startsWith('/search') ? 'Назад к поиску' : 'Назад в каталог'}><Icon name="chevron-left" size={18} /></Link></div>
     {!validId ? <EmptyState title="Олимпиада не найдена" action={<Link className="button-link" to="/catalog">В каталог</Link>}>Проверьте ссылку или найдите олимпиаду в каталоге.</EmptyState> : detail.isPending ? <Loading /> : detail.isError ? <Notice tone="error">{detail.error.message}<Button variant="secondary" onClick={() => detail.refetch()}>Повторить</Button></Notice> : item && <>
@@ -65,6 +66,8 @@ export function DetailPage() {
         <DetailRow icon="bar-chart" label="Уровень олимпиады" value={levelLabel(item)} hint={levelHint} />
         <DetailRow icon="bell" label="Сроки регистрации" value={registrationLabel(item)} />
         <DetailRow icon="calendar" label="Этапы" value={stageSummary(stages)} />
+        {countdown && <DetailRow icon="calendar" label="До следующего этапа" value={`${countdown.value} · ${countdown.stage}`}
+          hint={`Начало — ${countdown.date}${countdown.estimated ? ' Год в источнике не указан и рассчитан по текущему сезону — сверяйте даты у организатора.' : ''}`} />}
         <DetailRow icon="book" label="Организатор" value={item.organizers.join(', ') || 'Не указан'} />
       </dl></section>
       <Button className={`full-width olympiad-detail__track ${saved?.tracking ? 'tracking-button--saved' : ''}`} variant={saved ? 'secondary' : 'primary'} disabled={action.isPending || plan.isPending} onClick={() => saved ? navigate('/plan') : action.mutate({ id, action: 'save' })}>{saved?.tracking && <Icon name="check" size={15} />}{action.isPending ? 'Сохраняем…' : saved ? saved.tracking ? 'Отслеживается' : 'В плане · на паузе' : 'Отслеживать'}</Button>
@@ -77,10 +80,9 @@ export function DetailPage() {
         {referenceNote && <p className="olympiad-schedule__hint">{referenceNote}</p>}
       </div></details>}
       {benefits && (benefits.items.length > 0 || benefits.note) && <details className="olympiad-schedule olympiad-benefits"><summary>Льготы при поступлении{universityCount ? ` · ${universityCount} ${plural(universityCount, 'вуз', 'вуза', 'вузов')}` : ''}<Icon name="chevron-down" size={16} /></summary><div className="olympiad-schedule__content">
-        {benefits.items.length > 0 && <ol>{benefits.items.map(b => <li key={`${b.university.slug}-${b.kind}-${b.diploma}`}><strong>{b.university.name} · {b.university.city}</strong><span>{benefitLabel(b)}</span><small>{b.requirement ? `Подтвердить: ${b.requirement}` : 'Минимальный балл ЕГЭ для подтверждения не указан'}</small></li>)}</ol>}
+        {benefits.items.length > 0 && <ol>{benefits.items.map(b => <li key={`${b.university.slug}-${b.kind}-${b.diploma}`}><strong>{b.university.name} · {b.university.city}</strong><span>{benefitLabel(b)}</span><small>{!b.requirement ? 'Минимальный балл ЕГЭ для подтверждения не указан' : b.minScore === null ? b.requirement : `Подтвердить: ${b.requirement}`}</small></li>)}</ol>}
         {benefits.note && <p className="olympiad-schedule__hint">{benefits.note}</p>}
       </div></details>}
-      {item.featuresRaw && <section className="olympiad-detail__about"><h2>Особенности участия</h2><p className="preserve-lines">{item.featuresRaw.split(' | ').join('\n')}</p></section>}
       {contacts.length > 0 && <section className="olympiad-detail__about"><h2>Контакты</h2><ul className="contact-list">{contacts.map((contact, index) => <ContactItem key={index} contact={contact} />)}</ul></section>}
       <button className="olympiad-detail__source" onClick={() => max.openExternal(item.sourceUrl)}>Подробнее об олимпиаде<Icon name="external-link" size={14} /></button>
     </>}

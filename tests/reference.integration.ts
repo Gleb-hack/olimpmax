@@ -53,7 +53,7 @@ test('series data reaches every subject card: level by profile, schedule and ben
   assert.match(history.catalogCalendarRaw!, /20 окт—18 ноя/);
   assert.ok(history.stages.some(s => s.origin === 'reference' && s.mode === 'online'));
   assert.equal(history.benefits!.applicable, true);
-  assert.equal(history.benefits!.items.length, 7);
+  assert.equal(history.benefits!.items.length, 27); // 7 from the first benefits file + 20 from the 2026 delivery
   assert.equal(history.seriesInfo!.profiles.length, 7);
   const philology = await get(contracts.OlympiadDetail, '/olympiads/6962');
   assert.equal(philology.level, null);
@@ -63,6 +63,13 @@ test('series data reaches every subject card: level by profile, schedule and ben
   assert.match(philology.benefits!.note!, /не распространяются/);
   const nto = await get(contracts.OlympiadDetail, '/olympiads/5369');
   assert.equal(nto.level, 'II–III');
+  // ВсОШ cards joined series with the 2026 delivery: БВИ without ЕГЭ confirmation.
+  const vsoshHistory = await get(contracts.OlympiadDetail, '/olympiads/84');
+  assert.equal(vsoshHistory.series?.slug, 'vsosh-history');
+  assert.ok(vsoshHistory.benefits!.items.some(b => b.university.slug === 'mgimo' && b.kind === 'bvi' && b.minScore === null && /не нужно/.test(b.requirement ?? '')));
+  const german = await get(contracts.OlympiadDetail, '/olympiads/98');
+  assert.equal(german.series?.slug, 'vsosh-foreign-languages');
+  assert.ok(german.benefits!.applicable);
 });
 
 test('placeholder, outdated and contradicting schedules fall back to olimpiada.ru', async () => {
@@ -89,14 +96,16 @@ test('catalog filters by university, series and the new level ranges', async () 
   assert.equal((await get(contracts.CatalogResponse, '/olympiads?series=spbu')).total, 23);
   assert.deepEqual((await get(contracts.CatalogResponse, '/olympiads?levels=II–III')).items.map(i => i.id), [5369]);
   const filters = await get(contracts.FiltersResponse, '/olympiads/filters');
-  assert.equal(filters.universities!.length, 10);
+  assert.equal(filters.universities!.length, 23);
   assert.equal(filters.levels!.find(l => l.value === 'II–III')!.count, 1);
   assert.equal((await app.inject('/olympiads?universities=Bad%20Slug')).statusCode, 400);
 });
 
 test('university and series endpoints', async () => {
   const list = await get(contracts.UniversityListResponse, '/universities');
-  assert.equal(list.items.length, 10);
+  assert.equal(list.items.length, 23);
+  const bmstu = await get(contracts.UniversityResponse, '/universities/bmstu');
+  assert.deepEqual(bmstu.benefits.filter(b => b.series.slug === 'innopolis-open').map(b => b.kind).sort(), ['bvi', 'score_100']);
   const mipt = await get(contracts.UniversityResponse, '/universities/mipt');
   const innopolis = mipt.benefits.find(b => b.series.slug === 'innopolis-open')!;
   assert.deepEqual([innopolis.kind, innopolis.diploma, innopolis.minScore, innopolis.maxScore], ['bvi', 'winner', 75, 85]);
@@ -114,7 +123,7 @@ test('re-import is idempotent, keeps stage ids, and a reviewed series switches t
   const patched: ReferenceInput = { ...input, files: { ...input.files,
     [referenceFiles.series]: Buffer.from(input.files[referenceFiles.series]!.toString('utf8').replace(/^(lomonosov;[^\n]*?);;([^;\n]*)$/m, '$1;ok;$2')) } };
   const report = await applyReference(connection.db, buildReference(patched, { today }));
-  assert.equal(report.series, 87);
+  assert.equal(report.series, 95);
   assert.deepEqual(await stageIds(), before);
   const lomonosov = await get(contracts.OlympiadDetail, '/olympiads/348');
   assert.equal(lomonosov.scheduleSource, 'reference');

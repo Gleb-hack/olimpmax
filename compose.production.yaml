@@ -47,7 +47,6 @@ services:
       MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:?Set MAX_BOT_TOKEN}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
-      SERPER_API_KEY: ${SERPER_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

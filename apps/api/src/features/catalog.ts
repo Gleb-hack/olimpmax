@@ -4,7 +4,7 @@ import type { Database } from '../db/client.js';
 import { olympiads, olympiadSubjects, subjects, stages, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesBenefits, universities } from '../db/schema.js';
 import { olympiadLevelOptions, type CatalogQuery, type Stage, type OlympiadCard } from '../../../../packages/contracts/src/index.js';
 import { normalizeSearch } from '../import/csv.js';
-import { calendarSummary, moscowToday } from './calendar.js';
+import { anchorDay, calendarSummary, moscowToday, upcomingStage } from './calendar.js';
 import { olympiadBenefits, seriesInfo } from './reference.js';
 
 type Olympiad = typeof olympiads.$inferSelect;
@@ -61,6 +61,7 @@ export async function enrich(db: Database, rows: Olympiad[], today = moscowToday
       ? 'reference' as const : 'catalog' as const;
     const rowStages = [...stageMap.get(row.id) ?? [], ...reference];
     const effectiveStatus = scheduleSource === 'reference' && row.scheduleStatus === 'unknown' ? 'published' as const : row.scheduleStatus;
+    const summary = calendarSummary(rowStages, effectiveStatus, today);
     const card: z.infer<typeof OlympiadCard> = {
       id: row.id, title: row.title, description: row.description, organizers: row.organizers, subjects: subjectMap.get(row.id) ?? [],
       gradeFrom: row.gradeFrom, gradeTo: row.gradeTo, classesRaw: row.classesRaw,
@@ -70,7 +71,9 @@ export async function enrich(db: Database, rows: Olympiad[], today = moscowToday
       level: row.level, levelProfile: row.levelProfile, levelStatus: row.levelStatus,
       levelSourceUrl: row.levelSourceUrl, levelSource: row.levelSource,
       series: link ? { slug: link.slug, name: link.name } : null, scheduleSource,
-      ...calendarSummary(rowStages, effectiveStatus, today),
+      ...summary,
+      upcomingStage: upcomingStage(rowStages, { scheduleSource, statusRaw: row.statusRaw, calendarState: summary.calendarState,
+        anchor: anchorDay(row.rawSource['Дата проверки'], row.importedAt), today }),
     };
     return { row, card, stages: rowStages, link: link ?? null };
   });

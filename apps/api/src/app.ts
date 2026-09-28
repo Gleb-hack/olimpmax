@@ -17,10 +17,10 @@ import { readProfile, saveProfile, deleteAccount, ProfileError } from './feature
 import { moscowToday } from './features/calendar.js';
 import { answerAssistant, databaseAssistantData } from './features/assistant/assistant.js';
 import { AssistantError, deepseekCompletion, type CompleteJson } from './features/assistant/deepseek.js';
-import { webConsent, WebConsentError } from './features/assistant/web-consent.js';
-import { researchOlympiad } from './features/assistant/web-research.js';
+import { webResearchTickets, WebTaskError } from './features/assistant/web-task.js';
+import { researchOnWeb } from './features/assistant/web-research.js';
 import type { ReadPublicPage } from './features/assistant/public-page.js';
-import { serperSearch, type SearchWeb } from './features/assistant/serper.js';
+import type { LinkEntry } from './features/assistant/knowledge.js';
 
 declare module '@fastify/jwt' {
   interface FastifyJWT { payload: { sub: string }; user: { sub: string } }
@@ -29,8 +29,8 @@ type AppOptions = {
   db: Database; jwtSecret: string; botToken?: string; allowDevAuth?: boolean;
   corsOrigin?: string; trustProxyHops?: number; logger?: boolean; now?: () => Date;
   deepseekApiKey?: string; deepseekModel?: string; assistantCompletion?: CompleteJson;
-  readPublicPage?: ReadPublicPage;
-  serperApiKey?: string; searchWeb?: SearchWeb;
+  /** Test seams: page reader and the list of links Olimp may open (default: data/assistant/*.csv). */
+  readPublicPage?: ReadPublicPage; researchLinks?: LinkEntry[];
 };
 export async function buildApp(options: AppOptions) {
   const { db } = options;
@@ -58,9 +58,8 @@ export async function buildApp(options: AppOptions) {
   const now = () => options.now?.() ?? new Date();
   const today = () => moscowToday(now());
   const complete = options.assistantCompletion ?? deepseekCompletion(options.deepseekApiKey, options.deepseekModel);
-  const search = options.searchWeb ?? serperSearch(options.serperApiKey);
   const activeChats = new Set<string>();
-  const consent = webConsent(options.jwtSecret, () => now().getTime());
+  const tickets = webResearchTickets(options.jwtSecret, () => now().getTime());
   api.get('/health', { schema: { response: { 200: z.object({ status: z.literal('ok') }) } } }, async () => {
     await db.execute(sql`select 1`); return { status: 'ok' as const };
   });
@@ -134,24 +133,25 @@ export async function buildApp(options: AppOptions) {
       try {
         const { research, ...answer } = await answerAssistant(request.body, databaseAssistantData(db, userId, today()), complete,
           today(), AbortSignal.any([controller.signal, AbortSignal.timeout(55000)]));
-        return { ...answer, ...(research ? { webSearchOffer: { token: consent.issue(userId, research.task),
-          question: research.task.question, olympiads: research.olympiads } } : {}) };
+        return { ...answer, ...(research ? { webSearch: { token: tickets.issue(userId, research.task),
+          question: research.task.question, olympiadIds: research.task.olympiadIds } } : {}) };
       } catch (error) {
         if (error instanceof AssistantError) return reply.code(error.status).send({ error: error.code, message: error.message });
         throw error;
       } finally { activeChats.delete(userId); reply.raw.off('close', onClose); }
     });
+    // Runs automatically after a chat answer that found nothing in the database: at most one per chat question.
     routes.post('/assistant/web-search', {
-      config: { rateLimit: { max: 3, timeWindow: '1 minute', hook: 'preHandler', keyGenerator: request => request.user.sub } },
+      config: { rateLimit: { max: 6, timeWindow: '1 minute', hook: 'preHandler', keyGenerator: request => request.user.sub } },
       schema: { body: c.AssistantWebRequest, response: { 200: c.AssistantResponse, 400: c.ErrorResponse, 401: c.ErrorResponse,
         429: c.ErrorResponse, 502: c.ErrorResponse, 503: c.ErrorResponse, 504: c.ErrorResponse } },
     }, async (request, reply) => {
       reply.header('Cache-Control', 'no-store');
       const userId = request.user.sub;
       let task;
-      try { task = consent.verify(userId, request.body.token); }
+      try { task = tickets.verify(userId, request.body.token); }
       catch (error) {
-        if (error instanceof WebConsentError) return reply.code(400).send({ error: 'WEB_CONSENT_INVALID', message: error.message });
+        if (error instanceof WebTaskError) return reply.code(400).send({ error: 'WEB_SEARCH_EXPIRED', message: error.message });
         throw error;
       }
       if (activeChats.has(userId) || activeChats.size >= 8) return reply.code(429).send({ error: 'ASSISTANT_BUSY', message: 'Олимп уже готовит ответ. Попробуйте чуть позже.' });
@@ -160,8 +160,8 @@ export async function buildApp(options: AppOptions) {
       const onClose = () => { if (!reply.raw.writableEnded) controller.abort(); };
       reply.raw.on('close', onClose);
       try {
-        return await researchOlympiad(task, databaseAssistantData(db, userId, today()), complete,
-          today(), AbortSignal.any([controller.signal, AbortSignal.timeout(70000)]), search, options.readPublicPage);
+        return await researchOnWeb(task, databaseAssistantData(db, userId, today()), complete,
+          today(), AbortSignal.any([controller.signal, AbortSignal.timeout(100000)]), options.readPublicPage, options.researchLinks);
       } catch (error) {
         if (error instanceof AssistantError) return reply.code(error.status).send({ error: error.code, message: error.message });
         throw error;

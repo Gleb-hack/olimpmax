@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { conversationHistory, isSearchConsent, isSearchDecline, welcomeMessages, type ChatMessage } from '../src/features/assistant/conversation';
+import { conversationHistory, welcomeMessages, type ChatMessage } from '../src/features/assistant/conversation';
 
 test('history excludes failed questions, limits context and preserves recent conversation order', () => {
   const messages: ChatMessage[] = [...welcomeMessages(), ...Array.from({ length: 14 }, (_, i): ChatMessage => ({
@@ -13,17 +13,10 @@ test('history excludes failed questions, limits context and preserves recent con
   assert.equal(history.some(m => m.content.includes('Привет')), false);
   assert.equal(conversationHistory([{ ...messages[2]!, failed: true }]).length, 0);
 });
-test('only an unambiguous confirmation can accept the pending web offer', () => {
-  for (const text of ['Да', 'Давай', 'Да, поищи в интернете.', 'Поищи']) assert.equal(isSearchConsent(text), true);
-  for (const text of ['Нет', 'Да, но не ищи', 'даже не думай', 'Не ищи в интернете', 'давай другую олимпиаду']) assert.equal(isSearchConsent(text), false);
-  for (const text of ['Нет', 'Нет, спасибо', 'Не сейчас', 'Не ищи в интернете.']) assert.equal(isSearchDecline(text), true);
-  for (const text of ['Да', 'Нет информации о взносах?', 'Не надо математику, ищи информатику']) assert.equal(isSearchDecline(text), false);
-});
-
-test('compact offers and research replies retain topic IDs and normalized questions, never tokens', () => {
+test('web search announcements and web replies keep topic IDs and the normalized question, never the ticket', () => {
   const messages: ChatMessage[] = [
-    { id: 'offer', role: 'assistant', content: 'Поискать в интернете?', at: '', olympiads: [], offerOnly: true,
-      webSearchOffer: { token: 'private-token', question: 'Сколько стоит участие в олимпиаде X?', olympiads: [{ id: 88, title: 'X' }] } },
+    { id: 'search', role: 'assistant', content: 'В нашей базе нет данных о стоимости. Сейчас поищу в интернете.', at: '', olympiads: [],
+      webSearch: { token: 'private-token', question: 'Сколько стоит участие в олимпиаде X?', olympiadIds: [88] }, webSearchState: 'done' },
     { id: 'result', role: 'assistant', content: 'Участие бесплатное.', at: '', olympiads: [], contextOlympiadIds: [88] },
   ];
   const history = conversationHistory(messages);

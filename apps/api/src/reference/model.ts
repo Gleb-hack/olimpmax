@@ -52,8 +52,13 @@ export function stageMode(value: string): StageMode | null | undefined {
 const months: Record<string, number> = {
   'январ': 1, 'феврал': 2, 'март': 3, 'апрел': 4, 'ма': 5, 'июн': 6, 'июл': 7, 'август': 8, 'сентябр': 9, 'октябр': 10, 'ноябр': 11, 'декабр': 12,
 };
+// Short forms used by the olimpiada.ru calendar: «2 ноя—25 дек», «До 1 ноя».
+const shortMonthNames: Record<string, number> = {
+  'янв': 1, 'фев': 2, 'мар': 3, 'апр': 4, 'май': 5, 'мая': 5, 'июн': 6, 'июл': 7, 'авг': 8, 'сен': 9, 'сент': 9, 'окт': 10, 'ноя': 11, 'нояб': 11, 'дек': 12,
+};
 function monthNumber(word: string) {
   const w = word.toLocaleLowerCase('ru');
+  if (shortMonthNames[w]) return shortMonthNames[w];
   for (const [prefix, n] of Object.entries(months)) if (w.startsWith(prefix) && (prefix !== 'ма' || /^ма[йяе]$/.test(w))) return n;
   return null;
 }
@@ -140,11 +145,27 @@ export function parseBenefit(value: string): ParsedBenefit | null {
   if (/^100 баллов( победителям)?$/.test(v)) return { kind: 'score_100', diploma: v.includes('победител') ? 'winner' : 'any' };
   return null;
 }
+/**
+ * One source cell may list several benefits: «БВИ / 100 баллов» means БВИ on one programme and 100 points on another.
+ * A shared «победителям» at the end applies to every part. null — at least one part is unknown.
+ */
+export function parseBenefits(value: string): ParsedBenefit[] | null {
+  const v = value.trim().replace(/\s+/g, ' ');
+  const winners = /\s+победителям$/i.test(v);
+  const parts = v.replace(/\s+победителям$/i, '').split(/\s*(?:\/|\+|,|;|\sи\s|\sили\s)\s*/i).filter(Boolean);
+  if (!parts.length) return null;
+  const parsed = parts.map(part => parseBenefit(winners ? `${part} победителям` : part));
+  if (parsed.some(p => p === null)) return null;
+  return parsed.filter((p, i, all) => all.findIndex(q => q!.kind === p!.kind && q!.diploma === p!.diploma) === i) as ParsedBenefit[];
+}
+export const REQUIREMENT_NOT_NEEDED = 'Подтверждать баллами ЕГЭ не нужно';
 export type ParsedRequirement = { minScore: number | null; maxScore: number | null; text: string | null; known: boolean };
 /** «ЕГЭ от75 до 85 баллов по профильному предмету.» → 75…85; OCR notes like «не видно на скриншотах» mean «not stated». */
 export function parseRequirement(value: string): ParsedRequirement {
   const text = value.trim().replace(/\s+/g, ' ');
   if (!text || /не видно|нет данных|не указан/i.test(text)) return { minScore: null, maxScore: null, text: null, known: true };
+  // ВсОШ final-stage diplomas are not confirmed by ЕГЭ scores.
+  if (/^не\s+требуется\.?$/i.test(text)) return { minScore: null, maxScore: null, text: REQUIREMENT_NOT_NEEDED, known: true };
   const m = /ЕГЭ\s*от\s*(\d{2,3})(?:\s*до\s*(\d{2,3}))?\s*балл/i.exec(text);
   if (!m) return { minScore: null, maxScore: null, text, known: false };
   const min = Number(m[1]), max = m[2] ? Number(m[2]) : null;
