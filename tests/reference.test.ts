@@ -126,10 +126,15 @@ test('bundled reference data is consistent with the catalog', () => {
   assert.deepEqual(bundle.issues.filter(i => i.severity === 'error'), []);
   assert.equal(bundle.series.length, 95);
   assert.equal(bundle.links.length, 357);
-  // 611 from the first file + 1240 from vuzi_olympiad_benefits_2026 («БВИ / 100 баллов» rows give two benefits each).
-  assert.equal(bundle.benefits.length, 1851);
-  assert.equal(bundle.universities.length, 23);
-  assert.deepEqual(bundle.issues.filter(i => i.code === 'skipped_olympiad'), []);
+  // 611 from the first file + 1240 from vuzi_olympiad_benefits_2026 + 1792 from its part 2 («БВИ / 100 баллов» rows give two benefits each).
+  assert.equal(bundle.benefits.length, 3643);
+  assert.equal(bundle.universities.length, 38);
+  // Part 2 names five olympiads that are not in the project; their rows are skipped with a warning.
+  assert.deepEqual(bundle.issues.filter(i => i.code === 'skipped_olympiad').map(i => i.message.split(':')[0]), Array(5).fill('sources/vuzi_olympiad_benefits_2026_part2.csv'));
+  const tpu = bundle.benefits.filter(b => b.university === 'tpu' && b.series === 'innopolis-open');
+  assert.deepEqual(tpu.map(b => [b.kind, b.minScore]), [['bvi', 75]]);
+  // «БВИ / 300 / 200 / 100 баллов»: БВИ and the top score of the entrance test.
+  assert.deepEqual(bundle.benefits.filter(b => b.university === 'sfedu' && b.series === 'architecture-art-south').map(b => b.kind).sort(), ['bvi', 'score_100']);
   const bmstu = bundle.benefits.filter(b => b.university === 'bmstu' && b.series === 'innopolis-open');
   assert.deepEqual(bmstu.map(b => b.kind).sort(), ['bvi', 'score_100']);
   assert.equal(bundle.benefits.find(b => b.university === 'mgimo' && b.series === 'vsosh-history')!.requirement, REQUIREMENT_NOT_NEEDED);
@@ -163,7 +168,7 @@ test('unknown names, profiles and series are errors, not silent skips', () => {
   const skipped = buildReference(patch(extra, t => t + 'МИРЭА,Москва,Несуществующая олимпиада,БВИ,Не требуется.\n'), { today });
   assert.deepEqual(skipped.issues.filter(i => i.severity === 'error'), []);
   assert.ok(skipped.issues.some(i => i.code === 'skipped_olympiad' && i.message.includes('Несуществующая олимпиада')));
-  assert.equal(skipped.benefits.length, 1851);
+  assert.equal(skipped.benefits.length, 3643);
   const badProfile = buildReference(patch(referenceFiles.links, t => t.replace('5285;ranepa;история;', '5285;ranepa;астрология;')), { today });
   assert.ok(badProfile.issues.some(i => i.code === 'unknown_profile'));
   const badSeries = buildReference(patch(referenceFiles.links, t => t.replace('5285;ranepa;', '5285;ranepa-x;')), { today });

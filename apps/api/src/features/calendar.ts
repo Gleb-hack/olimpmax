@@ -92,12 +92,17 @@ export function scheduleEvents(stages: CalendarStage[], options: ScheduleOptions
 }
 
 /**
- * The next stage that has not started yet, for the «N дней до этапа» counter: the earliest start or one-day stage
- * from today on. Stages given only as a deadline («До 1 ноя») have no known start and are skipped; null — nothing reliable.
+ * The nearest stage for the «N дней» counter, in the order the schedule goes. A stage that has not begun counts to its start;
+ * a running stage, or one given only as a deadline («до 11 октября»), counts to its end — so a running selection round is
+ * not skipped in favour of the final. On the same day a deadline goes first. null — nothing reliable ahead.
  */
 export function upcomingStage(stages: CalendarStage[], options: ScheduleOptions & { today: string }): z.infer<typeof UpcomingStage> | null {
   // Nothing more than eleven months ahead: such a date belongs to another season.
   const horizon = addDays(options.today, 335);
-  const next = scheduleEvents(stages, options).find(event => event.kind !== 'ends' && event.date >= options.today && event.date <= horizon);
-  return next ? { name: next.name, kind: next.stageKind, startsOn: next.date, estimated: next.estimated } : null;
+  const events = scheduleEvents(stages, options);
+  const starts = new Map(events.filter(event => event.kind === 'starts').map(event => [event.stageId, event.date]));
+  const next = events.filter(event => event.date >= options.today && event.date <= horizon
+      && (event.kind !== 'ends' || !starts.has(event.stageId) || starts.get(event.stageId)! < options.today))
+    .sort((a, b) => a.date.localeCompare(b.date) || Number(b.kind === 'ends') - Number(a.kind === 'ends'))[0];
+  return next ? { name: next.name, kind: next.stageKind, event: next.kind === 'ends' ? 'ends' : 'starts', date: next.date, estimated: next.estimated } : null;
 }

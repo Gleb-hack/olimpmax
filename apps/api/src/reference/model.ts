@@ -147,10 +147,12 @@ export function parseBenefit(value: string): ParsedBenefit | null {
 }
 /**
  * One source cell may list several benefits: «БВИ / 100 баллов» means БВИ on one programme and 100 points on another.
- * A shared «победителям» at the end applies to every part. null — at least one part is unknown.
+ * A shared «победителям» at the end applies to every part; «300 / 200 / 100 баллов» is one 100-point benefit.
+ * null — at least one part is unknown.
  */
 export function parseBenefits(value: string): ParsedBenefit[] | null {
-  const v = value.trim().replace(/\s+/g, ' ');
+  // «300 / 200 / 100 баллов»: the top score of an entrance test on the university's own scale — the same benefit as 100 баллов.
+  const v = value.trim().replace(/\s+/g, ' ').replace(/(?:\b\d{3}\s*\/\s*)+100 баллов/i, '100 баллов');
   const winners = /\s+победителям$/i.test(v);
   const parts = v.replace(/\s+победителям$/i, '').split(/\s*(?:\/|\+|,|;|\sи\s|\sили\s)\s*/i).filter(Boolean);
   if (!parts.length) return null;

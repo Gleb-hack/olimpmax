@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button, EmptyState, Icon, Loading, Notice } from '@olimp/ui';
@@ -7,9 +7,13 @@ import { max } from '../../lib/max';
 import { canGoBack } from '../../lib/history';
 import { DetailRow } from '../catalog/DetailRow';
 import { universityInitials } from '../catalog/detail-format';
-import { benefitOverview, commonRequirement, siteLabel, universitySeries, universityTypes, type UniversitySeries } from './university-format';
+import { benefitOverview, commonRequirement, rulesLabel, siteLabel, universitySeries, universityTypes, type UniversitySeries } from './university-format';
 
 const COLLAPSED = 8;
+// A real link keeps long-press and copy; the click itself goes through MAX like other external links.
+function ExternalLink({ href, children }: { href: string; children: ReactNode }) {
+  return <a className="text-link" href={href} onClick={event => { event.preventDefault(); max.openExternal(href); }}>{children}<Icon name="external-link" size={13} /></a>;
+}
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function SeriesCard({ card, backTo, currentId }: { card: UniversitySeries; backTo: string; currentId?: number }) {
@@ -69,7 +73,8 @@ export function UniversityPage() {
           {item.type && <DetailRow icon="graduation-cap" label="Тип" value={universityTypes[item.type]} />}
           {item.fullName && item.fullName !== item.name && <DetailRow icon="book" label="Полное название" value={item.fullName} />}
           <DetailRow icon="bar-chart" label="Льготы" value={benefitOverview(series)} hint={requirement ? `Подтверждение: ${requirement}` : undefined} />
-          {item.site && <DetailRow icon="globe" label="Официальный сайт" value={<a className="text-link" href={item.site} onClick={event => { event.preventDefault(); max.openExternal(item.site!); }}>{siteLabel(item.site)}<Icon name="external-link" size={13} /></a>} />}
+          {item.rules && <DetailRow icon="clipboard-list" label="Правила приёма" value={<ExternalLink href={item.rules}>{rulesLabel(item.rules)}</ExternalLink>} />}
+          {item.site && <DetailRow icon="globe" label="Официальный сайт" value={<ExternalLink href={item.site}>{siteLabel(item.site)}</ExternalLink>} />}
         </dl></section>
         <section className="olympiad-detail__about olympiad-universities" aria-labelledby="university-olympiads-title">
           <h2 id="university-olympiads-title">Олимпиады с льготами{series.length > 0 && <span className="olympiad-universities__count">{series.length}</span>}</h2>

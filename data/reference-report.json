@@ -1,14 +1,14 @@
 {
-  "checkedAt": "2026-09-28T00:03:35.857Z",
-  "referenceSha256": "f1a1c35fe4cf7daf9ed9792ec4e297f2c11358feb0b1f55e19ed4eaf7800d36e",
+  "checkedAt": "2026-09-28T11:52:08.280Z",
+  "referenceSha256": "f9dde352f061cecca3084c8588554bd1090cb405f5b2cca96b29f6101347e0b7",
   "season": "2026/27",
   "counts": {
     "series": 95,
     "seriesWithSchedule": 64,
     "seriesInRsoshList": 71,
     "rsoshProfiles": 283,
-    "universities": 23,
-    "benefits": 1851,
+    "universities": 38,
+    "benefits": 3643,
     "links": 357,
     "catalogCards": 698,
     "linkedCards": 357
@@ -1018,7 +1018,7 @@
       "rsoshProfiles": 5,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 32
+      "benefits": 60
     },
     {
       "slug": "belchonok",
@@ -1028,7 +1028,7 @@
       "rsoshProfiles": 0,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 28
+      "benefits": 52
     },
     {
       "slug": "future-of-siberia",
@@ -1038,7 +1038,7 @@
       "rsoshProfiles": 2,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 24
+      "benefits": 48
     },
     {
       "slug": "future-researchers",
@@ -1048,7 +1048,7 @@
       "rsoshProfiles": 6,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 32
+      "benefits": 60
     },
     {
       "slug": "vguyu-law",
@@ -1058,7 +1058,7 @@
       "rsoshProfiles": 1,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 1
+      "benefits": 5
     },
     {
       "slug": "vernadsky",
@@ -1068,7 +1068,7 @@
       "rsoshProfiles": 2,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 29
+      "benefits": 50
     },
     {
       "slug": "ai-olympiad",
@@ -1078,7 +1078,7 @@
       "rsoshProfiles": 1,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 27
+      "benefits": 55
     },
     {
       "slug": "sechenov",
@@ -1088,7 +1088,7 @@
       "rsoshProfiles": 2,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 27
+      "benefits": 53
     },
     {
       "slug": "tolstoy",
@@ -1098,7 +1098,7 @@
       "rsoshProfiles": 4,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 19
+      "benefits": 38
     },
     {
       "slug": "vsesib",
@@ -1108,7 +1108,7 @@
       "rsoshProfiles": 5,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 30
+      "benefits": 58
     },
     {
       "slug": "vsosh-astronomy",
@@ -1118,7 +1118,7 @@
       "rsoshProfiles": 0,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 12
+      "benefits": 21
     },
     {
       "slug": "vsosh-biology",
@@ -1128,7 +1128,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 19
+      "benefits": 34
     },
     {
       "slug": "vsosh-informatics",
@@ -1138,7 +1138,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 20
+      "benefits": 35
     },
     {
       "slug": "vsosh-mathematics",
@@ -1148,7 +1148,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 21
+      "benefits": 36
     },
     {
       "slug": "vsosh-social-studies",
@@ -1158,7 +1158,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 18
+      "benefits": 31
     },
     {
       "slug": "vsosh-physics",
@@ -1168,7 +1168,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 20
+      "benefits": 35
     },
     {
       "slug": "vsosh-chemistry",
@@ -1178,7 +1178,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 18
+      "benefits": 32
     },
     {
       "slug": "vsosh-ecology",
@@ -1188,7 +1188,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 9
+      "benefits": 16
     },
     {
       "slug": "vsosh-economics",
@@ -1198,7 +1198,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 18
+      "benefits": 31
     },
     {
       "slug": "vuz-academic-informatics",
@@ -1208,7 +1208,7 @@
       "rsoshProfiles": 0,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 29
+      "benefits": 57
     },
     {
       "slug": "hse-vysshaya-proba",
@@ -1218,7 +1218,7 @@
       "rsoshProfiles": 25,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 35
+      "benefits": 63
     },
     {
       "slug": "gazprom",
@@ -1228,7 +1228,7 @@
       "rsoshProfiles": 3,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 25
+      "benefits": 51
     },
     {
       "slug": "herzen",
@@ -1238,7 +1238,7 @@
       "rsoshProfiles": 3,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 0
+      "benefits": 2
     },
     {
       "slug": "spb-city-physics",
@@ -1248,7 +1248,7 @@
       "rsoshProfiles": 0,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 28
+      "benefits": 54
     },
     {
       "slug": "granit-nauki",
@@ -1258,7 +1258,7 @@
       "rsoshProfiles": 2,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 19
+      "benefits": 43
     },
     {
       "slug": "eurasian-linguistic",
@@ -1268,7 +1268,7 @@
       "rsoshProfiles": 1,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 14
+      "benefits": 32
     },
     {
       "slug": "zvezda",
@@ -1278,7 +1278,7 @@
       "rsoshProfiles": 2,
       "stages": 5,
       "scheduleQuality": "outdated",
-      "benefits": 30
+      "benefits": 58
     },
     {
       "slug": "izumrud",
@@ -1288,7 +1288,7 @@
       "rsoshProfiles": 6,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 30
+      "benefits": 55
     },
     {
       "slug": "engineering-olympiad",
@@ -1298,7 +1298,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 28
+      "benefits": 54
     },
     {
       "slug": "innagrika",
@@ -1308,7 +1308,7 @@
       "rsoshProfiles": 1,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 22
+      "benefits": 47
     },
     {
       "slug": "internet-physics",
@@ -1318,7 +1318,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 28
+      "benefits": 54
     },
     {
       "slug": "art-of-graphics",
@@ -1328,7 +1328,7 @@
       "rsoshProfiles": 3,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 0
+      "benefits": 4
     },
     {
       "slug": "cognitive-technologies",
@@ -1338,7 +1338,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 17
+      "benefits": 38
     },
     {
       "slug": "culture-and-art",
@@ -1358,7 +1358,7 @@
       "rsoshProfiles": 1,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 6
+      "benefits": 20
     },
     {
       "slug": "lomonosov",
@@ -1368,7 +1368,7 @@
       "rsoshProfiles": 27,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 33
+      "benefits": 58
     },
     {
       "slug": "music-olympiad",
@@ -1388,7 +1388,7 @@
       "rsoshProfiles": 1,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 25
+      "benefits": 44
     },
     {
       "slug": "architecture-art",
@@ -1408,7 +1408,7 @@
       "rsoshProfiles": 2,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 26
+      "benefits": 51
     },
     {
       "slug": "departmental",
@@ -1418,7 +1418,7 @@
       "rsoshProfiles": 5,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 26
+      "benefits": 51
     },
     {
       "slug": "sarkisov",
@@ -1428,7 +1428,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 23
+      "benefits": 49
     },
     {
       "slug": "mission-financier",
@@ -1438,7 +1438,7 @@
       "rsoshProfiles": 5,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 25
+      "benefits": 46
     },
     {
       "slug": "mosh",
@@ -1448,7 +1448,7 @@
       "rsoshProfiles": 19,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 34
+      "benefits": 62
     },
     {
       "slug": "moscow-geology",
@@ -1468,7 +1468,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 27
+      "benefits": 53
     },
     {
       "slug": "umov-robofest",
@@ -1478,7 +1478,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 16
+      "benefits": 28
     },
     {
       "slug": "nto",
@@ -1488,7 +1488,7 @@
       "rsoshProfiles": 21,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 31
+      "benefits": 59
     },
     {
       "slug": "defense-tech",
@@ -1498,7 +1498,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 17
+      "benefits": 37
     },
     {
       "slug": "omo",
@@ -1508,7 +1508,7 @@
       "rsoshProfiles": 2,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 28
+      "benefits": 54
     },
     {
       "slug": "ocean-of-knowledge",
@@ -1518,7 +1518,7 @@
       "rsoshProfiles": 0,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 23
+      "benefits": 44
     },
     {
       "slug": "tatlin",
@@ -1528,7 +1528,7 @@
       "rsoshProfiles": 3,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 0
+      "benefits": 4
     },
     {
       "slug": "kurchatov",
@@ -1538,7 +1538,7 @@
       "rsoshProfiles": 2,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 28
+      "benefits": 54
     },
     {
       "slug": "mgimo",
@@ -1548,7 +1548,7 @@
       "rsoshProfiles": 1,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 16
+      "benefits": 35
     },
     {
       "slug": "ranepa",
@@ -1558,7 +1558,7 @@
       "rsoshProfiles": 7,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 27
+      "benefits": 48
     },
     {
       "slug": "rggu",
@@ -1568,7 +1568,7 @@
       "rsoshProfiles": 5,
       "stages": 3,
       "scheduleQuality": "outdated",
-      "benefits": 25
+      "benefits": 46
     },
     {
       "slug": "spbu",
@@ -1578,7 +1578,7 @@
       "rsoshProfiles": 21,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 33
+      "benefits": 58
     },
     {
       "slug": "informatics-programming",
@@ -1588,7 +1588,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 17
+      "benefits": 38
     },
     {
       "slug": "yumsh",
@@ -1598,7 +1598,7 @@
       "rsoshProfiles": 1,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 18
+      "benefits": 39
     },
     {
       "slug": "kfu",
@@ -1608,7 +1608,7 @@
       "rsoshProfiles": 8,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 31
+      "benefits": 56
     },
     {
       "slug": "ormo",
@@ -1618,7 +1618,7 @@
       "rsoshProfiles": 6,
       "stages": 5,
       "scheduleQuality": "ok",
-      "benefits": 20
+      "benefits": 44
     },
     {
       "slug": "orthodox-culture",
@@ -1638,7 +1638,7 @@
       "rsoshProfiles": 3,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 18
+      "benefits": 39
     },
     {
       "slug": "open-programming",
@@ -1648,7 +1648,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 27
+      "benefits": 55
     },
     {
       "slug": "open-chemistry",
@@ -1658,7 +1658,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 25
+      "benefits": 51
     },
     {
       "slug": "pirogov",
@@ -1668,7 +1668,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 12
+      "benefits": 26
     },
     {
       "slug": "plekhanov",
@@ -1678,7 +1678,7 @@
       "rsoshProfiles": 4,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 20
+      "benefits": 45
     },
     {
       "slug": "pokori-vorobyovy-gory",
@@ -1688,7 +1688,7 @@
       "rsoshProfiles": 8,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 30
+      "benefits": 55
     },
     {
       "slug": "mendeleev-descendants",
@@ -1698,7 +1698,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 25
+      "benefits": 51
     },
     {
       "slug": "chelyabinsk-contest",
@@ -1708,7 +1708,7 @@
       "rsoshProfiles": 2,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 19
+      "benefits": 40
     },
     {
       "slug": "rosatom",
@@ -1718,7 +1718,7 @@
       "rsoshProfiles": 3,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 28
+      "benefits": 54
     },
     {
       "slug": "spb-astronomy",
@@ -1728,7 +1728,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "outdated",
-      "benefits": 16
+      "benefits": 33
     },
     {
       "slug": "spb-olympiad",
@@ -1738,7 +1738,7 @@
       "rsoshProfiles": 1,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 26
+      "benefits": 52
     },
     {
       "slug": "sibiriada",
@@ -1748,7 +1748,7 @@
       "rsoshProfiles": 1,
       "stages": 5,
       "scheduleQuality": "ok",
-      "benefits": 14
+      "benefits": 31
     },
     {
       "slug": "real-science",
@@ -1758,7 +1758,7 @@
       "rsoshProfiles": 0,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 19
+      "benefits": 43
     },
     {
       "slug": "technocup",
@@ -1768,7 +1768,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 29
+      "benefits": 57
     },
     {
       "slug": "tournament-of-towns",
@@ -1778,7 +1778,7 @@
       "rsoshProfiles": 0,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 30
+      "benefits": 58
     },
     {
       "slug": "lomonosov-tournament",
@@ -1788,7 +1788,7 @@
       "rsoshProfiles": 0,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 30
+      "benefits": 58
     },
     {
       "slug": "femida",
@@ -1798,7 +1798,7 @@
       "rsoshProfiles": 1,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 1
+      "benefits": 5
     },
     {
       "slug": "phystech",
@@ -1808,7 +1808,7 @@
       "rsoshProfiles": 7,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 28
+      "benefits": 54
     },
     {
       "slug": "finatlon",
@@ -1818,7 +1818,7 @@
       "rsoshProfiles": 1,
       "stages": 3,
       "scheduleQuality": "ok",
-      "benefits": 22
+      "benefits": 43
     },
     {
       "slug": "formula-of-unity",
@@ -1828,7 +1828,7 @@
       "rsoshProfiles": 2,
       "stages": 2,
       "scheduleQuality": "ok",
-      "benefits": 31
+      "benefits": 59
     },
     {
       "slug": "step-into-future",
@@ -1838,7 +1838,7 @@
       "rsoshProfiles": 6,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 21
+      "benefits": 43
     },
     {
       "slug": "architecture-art-south",
@@ -1848,7 +1848,7 @@
       "rsoshProfiles": 1,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 0
+      "benefits": 4
     },
     {
       "slug": "junior",
@@ -1858,7 +1858,7 @@
       "rsoshProfiles": 2,
       "stages": 3,
       "scheduleQuality": "placeholder",
-      "benefits": 26
+      "benefits": 52
     },
     {
       "slug": "young-talents",
@@ -1868,7 +1868,7 @@
       "rsoshProfiles": 3,
       "stages": 4,
       "scheduleQuality": "ok",
-      "benefits": 25
+      "benefits": 48
     },
     {
       "slug": "legal-heights",
@@ -1878,7 +1878,7 @@
       "rsoshProfiles": 1,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 1
+      "benefits": 5
     },
     {
       "slug": "vsosh-geography",
@@ -1888,7 +1888,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 8
+      "benefits": 18
     },
     {
       "slug": "vsosh-history",
@@ -1898,7 +1898,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 10
+      "benefits": 21
     },
     {
       "slug": "vsosh-literature",
@@ -1908,7 +1908,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 9
+      "benefits": 20
     },
     {
       "slug": "vsosh-law",
@@ -1918,7 +1918,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 7
+      "benefits": 15
     },
     {
       "slug": "vsosh-russian",
@@ -1928,7 +1928,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 9
+      "benefits": 20
     },
     {
       "slug": "vsosh-foreign-languages",
@@ -1938,7 +1938,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 9
+      "benefits": 20
     },
     {
       "slug": "levsha-heirs",
@@ -1948,7 +1948,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 4
+      "benefits": 8
     },
     {
       "slug": "umnitsy",
@@ -1958,7 +1958,7 @@
       "rsoshProfiles": 0,
       "stages": 0,
       "scheduleQuality": null,
-      "benefits": 8
+      "benefits": 20
     }
   ],
   "errors": [],
@@ -1992,6 +1992,11 @@
     "placeholder_schedule: pirogov: расписание похоже на шаблон (регистрация X, отбор X+20, финал X+50) — карточки показывают расписание olimpiada.ru; после проверки поставьте schedule_review=ok",
     "placeholder_schedule: plekhanov: расписание похоже на шаблон (совпадает с open-programming) — карточки показывают расписание olimpiada.ru; после проверки поставьте schedule_review=ok",
     "placeholder_schedule: chelyabinsk-contest: расписание похоже на шаблон (совпадает с pokori-vorobyovy-gory, energy-hope) — карточки показывают расписание olimpiada.ru; после проверки поставьте schedule_review=ok",
+    "skipped_olympiad: sources/vuzi_olympiad_benefits_2026_part2.csv: олимпиады «Сибирская межрегиональная олимпиада школьников «Архитектурно-дизайнерское творчество»» нет в базе проекта — 2 строк(и) пропущено",
+    "skipped_olympiad: sources/vuzi_olympiad_benefits_2026_part2.csv: олимпиады «Строгановская олимпиада» нет в базе проекта — 2 строк(и) пропущено",
+    "skipped_olympiad: sources/vuzi_olympiad_benefits_2026_part2.csv: олимпиады «В начале было Слово...» нет в базе проекта — 1 строк(и) пропущено",
+    "skipped_olympiad: sources/vuzi_olympiad_benefits_2026_part2.csv: олимпиады «Всероссийская экономическая олимпиада школьников имени Н.Д. Кондратьева» нет в базе проекта — 1 строк(и) пропущено",
+    "skipped_olympiad: sources/vuzi_olympiad_benefits_2026_part2.csv: олимпиады «Нанотехнологии - прорыв в будущее!» нет в базе проекта — 1 строк(и) пропущено",
     "profile_without_card: vernadsky: нет карточек для профилей перечня: экономика",
     "profile_without_card: sechenov: нет карточек для профилей перечня: биология",
     "profile_without_card: herzen: нет карточек для профилей перечня: образование и педагогика",

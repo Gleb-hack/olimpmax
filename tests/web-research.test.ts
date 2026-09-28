@@ -65,10 +65,13 @@ test('PDF documents are read as text: admission rules are usually published as P
 });
 test('the curated link list is loaded from data/assistant without tracking parameters', () => {
   const knowledge = loadKnowledge();
-  assert.equal(knowledge.links.length, 54);
+  assert.equal(knowledge.links.length, 88);
   assert.ok(knowledge.links.every(link => !/utm_/.test(link.url)));
   assert.ok(knowledge.links.some(link => link.url === 'https://olimpiada.ru/' && /каталог/.test(link.description)));
   assert.ok(knowledge.links.some(link => link.url.startsWith('https://cpk.msu.ru/') && /МГУ/.test(link.description)));
+  // Universities added in September 2026 bring their sites and admission rules.
+  assert.ok(knowledge.links.some(link => link.url === 'https://tpu.ru/' && /ТПУ/.test(link.description)));
+  assert.ok(knowledge.links.some(link => link.url.startsWith('https://pk.mpei.ru/') && /правила приёма/.test(link.description)));
 });
 test('candidates: the olympiad page and organizer site first, then the curated list; contacts give sites but not e-mail domains', () => {
   assert.deepEqual(contactSites(['olymp@hse.ru', 'https://olymp.hse.ru/mmo', 'Сайт: olymp.msu.ru/rules; +7 495 000-00-00']), ['https://olymp.hse.ru/mmo', 'https://olymp.msu.ru/rules']);

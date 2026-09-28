@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { benefitOverview, commonRequirement, seriesInitials, siteLabel, universitySeries } from '../src/features/university/university-format.ts';
+import { benefitOverview, commonRequirement, rulesLabel, seriesInitials, siteLabel, universitySeries } from '../src/features/university/university-format.ts';
 import { chatCardDate, chatCardMeta } from '../src/features/assistant/chat-card-format.ts';
 import { isOrganizer } from '../src/features/catalog/detail-format.ts';
 
@@ -37,6 +37,8 @@ test('university page: the olympiad the user came from first, then own olympiads
   assert.equal(benefitOverview(cards.slice(0, 1)), 'БВИ по 1 олимпиаде');
   assert.equal(commonRequirement({ benefits: [benefit('a', 'A', [1]), benefit('b', 'B', [2], { requirement: 'Другое' }), benefit('c', 'C', [3])] }), 'ЕГЭ от 75 баллов');
   assert.equal(siteLabel('https://www.hse.ru/'), 'hse.ru');
+  assert.equal(rulesLabel('https://cpk.msu.ru/files/2026/rules.pdf'), 'Документ PDF на cpk.msu.ru');
+  assert.equal(rulesLabel('https://pk.mipt.ru/bachelor/2026_rules/'), 'Страница на pk.mipt.ru');
 });
 
 test('generic words of a full name do not make a university the organizer', () => {
@@ -49,10 +51,11 @@ test('generic words of a full name do not make a university the organizer', () =
 
 test('chat card: organizer and the nearest date, the grades when no date is known', () => {
   const card = { organizers: ['СПбГУ'], calendarState: 'unverified' as const, nextEvent: null, gradeFrom: 9, gradeTo: 11, classesRaw: null,
-    upcomingStage: { name: 'Отборочный этап', kind: 'competition' as const, startsOn: '2026-10-12', estimated: true } };
+    upcomingStage: { name: 'Отборочный этап', kind: 'competition' as const, event: 'starts' as const, date: '2026-10-12', estimated: true } };
   assert.equal(chatCardMeta(card, '2026-09-28'), 'СПбГУ · этап с 12 октября');
   assert.equal(chatCardDate({ ...card, upcomingStage: { ...card.upcomingStage, kind: 'registration' } }, '2026-09-28'), 'регистрация с 12 октября');
   assert.equal(chatCardDate({ ...card, nextEvent: { stageId: '00000000-0000-4000-8000-000000000000', name: null, date: '2027-05-20', kind: 'ends', timezone: 'Europe/Moscow', sourceUrl: 'https://example.org' } }, '2026-09-28'), 'до 20 мая');
+  assert.equal(chatCardDate({ ...card, upcomingStage: { ...card.upcomingStage, event: 'ends' } }, '2026-09-28'), 'этап до 12 октября');
   assert.equal(chatCardMeta({ ...card, upcomingStage: null }, '2026-09-28'), 'СПбГУ · 9–11 кл.');
   assert.equal(chatCardMeta({ ...card, organizers: [], calendarState: 'not_held' }, '2026-09-28'), 'не проводится');
 });

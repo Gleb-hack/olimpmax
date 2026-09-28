@@ -10,8 +10,6 @@ export const localKeys = {
   legacyPreferences: (user: Owner) => `olimp.preferences.v1.${isMock ? 'mock' : user.maxUserId === 'local-demo' ? 'browser' : user.maxUserId}`,
   searchHistory: () => `olimp.search-history.v1.${isMock ? 'mock' : max.preferenceScope}`,
   comparison: () => `olimp.comparison.v1.${isMock ? 'mock' : max.preferenceScope}`,
-  /** Wide (tablet) layout on a desktop screen: a device setting, not personal data. */
-  layout: () => 'olimp.layout.v1',
 };
 
 export function readSearchHistory(): string[] {

@@ -53,7 +53,7 @@ test('series data reaches every subject card: level by profile, schedule and ben
   assert.match(history.catalogCalendarRaw!, /20 окт—18 ноя/);
   assert.ok(history.stages.some(s => s.origin === 'reference' && s.mode === 'online'));
   assert.equal(history.benefits!.applicable, true);
-  assert.equal(history.benefits!.items.length, 27); // 7 from the first benefits file + 20 from the 2026 delivery
+  assert.equal(history.benefits!.items.length, 48); // 7 from the first benefits file + 20 from the 2026 delivery + 21 from its part 2
   assert.equal(history.seriesInfo!.profiles.length, 7);
   const philology = await get(contracts.OlympiadDetail, '/olympiads/6962');
   assert.equal(philology.level, null);
@@ -96,14 +96,14 @@ test('catalog filters by university, series and the new level ranges', async () 
   assert.equal((await get(contracts.CatalogResponse, '/olympiads?series=spbu')).total, 23);
   assert.deepEqual((await get(contracts.CatalogResponse, '/olympiads?levels=II–III')).items.map(i => i.id), [5369]);
   const filters = await get(contracts.FiltersResponse, '/olympiads/filters');
-  assert.equal(filters.universities!.length, 23);
+  assert.equal(filters.universities!.length, 38);
   assert.equal(filters.levels!.find(l => l.value === 'II–III')!.count, 1);
   assert.equal((await app.inject('/olympiads?universities=Bad%20Slug')).statusCode, 400);
 });
 
 test('university and series endpoints', async () => {
   const list = await get(contracts.UniversityListResponse, '/universities');
-  assert.equal(list.items.length, 23);
+  assert.equal(list.items.length, 38);
   const bmstu = await get(contracts.UniversityResponse, '/universities/bmstu');
   assert.deepEqual(bmstu.benefits.filter(b => b.series.slug === 'innopolis-open').map(b => b.kind).sort(), ['bvi', 'score_100']);
   const mipt = await get(contracts.UniversityResponse, '/universities/mipt');
@@ -114,6 +114,9 @@ test('university and series endpoints', async () => {
   assert.deepEqual(innopolis.olympiads!.map(o => o.id).sort(), [5283, 5284, 5367, 5698, 5770]);
   assert.match(innopolis.olympiads![0]!.title, /Innopolis Open по информатике/);
   assert.equal(mipt.type, 'state'); assert.equal(mipt.site, 'https://mipt.ru/'); assert.ok(mipt.description);
+  assert.equal(mipt.rules, 'https://pk.mipt.ru/bachelor/2026_rules/');
+  const tpu = await get(contracts.UniversityResponse, '/universities/tpu');
+  assert.equal(tpu.city, 'Томск'); assert.ok(tpu.rules?.endsWith('.pdf')); assert.ok(tpu.benefits.length > 0);
   assert.ok(mipt.benefits.find(b => b.series.slug === 'phystech')?.organizers?.some(o => /физико-технический/i.test(o)));
   const series = await get(contracts.SeriesResponse, '/series/ranepa');
   assert.equal(series.olympiads.length, 8);

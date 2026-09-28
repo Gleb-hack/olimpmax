@@ -38,43 +38,56 @@ const csv = (name: string | null, rawDates: string | null, kind: 'registration' 
 const next = (stages: ReturnType<typeof csv>[], options: Partial<Parameters<typeof upcomingStage>[1]> = {}) =>
   upcomingStage(stages, { scheduleSource: 'catalog', statusRaw: 'Этап запланирован', calendarState: 'unverified', anchor: '2026-09-24', today: '2026-09-28', ...options });
 
-test('next stage: the earliest stage that has not started, year taken from the season of the checked schedule', () => {
-  // ВсОШ: the school stage is running (only a deadline), the municipal one starts on 2 November.
+test('next stage: the nearest stage in schedule order, year taken from the season of the checked schedule', () => {
+  // A stage that has not begun counts to its start.
+  assert.deepEqual(next([csv('Отборочный этап', '15 окт—10 дек'), csv('Финал', '3 апр')]),
+    { name: 'Отборочный этап', kind: 'competition', event: 'starts', date: '2026-10-15', estimated: true });
+  // «Высшая проба»: the selection round is given only as a deadline — it is the next stage, not the final in February.
+  assert.deepEqual(next([csv('Регистрация', 'до 22 сентября', 'registration'), csv('Отборочный этап, 1 тур', 'до 11 октября'),
+    csv('Отборочный этап, 2 тур', 'до 22 ноября'), csv('Заключительный этап', '5-15 февраля')]),
+    { name: 'Отборочный этап, 1 тур', kind: 'competition', event: 'ends', date: '2026-10-11', estimated: true });
+  // ВсОШ: the school stage is running (only a deadline) — it ends before the municipal one starts.
   assert.deepEqual(next([csv('Школьный этап', 'До 1 ноя'), csv('Муниципальный этап', '2 ноя—25 дек')]),
-    { name: 'Муниципальный этап', kind: 'competition', startsOn: '2026-11-02', estimated: true });
+    { name: 'Школьный этап', kind: 'competition', event: 'ends', date: '2026-11-01', estimated: true });
+  // A running range counts to its end; after it the next stage takes over.
+  assert.deepEqual(next([csv('Отборочный этап', '20 сен—10 окт'), csv('Финал', '14 фев')]), { name: 'Отборочный этап', kind: 'competition', event: 'ends', date: '2026-10-10', estimated: true });
+  assert.equal(next([csv('Отборочный этап', '20 сен—10 окт'), csv('Финал', '14 фев')], { today: '2026-10-11' })!.name, 'Финал');
   // January–July belong to the next calendar year of the 2026/27 season; single days are one-day stages.
-  assert.equal(next([csv('Отборочный этап', 'до 12 января'), csv('Финал', '14 февраля')])!.startsOn, '2027-02-14');
-  assert.equal(next([csv('Отборочный этап', '15 окт—10 дек'), csv('Финал', '3 апр')])!.startsOn, '2026-10-15');
-  // A stage starting today still counts; one that started yesterday does not.
-  assert.equal(next([csv('Первый тур', '28 сен')])!.startsOn, '2026-09-28');
+  assert.equal(next([csv('Отборочный этап', 'до 12 января'), csv('Финал', '14 февраля')])!.date, '2027-01-12');
+  assert.equal(next([csv('Отборочный этап', 'до 12 января'), csv('Финал', '14 февраля')], { today: '2027-01-13' })!.date, '2027-02-14');
+  // A stage starting today still counts to its start; a one-day stage yesterday is over.
+  assert.deepEqual(next([csv('Первый тур', '28 сен')]), { name: 'Первый тур', kind: 'competition', event: 'starts', date: '2026-09-28', estimated: true });
   assert.equal(next([csv('Первый тур', '27 сен')]), null);
   assert.equal(next([csv('Регистрация', '1 окт—1 дек', 'registration')])!.kind, 'registration');
+  // A registration deadline is the nearest moment too; the same-day start of the next stage comes after it.
+  assert.deepEqual(next([csv('Регистрация', 'До 21 окт', 'registration')]), { name: 'Регистрация', kind: 'registration', event: 'ends', date: '2026-10-21', estimated: true });
+  assert.equal(next([csv('Регистрация', 'До 21 окт', 'registration'), csv('Тур', '21 окт')])!.event, 'ends');
   // An explicit year is kept and not marked as estimated.
-  assert.deepEqual(next([csv('Финал', '16 декабря 2026 — 20 января 2027')]), { name: 'Финал', kind: 'competition', startsOn: '2026-12-16', estimated: false });
+  assert.deepEqual(next([csv('Финал', '16 декабря 2026 — 20 января 2027')]), { name: 'Финал', kind: 'competition', event: 'starts', date: '2026-12-16', estimated: false });
 });
 
 test('next stage is not guessed from closed cycles, month-only texts, other schedules or not-held olympiads', () => {
   assert.equal(next([csv('XVI олимпиада', '11—17 апр')], { statusRaw: 'Следующий цикл ожидается' }), null);
   assert.equal(next([csv('Финал', '6 мар')], { statusRaw: 'Итоги опубликованы' }), null);
   assert.equal(next([csv('Следующее соревнование', 'Следующее соревнование начнется в ноябре 2026 года')]), null);
-  assert.equal(next([csv('Регистрация', 'До 21 окт', 'registration')]), null);
   assert.equal(next([csv('Финал', '6 мар')], { calendarState: 'not_held' }), null);
   // The card shows the reference schedule: olimpiada.ru stages are ignored and vice versa.
   const reference = csv('Заключительный этап', '22-24 декабря', 'competition', 'reference');
-  assert.equal(next([csv('Финал', '6 мар'), reference], { scheduleSource: 'reference', statusRaw: 'Следующий цикл ожидается' })!.startsOn, '2026-12-22');
-  assert.equal(next([reference])?.startsOn, undefined);
+  assert.equal(next([csv('Финал', '6 мар'), reference], { scheduleSource: 'reference', statusRaw: 'Следующий цикл ожидается' })!.date, '2026-12-22');
+  assert.equal(next([reference])?.date, undefined);
   // Verified stages keep exact dates.
-  assert.deepEqual(next([{ ...stage, beginsOn: '2026-10-05', endsOn: '2026-10-06' }]), { name: 'Отборочный этап', kind: 'competition', startsOn: '2026-10-05', estimated: false });
+  assert.deepEqual(next([{ ...stage, beginsOn: '2026-10-05', endsOn: '2026-10-06' }]), { name: 'Отборочный этап', kind: 'competition', event: 'starts', date: '2026-10-05', estimated: false });
 });
 
 test('paired «Дополнительная дата» lines keep the stage title; the anchor comes from the export check date', () => {
   const stages = [csv('Дополнительная дата', 'Школьный тур для 7-11 классов'), csv('Дополнительная дата', '1—19 сен'),
     csv('Дополнительная дата', 'Муниципальный тур для 7-11 классов'), csv('Дополнительная дата', '3—21 окт')];
   assert.equal(next(stages)!.name, 'Муниципальный тур для 7-11 классов');
+  assert.equal(next(stages)!.event, 'starts');
   assert.equal(anchorDay('24.09.2026', '2027-01-10T00:00:00Z'), '2026-09-24');
   assert.equal(anchorDay(undefined, '2026-09-27T22:30:00Z'), '2026-09-28');
   // A schedule checked in spring belongs to the season that started the previous August.
-  assert.equal(next([csv('Финал', '6 мар')], { anchor: '2027-03-01', today: '2027-03-01' })!.startsOn, '2027-03-06');
+  assert.equal(next([csv('Финал', '6 мар')], { anchor: '2027-03-01', today: '2027-03-01' })!.date, '2027-03-06');
 });
 
 test('plan calendar: starts and ends of ranges, deadlines and one-day stages, with the season year', () => {
