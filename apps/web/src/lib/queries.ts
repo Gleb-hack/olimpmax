@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, type PlanPatch } from './api';
+import { api, isMock, type PlanPatch } from './api';
 
 export const useFilters = () => useQuery({ queryKey: ['filters'], queryFn: api.filters, staleTime: 300_000 });
+// Reference lists for the goal in the profile: they change only with a data import.
+// The demo reads the same CSVs the API imports; they stay out of the API client bundle (see mock-reference.ts).
+export const useUniversities = () => useQuery({ queryKey: ['universities'], staleTime: 3_600_000,
+  queryFn: isMock ? async () => (await import('./mock-reference')).mockUniversities() : api.universities });
+export const useDirections = () => useQuery({ queryKey: ['directions'], staleTime: 3_600_000,
+  queryFn: isMock ? async () => (await import('./mock-reference')).mockDirections() : api.directions });
 export const usePlan = () => useQuery({ queryKey: ['plan'], queryFn: api.plan, retry: false });
 export const useNotifications = () => useQuery({ queryKey: ['notifications'], queryFn: api.notifications, retry: false });
 export function useNotificationActions() {

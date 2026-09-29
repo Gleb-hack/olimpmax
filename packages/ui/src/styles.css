@@ -72,12 +72,26 @@
   --olimp-nav-bg: rgb(255 255 255 / 96%);
   --olimp-chat-avatar-bg: #f6f5ff;
   --olimp-chat-status-text: #838995;
-  --olimp-chat-online: #69bc78;
-  --olimp-chat-away: #b49a6a;
   --olimp-chat-reset-icon: #949ba9;
   --olimp-chat-reset-hover: #f2f4f8;
-  --olimp-chat-date-text: #8c92a0;
-  --olimp-chat-bubble-bg: #eff0f3;
+  --olimp-chat-bubble-bg: #f2f3f5;
+  /* Figma «Чат Олимпа (bottom sheet)» 1206:1404. */
+  --olimp-sheet-scrim: rgb(12 14 20 / 48%);
+  --olimp-sheet-handle: #e6ebef;
+  --olimp-sheet-close-bg: #f2f3f5;
+  --olimp-shadow-sheet: 0 -8px 40px rgb(20 27 48 / 12%);
+  /* Figma «Олимп — Обзор»: light 1235:6108, dark 1214:5512. */
+  --olimp-greet-bg: #eaf0ff;
+  --olimp-greet-border: transparent;
+  --olimp-greet-title: #0b0d3d;
+  --olimp-section-icon-bg: #ebf1ff;
+  --olimp-section-icon-fg: var(--olimp-blue);
+  --olimp-due-badge-bg: #ebf1ff;
+  --olimp-due-badge-text: #3d55b5;
+  --olimp-outline-button-border: var(--olimp-blue);
+  --olimp-outline-button-text: var(--olimp-blue);
+  --olimp-ask-fab-bg: #2a30a0;
+  --olimp-shadow-ask: 0 6px 16px rgb(42 48 160 / 28%);
   --olimp-chat-bubble-text: #30333b;
   --olimp-chat-caret: #8793b0;
   --olimp-chat-suggestion-border: #dce3ff;
@@ -348,12 +362,24 @@
   --olimp-nav-bg: rgb(20 25 34 / 96%);
   --olimp-chat-avatar-bg: var(--olimp-surface-nested);
   --olimp-chat-status-text: var(--olimp-muted);
-  --olimp-chat-online: var(--olimp-icon-success);
-  --olimp-chat-away: var(--olimp-on-warning-soft);
   --olimp-chat-reset-icon: var(--olimp-icon-muted);
   --olimp-chat-reset-hover: var(--olimp-surface-hover);
-  --olimp-chat-date-text: var(--olimp-text-tertiary);
   --olimp-chat-bubble-bg: var(--olimp-surface-nested);
+  --olimp-sheet-scrim: rgb(0 0 0 / 60%);
+  --olimp-sheet-handle: var(--olimp-border-strong);
+  --olimp-sheet-close-bg: var(--olimp-surface-nested);
+  --olimp-shadow-sheet: 0 0 0 1px var(--olimp-border);
+  --olimp-greet-bg: #1a1a32;
+  --olimp-greet-border: #262938;
+  --olimp-greet-title: var(--olimp-text);
+  --olimp-section-icon-bg: var(--olimp-blue-soft);
+  --olimp-section-icon-fg: #dbeafe;
+  --olimp-due-badge-bg: var(--olimp-blue-soft);
+  --olimp-due-badge-text: #dbeafe;
+  --olimp-outline-button-border: var(--olimp-border-strong);
+  --olimp-outline-button-text: var(--olimp-muted);
+  --olimp-ask-fab-bg: var(--olimp-blue);
+  --olimp-shadow-ask: 0 6px 18px rgb(45 95 255 / 30%);
   --olimp-chat-bubble-text: var(--olimp-text);
   --olimp-chat-caret: var(--olimp-icon-muted);
   --olimp-chat-suggestion-border: var(--olimp-border-strong);
@@ -593,27 +619,38 @@ h3 { font-size: 14px; line-height: 1.45; }
 .nav-item.is-active { color: var(--olimp-blue-accent); }
 .nav-item:hover { color: var(--olimp-blue-accent); }
 /* Figma: Олимп (177:309). The composer and tabs remain visible above the keyboard. */
-.app-shell--chat { position: fixed; top: var(--chat-viewport-top, 0px); left: 50%; transform: translateX(-50%); width: 100%; height: var(--chat-viewport-height, 100dvh); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-.app-shell--chat .bottom-nav { position: static; transform: none; width: 100%; flex-shrink: 0; }
-.page.page--chat { padding: 0; min-height: 0; flex: 1; display: flex; }
 .olimp-chat { display: flex; flex-direction: column; width: 100%; min-width: 0; min-height: 0; }
-.chat-header { display: flex; align-items: center; gap: 11px; min-height: 104px; padding: max(25px, env(safe-area-inset-top)) 16px 25px; border-bottom: 1px solid var(--olimp-border); background: var(--olimp-surface); flex-shrink: 0; }
-.chat-avatar { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; color: var(--olimp-on-primary); background: var(--olimp-blue); border-radius: 50%; flex-shrink: 0; }
-.chat-avatar { overflow: hidden; background: var(--olimp-chat-avatar-bg); }
-.chat-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(1.3); }
-.chat-header h1 { font-size: 17px; font-weight: 700; line-height: 1.35; letter-spacing: -.25px; }
-.chat-header p { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 11px; color: var(--olimp-chat-status-text); }
-.chat-status { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--olimp-chat-online); flex-shrink: 0; }
-.chat-status--away { background: var(--olimp-chat-away); }
-.chat-reset { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: auto; color: var(--olimp-chat-reset-icon); border-radius: 50%; flex-shrink: 0; }
-.chat-reset:hover { background: var(--olimp-chat-reset-hover); color: var(--olimp-blue-text); }
-.chat-log { flex: 1; min-height: 0; padding: 16px 14px 22px; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: none; scrollbar-color: var(--olimp-scrollbar) transparent; }
-.chat-date { margin-bottom: 16px; text-align: center; font-size: 10px; color: var(--olimp-chat-date-text); }
+/* Figma «🗂️ Чат Олимпа (bottom sheet)» (1206:1404) over «📱 Олимп — Обзор». The dialog follows the visible viewport,
+   so the composer stays above the on-screen keyboard; the panel takes ~76% of the screen as in the frame (620 of 812). */
+.chat-sheet { position: fixed; inset: var(--chat-viewport-top, 0px) 0 auto; width: min(100%, var(--app-width)); max-width: none; height: var(--chat-viewport-height, 100dvh); max-height: none; margin: 0 auto; padding: 0; border: 0; overflow: hidden; background: transparent; color: var(--olimp-text); }
+.chat-sheet[open] { display: flex; flex-direction: column; justify-content: flex-end; }
+.chat-sheet::backdrop { background: var(--olimp-sheet-scrim); animation: chat-sheet-fade .24s ease-out; transition: opacity .2s ease-in; }
+.chat-sheet.is-closing::backdrop { opacity: 0; }
+.chat-sheet__panel { height: min(calc(100% - 24px), max(76%, 480px)); background: var(--olimp-surface); border-radius: 24px 24px 0 0; box-shadow: var(--olimp-shadow-sheet); animation: chat-sheet-in .32s cubic-bezier(.2, .8, .3, 1); transition: transform .2s ease-in; will-change: transform; }
+.chat-sheet__panel.is-dragging { transition: none; }
+.chat-sheet.is-closing .chat-sheet__panel { transform: translateY(100%); }
+@keyframes chat-sheet-in { from { transform: translateY(100%); } }
+@keyframes chat-sheet-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .chat-sheet__panel, .chat-sheet::backdrop { animation: none; transition: none; } }
+.chat-sheet__top { flex-shrink: 0; padding: 10px 16px 0; touch-action: none; cursor: grab; }
+.chat-sheet__handle { display: block; width: 40px; height: 5px; margin: 0 auto 11px; border-radius: 3px; background: var(--olimp-sheet-handle); }
+.chat-sheet__header { display: flex; align-items: center; gap: 10px; min-height: 38px; }
+.chat-sheet__avatar { display: block; width: 38px; height: 38px; border-radius: 12px; object-fit: cover; flex-shrink: 0; background: var(--olimp-chat-avatar-bg); }
+.chat-sheet__title { flex: 1; min-width: 0; }
+.chat-sheet__title h2 { font-size: 15px; font-weight: 700; line-height: 18px; letter-spacing: -.2px; }
+.chat-sheet__title h2:focus { outline: none; }
+.chat-sheet__title p { margin-top: 1px; overflow: hidden; font-size: 11px; line-height: 13px; color: var(--olimp-chat-status-text); text-overflow: ellipsis; white-space: nowrap; }
+.chat-sheet__icon-button { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; color: var(--olimp-chat-reset-icon); }
+.chat-sheet__icon-button:hover { background: var(--olimp-chat-reset-hover); color: var(--olimp-blue-text); }
+.chat-sheet__close, .chat-sheet__close:hover { background: var(--olimp-sheet-close-bg); color: var(--olimp-icon); }
+.chat-log { flex: 1; min-height: 0; padding: 22px 16px 16px; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: none; scrollbar-color: var(--olimp-scrollbar) transparent; }
+/* Messages fade out under the sheet header instead of being cut by a hard edge. */
+.chat-sheet .chat-log { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14px); mask-image: linear-gradient(to bottom, transparent, #000 14px); }
 .chat-turn { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
 .chat-turn--user { align-items: flex-end; }
-.chat-bubble { width: fit-content; max-width: 86%; padding: 11px 13px; border-radius: 17px; font-size: 14px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
-.chat-bubble--assistant { background: var(--olimp-chat-bubble-bg); color: var(--olimp-chat-bubble-text); border-bottom-left-radius: 6px; }
-.chat-bubble--user { background: var(--olimp-blue); color: var(--olimp-on-primary); border-bottom-right-radius: 6px; }
+.chat-bubble { width: fit-content; max-width: 80%; padding: 11px 14px; border-radius: 16px; font-size: 13px; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-bubble--assistant { background: var(--olimp-chat-bubble-bg); color: var(--olimp-chat-bubble-text); }
+.chat-bubble--user { background: var(--olimp-blue); color: var(--olimp-on-primary); }
 .chat-card-reveal { width: 100%; }
 .chat-card-reveal.is-entering { animation: chat-card-in 360ms cubic-bezier(.2,.7,.3,1) both; }
 .chat-caret { display: inline-block; width: 2px; height: 1em; margin-left: 3px; vertical-align: -.12em; border-radius: 1px; background: var(--olimp-chat-caret); animation: chat-caret-blink .8s steps(2) infinite; }
@@ -631,13 +668,16 @@ h3 { font-size: 14px; line-height: 1.45; }
 .chat-suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 22px; }
 .chat-suggestions button { display: flex; align-items: center; gap: 5px; border: 1px solid var(--olimp-chat-suggestion-border); color: var(--olimp-chat-suggestion-text); background: var(--olimp-surface); padding: 9px 11px; border-radius: 20px; font-size: 11px; }
 .chat-suggestions button:hover { background: var(--olimp-blue-soft); }
-.chat-footer { flex-shrink: 0; padding: 18px 14px 10px; border-top: 1px solid var(--olimp-border); background: var(--olimp-surface); }
-.chat-composer { display: flex; align-items: flex-end; gap: 10px; }
-.chat-composer textarea { display: block; width: 100%; min-width: 0; min-height: 42px; max-height: 112px; padding: 11px 14px; resize: none; border: 0; border-radius: 22px; background: var(--olimp-chat-input-bg); color: var(--olimp-chat-bubble-text); font-size: 14px; line-height: 20px; scrollbar-width: none; }
+.chat-footer { flex-shrink: 0; padding: 2px 16px max(8px, env(safe-area-inset-bottom)); background: var(--olimp-surface); }
+.chat-footer .notice { margin: 0 0 10px; }
+/* One pill with the send button inside it, as SInputBar in the sheet. */
+.chat-composer { display: flex; align-items: flex-end; gap: 8px; min-height: 48px; padding: 7px 7px 7px 16px; border-radius: 24px; background: var(--olimp-chat-input-bg); }
+.chat-composer:focus-within { box-shadow: 0 0 0 3px var(--olimp-focus-ring-strong); }
+.chat-composer textarea { display: block; flex: 1; width: 100%; min-width: 0; min-height: 34px; max-height: 112px; padding: 7px 0; resize: none; border: 0; outline: none; background: transparent; color: var(--olimp-chat-bubble-text); font-size: 14px; line-height: 20px; scrollbar-width: none; }
 .chat-composer textarea::placeholder { color: var(--olimp-chat-input-placeholder); }
-.chat-send { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; color: var(--olimp-on-primary); background: var(--olimp-blue); flex-shrink: 0; }
+.chat-send { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; color: var(--olimp-on-primary); background: var(--olimp-blue); flex-shrink: 0; }
 .chat-send:disabled { opacity: .45; }
-.chat-footer__hint { text-align: center; font-size: 9px; color: var(--olimp-chat-hint-text); margin-top: 8px; }
+.chat-footer__hint { text-align: center; font-size: 9px; color: var(--olimp-chat-hint-text); margin-top: 6px; }
 .chat-footer__hint a { text-decoration: underline; text-underline-offset: 2px; }
 .chat-typing { display: flex; align-items: center; gap: 5px; width: fit-content; padding: 17px 15px; border-radius: 16px; background: var(--olimp-chat-bubble-bg); }
 .chat-typing span { width: 5px; height: 5px; background: var(--olimp-chat-typing-dot); border-radius: 50%; animation: chat-dot 1.2s infinite ease-in-out; }
@@ -645,7 +685,7 @@ h3 { font-size: 14px; line-height: 1.45; }
 .chat-typing span:nth-child(3) { animation-delay: .32s; }
 @keyframes chat-dot { 0%, 70%, 100% { opacity: .4; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .chat-typing span { animation: none; } }
-@media (max-height: 520px) { .chat-header { min-height: 66px; padding-block: 12px; } .chat-footer { padding-top: 10px; } .app-shell--chat .bottom-nav { padding-block: 4px; } .chat-footer__hint { display: none; } }
+@media (max-height: 520px) { .chat-sheet__panel { height: calc(100% - 8px); } .chat-log { padding-top: 12px; } .chat-footer__hint { display: none; } }
 .chat-error { padding: 12px 14px; margin-top: 12px; color: var(--olimp-chat-error-strong); background: var(--olimp-danger-soft); border-radius: 14px; font-size: 12px; }
 .chat-error button { display: inline-flex; align-items: center; gap: 5px; color: var(--olimp-chat-error-strong); font-weight: 600; padding: 8px 0 0; }
 .chat-pending > small { display: block; margin-top: 7px; color: var(--olimp-chat-pending-text); font-size: 11px; }
@@ -659,6 +699,47 @@ h3 { font-size: 14px; line-height: 1.45; }
 .chat-web-sources li small { display: block; color: var(--olimp-chat-web-link-note); font-size: 10px; }
 .chat-web-disclaimer { width: min(92%, 340px); margin-top: 2px; padding: 11px 13px; border-radius: 12px; background: var(--olimp-chat-disclaimer-bg); color: var(--olimp-chat-disclaimer-text); font-size: 11px; line-height: 1.55; }
 @media (prefers-reduced-motion: reduce) { .chat-web-sources { animation: none; } }
+/* Figma «📱 Олимп — Обзор» (light 1235:6108, dark 1214:5512): sections 35px apart, a 28px icon tile before each heading. */
+.page.page--overview { padding-bottom: calc(132px + env(safe-area-inset-bottom)); }
+.greet-card { position: relative; overflow: hidden; min-height: 105px; padding: 26px 0 28px 18px; border-radius: 16px; background: var(--olimp-greet-bg); outline: 1px solid var(--olimp-greet-border); outline-offset: -1px; }
+.greet-card__copy { position: relative; z-index: 1; max-width: 60%; }
+.greet-card h1 { color: var(--olimp-greet-title); font-size: 34px; font-weight: 800; line-height: 41px; letter-spacing: -1.2px; }
+.greet-card p { margin-top: -3px; color: var(--olimp-muted); font-size: 11px; line-height: 13px; }
+/* The mascot is cut by the card's bottom edge, as in the frame. */
+.greet-card__art { position: absolute; right: 0; bottom: 0; width: auto; height: 105px; pointer-events: none; user-select: none; }
+.overview-section { margin-top: 35px; }
+.overview-section__head { display: flex; align-items: center; gap: 8px; }
+.overview-section__icon { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 8px; background: var(--olimp-section-icon-bg); color: var(--olimp-section-icon-fg); }
+.overview-section__head h2 { font-size: 17px; font-weight: 700; line-height: 21px; letter-spacing: -.3px; }
+.overview-section__lead { margin: 10px 0; color: var(--olimp-muted); font-size: 12px; line-height: 15px; }
+.overview-section__lead .text-link { font-size: inherit; }
+.overview-section .loading { padding: 28px 0; }
+.overview-empty { padding: 14px 16px; border: 1px dashed var(--olimp-border-strong); border-radius: 14px; color: var(--olimp-muted); font-size: 12px; line-height: 1.5; }
+.overview-empty .text-link { font-size: inherit; }
+.due-list { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.due-row { display: flex; align-items: center; gap: 12px; min-height: 62px; padding: 12px 13px; border: 1px solid var(--olimp-border); border-radius: 14px; background: var(--olimp-surface); transition: border-color .15s; }
+.due-row:hover { border-color: var(--olimp-plan-card-hover-border); }
+.due-row__badge { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 42px; height: 38px; flex-shrink: 0; border-radius: 9px; background: var(--olimp-due-badge-bg); color: var(--olimp-due-badge-text); line-height: 1; }
+.due-row__badge small { font-size: 9px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; }
+.due-row__badge strong { margin-top: 3px; font-size: 15px; font-weight: 700; }
+.due-row__copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.due-row__copy strong { display: -webkit-box; overflow: hidden; font-size: 13px; font-weight: 650; line-height: 16px; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.due-row__copy small { color: var(--olimp-muted); font-size: 11px; line-height: 14px; }
+.overview-outline-button { display: flex; align-items: center; justify-content: center; min-height: 40px; margin-top: 10px; border: 1.5px solid var(--olimp-outline-button-border); border-radius: 20px; background: var(--olimp-surface); color: var(--olimp-outline-button-text); font-size: 13px; font-weight: 600; }
+.overview-outline-button:hover { background: var(--olimp-surface-hover); }
+.olimp-overview .catalog-list { gap: 10px; }
+/* «Поручи это Олимпу»: one card, rows split by 1px lines (OlympActions). */
+.olimp-actions .settings-row { min-height: 68px; padding: 14px; }
+.olimp-actions .icon-tile { width: 40px; height: 40px; border-radius: 12px; }
+.olimp-actions .settings-row strong { font-size: 14px; line-height: 18px; }
+.olimp-actions .settings-row small { color: var(--olimp-muted); font-size: 12px; line-height: 15px; }
+/* FloatingAskButton: 15px above the tab bar, 18px from the right edge of the app column. */
+.olimp-ask-fab { position: fixed; z-index: 6; right: max(18px, calc((100vw - var(--app-width)) / 2 + 18px)); bottom: calc(70px + max(16px, env(safe-area-inset-bottom))); display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: 999px; background: var(--olimp-ask-fab-bg); color: var(--olimp-on-primary); font-size: 11px; font-weight: 600; line-height: 14px; white-space: nowrap; box-shadow: var(--olimp-shadow-ask); transition: bottom .2s ease, transform .15s ease; }
+.olimp-ask-fab::after { content: ''; position: absolute; inset: -7px -4px; }
+.olimp-ask-fab:active { transform: scale(.97); }
+.app-shell--compare .olimp-ask-fab { bottom: calc(130px + max(16px, env(safe-area-inset-bottom))); }
+.app-shell--compare .page--overview { padding-bottom: calc(190px + env(safe-area-inset-bottom)); }
+@media (prefers-reduced-motion: reduce) { .olimp-ask-fab { transition: none; } }
 .filter-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
 .filter-grid__wide { grid-column: 1 / -1; min-width: 0; }
 .select { min-width: 0; }
@@ -1030,6 +1111,22 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .subject-choice.is-selected .subject-choice__check { background: var(--olimp-blue); border-color: var(--olimp-blue); color: var(--olimp-on-primary); }
 .subject-choice:has(input:focus-visible) { outline: 2px solid var(--olimp-focus-alt); outline-offset: -2px; }
 .subjects-dialog .button { flex-shrink: 0; }
+.subject-choice__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.subject-choice__text small { color: var(--olimp-dialog-hint); font-size: 10px; }
+.subject-choice.is-selected .subject-choice__text small { color: inherit; opacity: .75; }
+.subject-choice.is-disabled { cursor: not-allowed; opacity: .45; }
+/* Целевые вузы и направления: the subjects popup with a search field and a limit. */
+.goal-dialog .subjects-dialog__list { max-height: min(330px, 46dvh); }
+.goal-dialog__search { display: flex; align-items: center; gap: 8px; min-height: 40px; margin-bottom: 10px; padding: 0 10px; flex-shrink: 0; border: 1px solid var(--olimp-menu-search-border); border-radius: 11px; background: var(--olimp-menu-search-bg); color: var(--olimp-search-icon); }
+.goal-dialog__search:focus-within { border-color: var(--olimp-menu-search-focus-border); background: var(--olimp-menu-search-focus-bg); }
+.goal-dialog__search input { flex: 1; min-width: 0; padding: 10px 0; border: 0; outline: none; background: transparent; color: var(--olimp-input-text-alt); font: inherit; font-size: 12px; }
+.goal-dialog__search input::placeholder { color: var(--olimp-menu-search-placeholder); }
+.goal-dialog__search input::-webkit-search-cancel-button { display: none; }
+.goal-dialog__search button { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; color: var(--olimp-menu-clear-icon); }
+.goal-dialog__empty { margin-bottom: 18px; padding: 22px 8px; text-align: center; color: var(--olimp-menu-empty-text); font-size: 12px; }
+.goal-dialog__limit { margin: -8px 0 12px; color: var(--olimp-on-warning-soft); font-size: 11px; line-height: 1.5; }
+/* Direction names are long: chips wrap onto two lines instead of running past the card. */
+.chips-wrap--long .chip { max-width: 100%; white-space: normal; text-align: left; line-height: 1.35; }
 @media (min-width: 600px) { .page { padding-top: 32px; } }
 @media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
@@ -1194,7 +1291,7 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
   .page { padding-inline: 24px; }
   .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .catalog-list, .plan-card-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
-  .chat-bubble { max-width: min(86%, 520px); }
+  .chat-bubble { max-width: min(80%, 520px); }
   .chat-web-sources { width: min(92%, 440px); }
 }
 /* University logos (public/logos/universities): a square tile clipped by the avatar's rounded corners. */

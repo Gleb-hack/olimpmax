@@ -6,6 +6,7 @@ import { max } from '../../lib/max';
 import { useSession } from '../../lib/session';
 import { profileGradeLabel } from '../../lib/format';
 import { ProfileAvatar } from './ProfileAvatar';
+import { useGoal } from './GoalDialogs';
 import { useTheme, type ThemePreference } from '../../lib/theme';
 
 const themeOptions: { value: ThemePreference; label: string }[] = [{ value: 'light', label: 'Светлая' }, { value: 'dark', label: 'Тёмная' }, { value: 'system', label: 'Системная' }];
@@ -23,6 +24,11 @@ export function ProfilePage() {
     : filters.isError && profile.subjects.length ? <p className="panel-section__empty">Не удалось загрузить названия предметов.</p>
     : !selected.length ? empty
     : <div className="chips-wrap">{selected.map(subject => <Chip key={subject.id} selected>{subject.name}</Chip>)}</div>;
+  const goal = useGoal(profile);
+  const goalChips = (keys: string[], names: string[], state: { isPending: boolean; isError: boolean }, what: string) => !keys.length ? empty
+    : state.isPending ? <p className="panel-section__empty">Загружаем…</p>
+    : state.isError ? <p className="panel-section__empty">Не удалось загрузить названия {what}.</p>
+    : <div className="chips-wrap chips-wrap--long">{names.map(name => <Chip key={name} selected>{name}</Chip>)}</div>;
   const format = (label: string, enabled: boolean) => <div className="switch-row"><span>{label}</span><small className={enabled ? 'text-green' : 'muted'}>{enabled ? 'Включено' : 'Выключено'}</small></div>;
   return <><Header title="Профиль" />
     <section className="profile-card panel"><ProfileAvatar image={profile.avatar} /><div><h2>{profile.name || max.displayName}</h2><p>{[grade ?? 'Класс не указан', profile.region].filter(Boolean).join(' · ')}</p></div></section>
@@ -30,6 +36,8 @@ export function ProfilePage() {
     <div className="panel profile-details">
       <section className="panel-section"><h2 className="section-caption">Класс обучения</h2>{grade ? <div className="chips-wrap"><Chip selected>{grade}</Chip></div> : empty}</section>
       <section className="panel-section"><h2 className="section-caption">Интересующие предметы</h2>{subjects}</section>
+      <section className="panel-section"><h2 className="section-caption">Целевые вузы</h2>{goalChips(profile.universities, goal.universities.map(item => item.name), goal.universitiesState, 'вузов')}</section>
+      <section className="panel-section"><h2 className="section-caption">Направления</h2>{goalChips(profile.directions, goal.directions.map(item => item.name), goal.directionsState, 'направлений')}</section>
       <section className="panel-section"><h2 className="section-caption">Желаемый формат</h2>{format('Онлайн-этапы', profile.online)}{format('Очные финалы', profile.onsite)}</section>
     </div>
     <Button className="full-width profile-edit-button" onClick={() => navigate('/profile/edit')}><Icon name="edit" size={15} />Редактировать профиль</Button>

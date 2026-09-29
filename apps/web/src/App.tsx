@@ -16,6 +16,7 @@ import { HelpPage } from './features/profile/HelpPage';
 import { OlympiadFaqPage } from './features/profile/OlympiadFaqPage';
 import { OlimpPage } from './features/assistant/OlimpPage';
 import { AssistantProvider } from './features/assistant/AssistantProvider';
+import { isOlimpChatOpen, olimpChatPath, useOlimpChatRoute } from './features/assistant/chat-route';
 import { max } from './lib/max';
 import { canGoBack } from './lib/history';
 import { isMock } from './lib/api';
@@ -42,8 +43,11 @@ function Layout() {
   // Pages opened from a university page return through history, so the university keeps its own way back.
   const historyBack = (university || state?.historyBack === true) && canGoBack();
   const planItem = pathname === '/plan' && new URLSearchParams(queryString).has('olympiad');
-  const chat = pathname === '/olimp';
-  const comparing = useUI(state => state.comparisonIds.length >= 2) && (olympiad || search || pathname === '/catalog');
+  const overview = pathname === '/olimp';
+  // «Чат Олимпа» is a sheet over the overview: MAX «back» closes it.
+  const chatOpen = isOlimpChatOpen(pathname, queryString);
+  const { closeChat } = useOlimpChatRoute();
+  const comparing = useUI(state => state.comparisonIds.length >= 2) && (olympiad || search || pathname === '/catalog' || overview);
   const backTo = typeof state?.backTo === 'string' && /^\/(?:catalog|search|olimp|universities\/[a-z0-9-]+)(?:\?|$)/.test(state.backTo) ? state.backTo : '/catalog';
   const subpage = pathname.startsWith('/profile/');
   const returnTo = typeof state?.returnTo === 'string' && /^\/catalog(?:\?|$)/.test(state.returnTo) ? state.returnTo : '/catalog';
@@ -51,9 +55,11 @@ function Layout() {
     const heading = document.querySelector('h1');
     document.title = `${heading?.textContent || 'Olimp'} · Olimp`;
     heading?.focus({ preventScroll: true });
-    return max.backButton(subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : historyBack ? () => navigate(-1) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null);
-  }, [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo, historyBack]);
-  return <div className={`app-shell ${chat ? 'app-shell--chat' : ''} ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${chat ? 'page--chat' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />
+  }, [pathname]);
+  useEffect(() => max.backButton(chatOpen ? closeChat : subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : historyBack ? () => navigate(-1) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null),
+    // closeChat is rebuilt on every render; chatOpen and state?.chatOpened are what change its behavior.
+    [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo, historyBack, chatOpen, state?.chatOpened]);
+  return <div className={`app-shell ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${overview ? 'page--overview' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />
     {!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}</div>;
 }
 // A bot button («Открыть карточку») launches the app with start_param; follow it once per launch, after sign-in.
@@ -64,7 +70,7 @@ function useStartParam(signedIn: boolean) {
     if (!signedIn || startParamHandled) return;
     startParamHandled = true;
     const route = startRoute(max.startParam);
-    if (route && window.location.pathname !== route) navigate(route);
+    if (route && window.location.pathname + window.location.search !== route) navigate(route);
   }, [signedIn, navigate]);
 }
 function ProtectedApp() {
@@ -75,6 +81,6 @@ function ProtectedApp() {
   return <ProfileProvider key={user.id}><AssistantProvider><Outlet /></AssistantProvider></ProfileProvider>;
 }
 function AppRoutes() {
-  return <Routes><Route path="welcome" element={<WelcomePage />} /><Route path="login" element={<AuthPage key="login" mode="login" />} /><Route path="register" element={<AuthPage key="register" mode="register" />} /><Route element={<ProtectedApp />}><Route element={<Layout />}><Route index element={<Navigate to="/catalog" replace />} /><Route path="catalog" element={<CatalogPage />} /><Route path="search" element={<SearchPage />} /><Route path="profile/edit" element={<EditProfilePage />} /><Route path="olympiads/:id" element={<DetailPage />} /><Route path="universities/:slug" element={<UniversityPage />} /><Route path="plan" element={<PlanPage />} /><Route path="profile" element={<ProfilePage />} /><Route path="profile/privacy" element={<PrivacyPage />} /><Route path="profile/help" element={<HelpPage />} /><Route path="profile/olympiad-faq" element={<OlympiadFaqPage />} /><Route path="olimp" element={<OlimpPage />} /><Route path="bot" element={<Navigate to="/olimp" replace />} /><Route path="*" element={<EmptyState title="Страница не найдена" action={<Link className="button-link" to="/catalog">Перейти в каталог</Link>}>Такой страницы нет, но в каталоге есть много интересного.</EmptyState>} /></Route></Route></Routes>;
+  return <Routes><Route path="welcome" element={<WelcomePage />} /><Route path="login" element={<AuthPage key="login" mode="login" />} /><Route path="register" element={<AuthPage key="register" mode="register" />} /><Route element={<ProtectedApp />}><Route element={<Layout />}><Route index element={<Navigate to="/catalog" replace />} /><Route path="catalog" element={<CatalogPage />} /><Route path="search" element={<SearchPage />} /><Route path="profile/edit" element={<EditProfilePage />} /><Route path="olympiads/:id" element={<DetailPage />} /><Route path="universities/:slug" element={<UniversityPage />} /><Route path="plan" element={<PlanPage />} /><Route path="profile" element={<ProfilePage />} /><Route path="profile/privacy" element={<PrivacyPage />} /><Route path="profile/help" element={<HelpPage />} /><Route path="profile/olympiad-faq" element={<OlympiadFaqPage />} /><Route path="olimp" element={<OlimpPage />} /><Route path="bot" element={<Navigate to={olimpChatPath} replace />} /><Route path="*" element={<EmptyState title="Страница не найдена" action={<Link className="button-link" to="/catalog">Перейти в каталог</Link>}>Такой страницы нет, но в каталоге есть много интересного.</EmptyState>} /></Route></Route></Routes>;
 }
 export default function App() { const { starting } = useSession(); return starting ? <StartupScreen /> : <AppRoutes />; }
