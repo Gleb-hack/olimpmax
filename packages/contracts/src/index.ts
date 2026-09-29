@@ -124,7 +124,10 @@ export const GoalReason = z.object({
   subject: z.string().optional(),
 });
 export const GoalMatch = z.object({
-  /** For ordering only: 6 per university with a benefit (up to 3), 4 per RSOSH direction, 3 per core subject direction, 1 per related one. */
+  /**
+   * For ordering only: 6 per university with a benefit (up to 3), 4 per RSOSH or core subject direction, 1 per related one,
+   * plus the level once (ВсОШ 4, I 3, II 2, III 1; outside the RSOSH list 0).
+   */
   score: z.number().int(),
   reasons: z.array(GoalReason),
 });

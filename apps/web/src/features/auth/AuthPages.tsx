@@ -24,7 +24,7 @@ export function WelcomePage() {
   const { state } = useLocation();
   const [info, setInfo] = useState(false);
   useAuthNavigation('Добро пожаловать', null);
-  if (user) return <Navigate to="/catalog" replace />;
+  if (user) return <Navigate to="/olimp" replace />;
   return <main className="app-shell welcome-page">
     <h1 className="sr-only">Добро пожаловать в Олимп</h1>
     <div className="welcome-art"><img src="/main_logo_photo.jpg" width={1354} height={1798} alt="Олимп — твой проводник в мир олимпиад" /></div>
@@ -57,7 +57,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   useAuthNavigation(registering ? 'Регистрация' : 'Вход', '/welcome');
   const available = max.isEmbedded || canUseLocalAuth || isMock;
   const selected = filters.data?.subjects.filter(s => subjects.includes(s.id)).map(s => s.name).join(', ');
-  if (session.user) return <Navigate to={typeof location.state?.from === 'string' && /^\/(catalog|plan|profile|search|olympiads|olimp)(\/|\?|$)/.test(location.state.from) ? location.state.from : '/catalog'} replace />;
+  if (session.user) return <Navigate to={typeof location.state?.from === 'string' && /^\/(catalog|plan|profile|search|olympiads|olimp)(\/|\?|$)/.test(location.state.from) ? location.state.from : '/olimp'} replace />;
   async function submit(event: React.FormEvent) {
     event.preventDefault(); if (pending) return;
     setError('');

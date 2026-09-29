@@ -39,7 +39,6 @@ export function CalendarExportDialog({ entries, onClose }: { entries: PlanEntry[
   }
   async function copy() { if (url) setCopied(await copyText(url)); }
   return <Dialog title="Экспорт в календарь" className="calendar-export" onClose={onClose}>
-    <p className="calendar-export__lead">В календарь попадут этапы олимпиад, которые ты отслеживаешь{tracked ? ` (с датами — ${tracked})` : ''}. Даты без года рассчитаны по учебному сезону — сверяй их на сайте организатора.</p>
     {!tracked && <Notice tone="warning">Пока нет отслеживаемых олимпиад с датами этапов — календарь будет пустым.</Notice>}
     {!isMock && feed.isPending && !feed.data ? <Loading label="Готовим ссылку…" /> : !isMock && feed.isError && !feed.data
       ? <Notice tone="error">{feed.error.message} <button type="button" className="text-button" onClick={() => feed.mutate(false)}>Повторить</button></Notice>

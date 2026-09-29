@@ -16,7 +16,17 @@ export type DirectionFact = {
   core: string[]; related: string[];
 };
 
-export const goalWeights = { benefit: 6, benefitUniversities: 3, rsosh: 4, core: 3, related: 1 } as const;
+// A core subject weighs as much as the RSOSH list: the list names some profiles by a group of directions («информатика
+// и вычислительная техника») and others by the subject («информатика»), so a lower subject weight put robotics above informatics.
+// `main`: the card's subject is the first core subject of the direction (directions.csv lists the main one first: «Информатика»
+// for «Программная инженерия», «Математика» for ПМИ), so an informatics olympiad goes above a mathematics or finance one there.
+export const goalWeights = { benefit: 6, benefitUniversities: 3, rsosh: 4, core: 4, related: 1, main: 1 } as const;
+/**
+ * Added once per matched olympiad: a stronger level gives more (ВсОШ and I level first, III last, outside the list nothing).
+ * A range counts by its middle: the card level does not say which profile gives the match.
+ */
+export const levelWeights: Record<string, number> = { 'ВсОШ': 4, 'I': 3, 'I–II': 2, 'II': 2, 'I–III': 2, 'II–III': 1, 'III': 1 };
+export const levelWeight = (level: string | null | undefined) => (level && levelWeights[level]) || 0;
 const benefitOrder = (b: Pick<BenefitFact, 'kind' | 'diploma'>) => (b.kind === 'bvi' ? 0 : 2) + (b.diploma === 'any' ? 0 : 1);
 
 /** «МГУ им. М.В. Ломоносова» → «МГУ»: the short name reads better inside a sentence. */
@@ -41,7 +51,7 @@ function benefitText(kind: BenefitFact['kind'], diploma: BenefitFact['diploma'],
  * Reasons for one olympiad, strongest first. A benefit needs a card in the RSOSH list (`inRsoshList`): a profile outside it
  * gives no admission benefit even when its series does. Each direction is named once, in its strongest reason.
  */
-export function buildGoalMatch(input: { inRsoshList: boolean; benefits: BenefitFact[]; directions: DirectionFact[]; subjects: string[] }): z.infer<typeof GoalMatch> | null {
+export function buildGoalMatch(input: { inRsoshList: boolean; benefits: BenefitFact[]; directions: DirectionFact[]; subjects: string[]; level?: string | null }): z.infer<typeof GoalMatch> | null {
   const reasons: Reason[] = [];
   let score = 0;
   if (input.inRsoshList && input.benefits.length) {
@@ -69,6 +79,7 @@ export function buildGoalMatch(input: { inRsoshList: boolean; benefits: BenefitF
     score += goalWeights.rsosh * rsosh.length;
   }
   const cardSubjects = new Set(input.subjects);
+  score += goalWeights.main * input.directions.filter(d => d.core[0] && cardSubjects.has(d.core[0])).length;
   for (const relevance of ['core', 'related'] as const) {
     const list = input.directions.filter(d => !d.viaRsosh && d.subjectRelevance === relevance).sort(byCode);
     // One reason per linking subject: «Информатика — профильный предмет для направлений «ПИ» и «ПМИ»».
@@ -86,7 +97,7 @@ export function buildGoalMatch(input: { inRsoshList: boolean; benefits: BenefitF
     }
     score += (relevance === 'core' ? goalWeights.core : goalWeights.related) * list.length;
   }
-  return reasons.length ? { score, reasons } : null;
+  return reasons.length ? { score: score + levelWeight(input.level), reasons } : null;
 }
 
 export const hasGoal = (goal: Goal) => !!(goal.universities?.length || goal.directions?.length);
@@ -100,20 +111,20 @@ export async function goalMatches(db: Database, goal: Goal, olympiadIds?: number
   if (!hasGoal(goal) || olympiadIds?.length === 0) return result;
   const onlyIds = (column: typeof olympiadSeriesLinks.olympiadId | typeof olympiadDirections.olympiadId) => olympiadIds ? inArray(column, olympiadIds) : undefined;
   const [benefitRows, directionRows] = await Promise.all([
-    goal.universities?.length ? db.select({ olympiadId: olympiadSeriesLinks.olympiadId, slug: universities.slug, name: universities.name, city: universities.city,
+    goal.universities?.length ? db.select({ olympiadId: olympiadSeriesLinks.olympiadId, level: olympiads.level, slug: universities.slug, name: universities.name, city: universities.city,
       kind: seriesBenefits.kind, diploma: seriesBenefits.diploma })
       .from(seriesBenefits).innerJoin(universities, eq(universities.id, seriesBenefits.universityId))
       .innerJoin(olympiadSeriesLinks, eq(olympiadSeriesLinks.seriesId, seriesBenefits.seriesId))
       .innerJoin(olympiads, eq(olympiads.id, olympiadSeriesLinks.olympiadId))
       .where(and(inArray(universities.slug, goal.universities), eq(olympiads.inCatalog, true), isNotNull(olympiads.level), onlyIds(olympiadSeriesLinks.olympiadId))) : [],
-    goal.directions?.length ? db.select({ olympiadId: olympiadDirections.olympiadId, directionId: directions.id, code: directions.code, name: directions.name,
+    goal.directions?.length ? db.select({ olympiadId: olympiadDirections.olympiadId, level: olympiads.level, directionId: directions.id, code: directions.code, name: directions.name,
       educationLevel: directions.educationLevel, viaRsosh: olympiadDirections.viaRsosh, subjectRelevance: olympiadDirections.subjectRelevance })
       .from(olympiadDirections).innerJoin(directions, eq(directions.id, olympiadDirections.directionId))
       .innerJoin(olympiads, and(eq(olympiads.id, olympiadDirections.olympiadId), eq(olympiads.inCatalog, true)))
       .where(and(inArray(directions.code, goal.directions), onlyIds(olympiadDirections.olympiadId))) : [],
   ]);
-  // Which subject links an olympiad to a direction: only needed for the subject reasons.
-  const bySubject = directionRows.filter(r => !r.viaRsosh && r.subjectRelevance);
+  // Which subject links an olympiad to a direction: needed for the subject reasons and the main-subject weight.
+  const bySubject = directionRows.filter(r => r.subjectRelevance);
   const [directionSubjectRows, cardSubjectRows] = bySubject.length ? await Promise.all([
     db.select({ directionId: directionSubjects.directionId, relevance: directionSubjects.relevance, name: subjects.name }).from(directionSubjects)
       .innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId)).where(inArray(directionSubjects.directionId, [...new Set(bySubject.map(r => r.directionId))])),
@@ -127,8 +138,8 @@ export async function goalMatches(db: Database, goal: Goal, olympiadIds?: number
   }
   const cardSubjects = new Map<number, string[]>();
   for (const s of cardSubjectRows) cardSubjects.set(s.olympiadId, [...cardSubjects.get(s.olympiadId) ?? [], s.name]);
-  const ids = new Set([...benefitRows.map(r => r.olympiadId), ...directionRows.map(r => r.olympiadId)]);
-  for (const id of ids) {
+  const levels = new Map([...benefitRows, ...directionRows].map(r => [r.olympiadId, r.level]));
+  for (const [id, level] of levels) {
     const match = buildGoalMatch({
       // Benefit rows are read only for cards in the RSOSH list (level is not null).
       inRsoshList: true,
@@ -136,6 +147,7 @@ export async function goalMatches(db: Database, goal: Goal, olympiadIds?: number
       directions: directionRows.filter(r => r.olympiadId === id).map(r => ({ code: r.code, name: r.name, educationLevel: r.educationLevel, viaRsosh: r.viaRsosh,
         subjectRelevance: r.subjectRelevance, ...directionSubjectsOf.get(r.directionId) ?? { core: [], related: [] } })),
       subjects: cardSubjects.get(id) ?? [],
+      level,
     });
     if (match) result.set(id, match);
   }

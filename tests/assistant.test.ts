@@ -208,6 +208,26 @@ test('fresh server preferences and plan reach both model calls and supply missin
   assert.equal(calls, 2);
 });
 
+test('the goal reaches the model and a selection with the profile is sorted by it', async () => {
+  const goal = { directions: [{ code: '09.03.04', name: 'Программная инженерия' }], universities: [{ slug: 'hse', name: 'НИУ ВШЭ' }] };
+  const userContext = { profile: { grade: 10, subjects: [{ id: 8, name: 'Информатика' }], online: true, onsite: true },
+    plan: { total: 0, truncated: false, items: [] }, goal };
+  let calls = 0;
+  await answerAssistant(request('Подбери олимпиады под мою цель'), { ...data, userContext: async () => userContext, search: async query => {
+    assert.deepEqual(query.goalDirections, ['09.03.04']); assert.deepEqual(query.goalUniversities, ['hse']); assert.equal(query.sort, 'goal');
+    return { items: [{ id: item.id }], total: 1 };
+  } }, async (_system, payload) => {
+    assert.deepEqual((payload as { userContext: { goal: unknown } }).userContext.goal, goal);
+    return ++calls === 1 ? { intent: 'search' } : { message: 'Подходит для программной инженерии.', olympiadIds: [item.id] };
+  }, '2026-09-27', signal);
+  assert.equal(calls, 2);
+  // Without a goal the order stays the default one.
+  await answerAssistant(request(), { ...data, userContext: async () => ({ ...userContext, goal: { directions: [], universities: [] } }), search: async query => {
+    assert.equal(query.sort, 'complete'); assert.equal(query.goalDirections, undefined);
+    return { items: [{ id: item.id }], total: 1 };
+  } }, completeWith({ intent: 'search' }, { message: 'Вот вариант.', olympiadIds: [item.id] }), '2026-09-27', signal);
+});
+
 test('explicit criteria override preferences and an unrestricted request can disable profile defaults', async () => {
   for (const unrestricted of [false, true]) {
     await answerAssistant(request(), { ...data,

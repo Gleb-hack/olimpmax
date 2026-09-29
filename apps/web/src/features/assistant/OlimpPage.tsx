@@ -87,7 +87,7 @@ export function OlimpPage() {
         title={action.title} subtitle={action.subtitle} onClick={() => ask(action.prompt)} />)}</div>
     </section>
 
-    <button type="button" className="olimp-ask-fab" onClick={() => ask()}><Icon name="sparkle" size={13} />Спросить Олимпа</button>
+    <button type="button" className="olimp-ask-fab" onClick={() => ask()}><Icon name="sparkle" size={20} />Спросить Олимпа</button>
     {route.open && <OlimpChatSheet onClose={route.closeChat} />}
     {picksRoute.open && <MorePicksSheet shownIds={picks.map(item => item.id)} onClose={picksRoute.closePicks} />}
   </div>;

@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { connectDatabase } from '../apps/api/src/db/client.js';
 import { buildApp } from '../apps/api/src/app.js';
+import { databaseAssistantData } from '../apps/api/src/features/assistant/assistant.js';
 import { importCsv } from '../apps/api/src/import/importer.js';
 import { applyReference } from '../apps/api/src/reference/apply.js';
 import { buildReference, readReferenceDir, referenceFiles } from '../apps/api/src/reference/load.js';
@@ -153,6 +154,10 @@ test('the goal in the profile: directions and universities survive a re-import a
   await applyReference(connection.db, reference);
   const me = c.UserProfile.parse((await app.inject({ url: '/me', headers: a.headers })).json());
   assert.deepEqual(me.directions, ['09.03.04']); assert.deepEqual(me.universities, ['hse', 'kazan-fu']);
+  // Олимп sees the goal by name, so «подбери вузы под мою цель» needs no question back.
+  const context = await databaseAssistantData(connection.db, a.user.id, today).userContext();
+  assert.deepEqual(context.goal?.directions, [{ code: '09.03.04', name: 'Программная инженерия' }]);
+  assert.deepEqual(context.goal?.universities.map(u => u.slug).sort(), ['hse', 'kazan-fu']);
 
   assert.equal((await app.inject({ method: 'DELETE', url: '/me', headers: a.headers })).statusCode, 204);
   assert.equal(await count(`select count(*) from user_directions where user_id = '${a.user.id}'`), 0);
@@ -207,7 +212,9 @@ test('goal match: reasons come with the card, sort=goal puts the best match firs
   assert.match(reason.text, /^(БВИ|100 баллов ЕГЭ)( победителям)? в /);
   const facts = await connection.pool.query(`select distinct u.slug from series_benefits b join universities u on u.id = b.university_id
     join olympiad_series_links l on l.series_id = b.series_id where l.olympiad_id = $1 and u.slug = any($2)`, [benefitCard.id, ['hse', 'kazan-fu']]);
-  assert.deepEqual(new Set(reason.universities!.map(u => u.slug)), new Set(facts.rows.map(r => r.slug)));
+  // A card may have several benefit reasons (БВИ in one university, 100 points in another): together they name every fact.
+  const named = benefitCard.goalMatch!.reasons.filter(r => r.kind === 'benefit').flatMap(r => r.universities!.map(u => u.slug));
+  assert.deepEqual(new Set(named), new Set(facts.rows.map(r => r.slug)));
 
   // Reasons by direction follow olympiad_directions; each direction appears once.
   const informatics = await get(c.CatalogResponse, `/olympiads?${goal}&subjectIds=${(await connection.pool.query("select id from subjects where name = 'Информатика'")).rows[0].id}&sort=goal&pageSize=50`);
@@ -225,4 +232,13 @@ test('goal match: reasons come with the card, sort=goal puts the best match firs
   assert.equal((await get(c.OlympiadDetail, `/olympiads/${first.id}`)).goalMatch, undefined);
   assert.equal((await get(c.CatalogResponse, '/olympiads?pageSize=3')).items[0]!.goalMatch, undefined);
   assert.equal((await app.inject(`/olympiads?goalDirections=bad`)).statusCode, 400);
+});
+
+test('sort=goal for «Программная инженерия»: ВсОШ по информатике first, I level above robotics and III level', async () => {
+  const page = await get(c.CatalogResponse, '/olympiads?goalDirections=09.03.04&sort=goal&pageSize=8');
+  const titles = page.items.map(item => item.title);
+  assert.equal(titles[0], 'Всероссийская олимпиада по информатике', titles.join('\n'));
+  assert.ok(titles.includes('Олимпиада «Высшая проба» по информатике'), titles.join('\n'));
+  for (const item of page.items) assert.ok(item.level === 'ВсОШ' || item.level === 'I', `${item.title}: ${item.level}`);
+  assert.ok(!titles.some(t => /робототехник|компьютерному моделированию/.test(t)), titles.join('\n'));
 });

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, type SetURLSearchParams } from 'react-router-dom';
-import { Button, EmptyState, Icon, Loading, Notice, Select } from '@olimp/ui';
+import { Button, EmptyState, Icon, Loading, Select } from '@olimp/ui';
 import { api, isMock } from '../../lib/api';
 import { useDirections, useUniversities } from '../../lib/queries';
 import { useProfile } from '../../lib/profile';
@@ -9,9 +9,7 @@ import { UniversityLogo } from '../university/UniversityLogo';
 import { goalLimits, type University } from '../profile/goal-format';
 import { filterUniversities, universityCities, universityFacts, universitySorts, type UniversitySort } from './university-search';
 
-function UniversityCard({ item, backTo, inGoal, goalFull, saving, onGoal }: {
-  item: University; backTo: string; inGoal: boolean; goalFull: boolean; saving: boolean; onGoal: () => void;
-}) {
+function UniversityCard({ item, backTo }: { item: University; backTo: string }) {
   const facts = universityFacts(item);
   return <article className="olympiad-card university-card">
     <div className="university-card__head">
@@ -25,22 +23,18 @@ function UniversityCard({ item, backTo, inGoal, goalFull, saving, onGoal }: {
     {facts.length > 0 && <div className="university-card__facts">{facts.map(fact => <span key={fact} className="chip">{fact}</span>)}</div>}
     <div className="card-actions">
       <span className="university-card__more">Программы и льготы<Icon name="chevron-right" size={14} /></span>
-      <Button size="small" variant={inGoal ? 'secondary' : 'primary'} className={inGoal ? 'tracking-button--saved' : ''} aria-pressed={inGoal}
-        disabled={saving || (!inGoal && goalFull)} onClick={onGoal}>
-        {inGoal ? <><Icon name="check" size={13} />В цели</> : goalFull ? `Лимит — ${goalLimits.universities}` : <><Icon name="target" size={13} />В цель</>}
-      </Button>
     </div>
   </article>;
 }
 
 /**
  * «Каталог → Вузы»: the same page as the olympiad catalog, switched to universities. Search by name or city,
- * filters by city and direction of study, «Мои вузы»; a card opens the university page, «В цель» adds it to the profile goal.
+ * filters by city and direction of study, «Мои вузы» (the goal universities, chosen in the profile); a card opens the university page.
  */
 export function UniversityCatalog({ params, setParams }: { params: URLSearchParams; setParams: SetURLSearchParams }) {
   const all = useUniversities();
   const directions = useDirections();
-  const { profile, update, saving, storageError } = useProfile();
+  const { profile } = useProfile();
   const q = params.get('q') ?? '';
   const city = params.get('city') ?? '';
   const direction = params.get('direction') ?? '';
@@ -58,10 +52,7 @@ export function UniversityCatalog({ params, setParams }: { params: URLSearchPara
   const reset = () => setParams({ mode: 'universities' });
   const items = source.data ? filterUniversities(source.data.items, { q, city, sort, only: mine ? profile.universities : undefined }) : [];
   const cities = universityCities(all.data?.items ?? []);
-  const goalFull = profile.universities.length >= goalLimits.universities;
   const backTo = `/catalog?${params}`;
-  const toggleGoal = (slug: string) => update({ universities: profile.universities.includes(slug)
-    ? profile.universities.filter(value => value !== slug) : [...profile.universities, slug] });
   return <>
     <form className="search-page__field university-search" role="search" onSubmit={event => event.preventDefault()}>
       <Icon name="search" size={16} />
@@ -81,13 +72,11 @@ export function UniversityCatalog({ params, setParams }: { params: URLSearchPara
       <button type="button" className={`chip ${!mine ? 'chip--active' : ''}`} aria-pressed={!mine} onClick={() => set('mine', '')}>Все вузы</button>
       <button type="button" className={`chip ${mine ? 'chip--active' : ''}`} aria-pressed={mine} onClick={() => set('mine', mine ? '' : '1')}>Мои вузы · {profile.universities.length} из {goalLimits.universities}</button>
     </div>
-    {storageError && <Notice tone="error">{storageError}</Notice>}
     <div className="results-label" aria-live="polite"><span>{source.data ? `Найдено: ${items.length}` : 'Вузы'}</span><span>{q || city || direction || mine ? 'По вашим фильтрам' : 'Все вузы'}</span></div>
     {source.isPending ? <Loading label="Загружаем вузы…" /> : source.isError
       ? <EmptyState title="Не удалось загрузить вузы" action={<Button onClick={() => source.refetch()}>Попробовать снова</Button>}>{source.error.message}</EmptyState>
       : !items.length ? <EmptyState icon="search" title={mine && !profile.universities.length ? 'Целевых вузов пока нет' : 'Ничего не нашлось'} action={<Button variant="secondary" onClick={reset}>Сбросить фильтры</Button>}>
-        {mine && !profile.universities.length ? 'Нажмите «В цель» на карточке вуза — он появится здесь и в подборке олимпиад «Под мою цель».' : 'Попробуйте другое название, город или направление.'}</EmptyState>
-      : <div className="catalog-list">{items.map(item => <UniversityCard key={item.slug} item={item} backTo={backTo} inGoal={profile.universities.includes(item.slug)}
-        goalFull={goalFull} saving={saving} onGoal={() => toggleGoal(item.slug)} />)}</div>}
+        {mine && !profile.universities.length ? <>Укажите целевые вузы в <Link className="text-link" to="/profile/edit">профиле</Link> — они появятся здесь и в подборке олимпиад «Под мою цель».</> : 'Попробуйте другое название, город или направление.'}</EmptyState>
+      : <div className="catalog-list">{items.map(item => <UniversityCard key={item.slug} item={item} backTo={backTo} />)}</div>}
   </>;
 }

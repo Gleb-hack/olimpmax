@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button, EmptyState, Loading, Notice, Icon, type IconName } from '@olimp/ui';
-import { api } from '../../lib/api';
+import { api, isMock } from '../../lib/api';
 import { usePlan, usePlanActions } from '../../lib/queries';
 import { formats, formatDay, levelLabel, stageCountdown } from '../../lib/format';
 import { parseContact, type Contact } from '../../lib/contacts';
@@ -13,6 +13,7 @@ import { OlympiadMeta, OlympiadStatus, OlympiadTags } from './OlympiadSummary';
 import { stageModeLabels } from '@olimp/contracts';
 import { hiddenReferenceNote, primaryStages, registrationLabel, scheduleGroups, stageSummary, universityBenefits, verifiedStageDates } from './detail-format';
 import { UniversityBenefits } from './UniversityBenefits';
+import { AdmissionPrograms } from './AdmissionPrograms';
 import { DetailRow } from './DetailRow';
 import { GoalReasonsSection } from './GoalReasons';
 import { useProfile } from '../../lib/profile';
@@ -89,6 +90,7 @@ export function DetailPage() {
         {item.scheduleSource !== 'reference' && item.scheduleUpdatedRaw && <p className="olympiad-schedule__hint">{item.scheduleUpdatedRaw}</p>}
         {referenceNote && <p className="olympiad-schedule__hint">{referenceNote}</p>}
       </div></details>}
+      {!isMock && benefits?.applicable && benefits.items.length > 0 && <AdmissionPrograms olympiadId={item.id} goal={profile} />}
       {benefits && <UniversityBenefits groups={universityBenefits(benefits.items, item.organizers)} note={benefits.note} olympiadId={item.id} />}
       {contacts.length > 0 && <section className="olympiad-detail__about"><h2>Контакты</h2><ul className="contact-list">{contacts.map((contact, index) => <ContactItem key={index} contact={contact} />)}</ul></section>}
     </>}
