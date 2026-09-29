@@ -53,29 +53,35 @@ export function dueItems(entries: PlanEntry[], events: PlanEventItem[], today: s
   }).sort((a, b) => a.date.localeCompare(b.date) || a.olympiadId - b.olympiadId).slice(0, limit);
 }
 
-type Preferences = { grade: number | null; subjects: number[]; online: boolean; onsite: boolean };
+type Preferences = { grade: number | null; subjects: number[]; online: boolean; onsite: boolean; universities?: string[]; directions?: string[] };
 
 /** True when the profile says enough for a personal selection. */
-export const hasPreferences = (profile: Preferences) => profile.grade !== null || profile.subjects.length > 0;
+export const hasPreferences = (profile: Preferences) => profile.grade !== null || profile.subjects.length > 0 || !!profile.universities?.length || !!profile.directions?.length;
+/** Target universities or directions: the selection is then ordered by the goal and every card says why it fits. */
+export const hasGoalIn = (profile: Preferences) => !!profile.universities?.length || !!profile.directions?.length;
 
 /**
  * «Подобрано для тебя»: the catalog filtered the way the assistant fills in missing criteria from the profile
- * (subjects, grade, and a format only when exactly one of online/onsite is chosen).
+ * (subjects, grade, and a format only when exactly one of online/onsite is chosen). With a goal the server orders
+ * the cards by it (benefits of target universities, the RSOSH list, subjects of target directions) and explains each one.
  */
 export function recommendationQuery(profile: Preferences, pageSize = 6) {
   const query = new URLSearchParams();
   if (profile.subjects.length) query.set('subjectIds', profile.subjects.join(','));
   if (profile.grade) query.set('grades', String(profile.grade));
   if (profile.online !== profile.onsite) query.set('formats', profile.online ? 'online' : 'onsite');
-  query.set('sort', 'complete' satisfies CatalogQuery['sort']);
+  if (profile.universities?.length) query.set('goalUniversities', profile.universities.join(','));
+  if (profile.directions?.length) query.set('goalDirections', profile.directions.join(','));
+  query.set('sort', (hasGoalIn(profile) ? 'goal' : 'complete') satisfies CatalogQuery['sort']);
   query.set('pageSize', String(pageSize));
   return query.toString();
 }
 
-/** New suggestions first; olympiads that no longer take place are left out. */
+/** Matching the goal first (the server order), then new suggestions before saved ones; olympiads that no longer take place are left out. */
 export function pickRecommendations(items: Olympiad[], savedIds: Set<number>, limit = 2) {
   const open = items.filter(item => item.calendarState !== 'not_held');
-  return [...open.filter(item => !savedIds.has(item.id)), ...open.filter(item => savedIds.has(item.id))].slice(0, limit);
+  const rank = (item: Olympiad) => (item.goalMatch ? 0 : 2) + (savedIds.has(item.id) ? 1 : 0);
+  return open.map((item, index) => ({ item, index })).sort((a, b) => rank(a.item) - rank(b.item) || a.index - b.index).map(({ item }) => item).slice(0, limit);
 }
 
 /** «Поручи это Олимпу»: each action sends a ready question; the server adds the profile and the plan to it. */

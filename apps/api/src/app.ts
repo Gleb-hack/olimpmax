@@ -9,6 +9,7 @@ import { eq, sql } from 'drizzle-orm';
 import type { Database } from './db/client.js';
 import { users, planItems, olympiads } from './db/schema.js';
 import * as c from '../../../packages/contracts/src/index.js';
+import { goalOf } from './features/goal-match.js';
 import { catalog, detail, filters } from './features/catalog.js';
 import { seriesDetail, universityDetail, universityList } from './features/reference.js';
 import { directionDetail, directionList, olympiadPrograms } from './features/directions.js';
@@ -88,8 +89,8 @@ export async function buildApp(options: AppOptions) {
   });
   api.get('/olympiads/filters', { schema: { response: { 200: c.FiltersResponse } } }, () => filters(db));
   api.get('/olympiads', { schema: { querystring: c.CatalogQuery, response: { 200: c.CatalogResponse } } }, request => catalog(db, request.query, today()));
-  api.get('/olympiads/:id', { schema: { params: c.OlympiadParams, response: { 200: c.OlympiadDetail, 404: c.ErrorResponse } } }, async (request, reply) => {
-    const result = await detail(db, request.params.id, today());
+  api.get('/olympiads/:id', { schema: { params: c.OlympiadParams, querystring: c.OlympiadGoalQuery, response: { 200: c.OlympiadDetail, 404: c.ErrorResponse } } }, async (request, reply) => {
+    const result = await detail(db, request.params.id, today(), goalOf(request.query));
     if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не найдена' });
     return result;
   });

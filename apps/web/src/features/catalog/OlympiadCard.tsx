@@ -5,6 +5,7 @@ import { usePlanActions } from '../../lib/queries';
 import { scheduleLabel } from '../../lib/format';
 import { useUI } from '../../lib/ui-store';
 import { OlympiadMeta, OlympiadStatus, OlympiadTags, StageCountdown } from './OlympiadSummary';
+import { GoalReasons } from './GoalReasons';
 
 export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }: { item: Olympiad; saved: boolean; tracking?: boolean; backTo?: string; returnTo?: string }) {
   const mutation = usePlanActions();
@@ -16,6 +17,7 @@ export function OlympiadCard({ item, saved, tracking = true, backTo, returnTo }:
     <OlympiadStatus item={item} />
     <h2><Link className="olympiad-card__link" to={`/olympiads/${item.id}`} state={backTo ? { backTo, returnTo } : undefined}>{item.title}</Link></h2>
     <OlympiadMeta item={item} /><OlympiadTags item={item} compact />
+    <GoalReasons match={item.goalMatch} />
     <div className="card-schedule"><span className="muted">{item.nextEvent ? item.nextEvent.name || 'Ближайший этап' : 'Расписание'}</span>
       <span className="schedule-line"><Icon name="bell" size={15} />{scheduleLabel(item)}</span>
       <StageCountdown item={item} />

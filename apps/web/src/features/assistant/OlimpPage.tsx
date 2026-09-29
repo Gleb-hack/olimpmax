@@ -10,7 +10,7 @@ import { OlympiadCard } from '../catalog/OlympiadCard';
 import { useAssistant } from './AssistantProvider';
 import { OlimpChatSheet } from './OlimpChatSheet';
 import { useOlimpChatRoute } from './chat-route';
-import { dueItems, hasPreferences, olimpActions, pickRecommendations, recommendationQuery } from './overview-format';
+import { dueItems, hasGoalIn, hasPreferences, olimpActions, pickRecommendations, recommendationQuery } from './overview-format';
 import greetLight from '../../assets/olimp/greet-light.webp';
 import greetDark from '../../assets/olimp/greet-dark.webp';
 
@@ -68,7 +68,7 @@ export function OlimpPage() {
 
     <section className="overview-section" aria-labelledby="overview-picks">
       <SectionHead id="overview-picks" icon="target" title="Подобрано для тебя" />
-      <p className="overview-section__lead">{personal ? 'На основании твоего профиля' : <>Популярное в каталоге. <Link className="text-link" to="/profile/edit">Укажи класс и предметы</Link> — подбор станет точнее</>}</p>
+      <p className="overview-section__lead">{hasGoalIn(profile) ? 'По твоей цели: целевые вузы и направления' : personal ? 'На основании твоего профиля' : <>Популярное в каталоге. <Link className="text-link" to="/profile/edit">Укажи класс и предметы</Link> — подбор станет точнее</>}</p>
       {catalog.isPending ? <Loading label="Подбираем олимпиады…" />
         : catalog.isError ? <EmptyState title="Не удалось подобрать олимпиады" action={<button type="button" className="text-button" onClick={() => catalog.refetch()}>Попробовать снова</button>}>{catalog.error.message}</EmptyState>
         : picks.length ? <div className="catalog-list">{picks.map(item => <OlympiadCard key={item.id} item={item} saved={savedIds.has(item.id)}

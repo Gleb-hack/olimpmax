@@ -190,3 +190,39 @@ test('«на N из M направлений»: estimate by exams on every card,
   await applyReference(connection.db, reference);
   assert.equal(await count('select count(*) from direction_benefits'), 0);
 });
+
+test('goal match: reasons come with the card, sort=goal puts the best match first, no goal — no field', async () => {
+  const goal = 'goalUniversities=hse,kazan-fu&goalDirections=09.03.04';
+  const page = await get(c.CatalogResponse, `/olympiads?${goal}&sort=goal&pageSize=20`);
+  const first = page.items[0]!;
+  assert.ok(first.goalMatch, 'the first card suits the goal');
+  const scores = page.items.map(item => item.goalMatch?.score ?? 0);
+  assert.deepEqual(scores, [...scores].sort((a, b) => b - a), 'ordered by the goal score');
+  assert.equal(page.total, (await get(c.CatalogResponse, '/olympiads?pageSize=1')).total, 'the goal does not filter the catalog');
+
+  // A benefit is a fact from series_benefits: the card's series gives it at a target university, and the card is in the RSOSH list.
+  const benefitCard = page.items.find(item => item.goalMatch?.reasons.some(r => r.kind === 'benefit'))!;
+  assert.ok(benefitCard && benefitCard.level, 'a benefit reason only on a card with a level');
+  const reason = benefitCard.goalMatch!.reasons.find(r => r.kind === 'benefit')!;
+  assert.match(reason.text, /^(БВИ|100 баллов ЕГЭ)( победителям)? в /);
+  const facts = await connection.pool.query(`select distinct u.slug from series_benefits b join universities u on u.id = b.university_id
+    join olympiad_series_links l on l.series_id = b.series_id where l.olympiad_id = $1 and u.slug = any($2)`, [benefitCard.id, ['hse', 'kazan-fu']]);
+  assert.deepEqual(new Set(reason.universities!.map(u => u.slug)), new Set(facts.rows.map(r => r.slug)));
+
+  // Reasons by direction follow olympiad_directions; each direction appears once.
+  const informatics = await get(c.CatalogResponse, `/olympiads?${goal}&subjectIds=${(await connection.pool.query("select id from subjects where name = 'Информатика'")).rows[0].id}&sort=goal&pageSize=50`);
+  const kinds = new Set(informatics.items.flatMap(item => item.goalMatch?.reasons.map(r => r.kind) ?? []));
+  assert.ok(kinds.has('rsosh') || kinds.has('core_subject'), 'informatics olympiads suit «Программная инженерия»');
+  for (const item of informatics.items) {
+    const codes = item.goalMatch?.reasons.flatMap(r => r.directions?.map(d => d.code) ?? []) ?? [];
+    assert.equal(new Set(codes).size, codes.length);
+  }
+  const core = informatics.items.flatMap(item => item.goalMatch?.reasons ?? []).find(r => r.kind === 'core_subject');
+  if (core) assert.equal(core.text, `${core.subject} — профильный предмет для направления «Программная инженерия»`);
+
+  const detail = await get(c.OlympiadDetail, `/olympiads/${first.id}?${goal}`);
+  assert.deepEqual(detail.goalMatch, first.goalMatch);
+  assert.equal((await get(c.OlympiadDetail, `/olympiads/${first.id}`)).goalMatch, undefined);
+  assert.equal((await get(c.CatalogResponse, '/olympiads?pageSize=3')).items[0]!.goalMatch, undefined);
+  assert.equal((await app.inject(`/olympiads?goalDirections=bad`)).statusCode, 400);
+});

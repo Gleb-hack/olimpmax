@@ -91,6 +91,12 @@
   --olimp-outline-button-border: var(--olimp-blue);
   --olimp-outline-button-text: var(--olimp-blue);
   --olimp-ask-fab-bg: #2a30a0;
+  /* «Подходит под цель»: a fact (university benefit), the RSOSH list, a subject recommendation. */
+  --olimp-goal-bg: #f5f7ff;
+  --olimp-goal-title: #3d55b5;
+  --olimp-goal-fact: var(--olimp-green);
+  --olimp-goal-rsosh: var(--olimp-blue);
+  --olimp-goal-hint: #6f7787;
   --olimp-shadow-ask: 0 6px 16px rgb(42 48 160 / 28%);
   --olimp-chat-bubble-text: #30333b;
   --olimp-chat-caret: #8793b0;
@@ -379,6 +385,11 @@
   --olimp-outline-button-border: var(--olimp-border-strong);
   --olimp-outline-button-text: var(--olimp-muted);
   --olimp-ask-fab-bg: var(--olimp-blue);
+  --olimp-goal-bg: #161c2b;
+  --olimp-goal-title: var(--olimp-on-blue-soft);
+  --olimp-goal-fact: #6fd592;
+  --olimp-goal-rsosh: var(--olimp-blue-accent);
+  --olimp-goal-hint: var(--olimp-muted);
   --olimp-shadow-ask: 0 6px 18px rgb(45 95 255 / 30%);
   --olimp-chat-bubble-text: var(--olimp-text);
   --olimp-chat-caret: var(--olimp-icon-muted);
@@ -813,6 +824,23 @@ h3 { font-size: 14px; line-height: 1.45; }
 .card-actions .button.button { min-height: 36px; height: auto; padding: 7px 14px; border-radius: 24px; font-size: 11px; }
 .button.button.tracking-button--saved { color: var(--olimp-on-green-soft); background: var(--olimp-saved-bg); border: 1px solid var(--olimp-green-border); }
 .tracking-button--saved svg { color: var(--olimp-icon-success); }
+.goal-reasons { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--olimp-goal-bg); }
+.goal-reasons__title { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--olimp-goal-title); font-size: 11px; font-weight: 650; }
+.goal-reasons ul, .goal-reasons-section ul { display: flex; flex-direction: column; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.goal-reason { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; line-height: 1.4; color: var(--olimp-text); }
+.goal-reason > svg { margin-top: 2px; }
+.goal-reason--fact > svg, .goal-reason--fact .goal-reason__icon { color: var(--olimp-goal-fact); }
+.goal-reason--rsosh > svg, .goal-reason--rsosh .goal-reason__icon { color: var(--olimp-goal-rsosh); }
+.goal-reason--hint, .goal-reason--weak { color: var(--olimp-goal-hint); }
+.goal-reason--weak { font-size: 11.5px; }
+.goal-reasons__more { display: block; margin-top: 5px; color: var(--olimp-goal-hint); font-size: 11px; }
+.goal-reasons-section ul { gap: 12px; margin-top: 12px; }
+.goal-reasons-section .goal-reason { font-size: 13px; }
+.goal-reason__icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; background: var(--olimp-goal-bg); color: var(--olimp-goal-hint); }
+.goal-reason__copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.goal-reason__copy small { color: var(--olimp-muted); font-size: 11px; }
+.goal-reasons-section__empty { margin-top: 8px; color: var(--olimp-muted); font-size: 12px; }
+.goal-reasons-section .olympiad-schedule__hint { margin-top: 14px; }
 .compare-check { position: relative; display: flex; align-items: center; gap: 6px; color: var(--olimp-compare-check-text); font-size: 11px; cursor: pointer; min-height: 36px; }
 input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); width: 16px; height: 16px; margin: 0; flex-shrink: 0; }
 .compare-check input { position: absolute; left: 0; opacity: 0; }

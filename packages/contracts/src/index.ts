@@ -47,8 +47,16 @@ export const CatalogQuery = z.object({
   /** Only olympiads that suit one of these directions: by the RSOSH list or by a core subject of the direction. */
   directions: list(DirectionCode),
   scheduleStatus: ScheduleStatus.optional(),
-  /** complete — cards with the most data first (dated stages, days to the next stage, university benefits); then by rating. */
-  sort: z.enum(['complete', 'rating', 'name']).default('complete'),
+  /**
+   * The pupil's goal (target universities and directions). Not a filter: every card gets `goalMatch` — why it suits the goal;
+   * with sort=goal the best matches go first.
+   */
+  goalUniversities: list(Slug), goalDirections: list(DirectionCode),
+  /**
+   * complete — cards with the most data first (dated stages, days to the next stage, university benefits); then by rating.
+   * goal — the strongest match with goalUniversities/goalDirections first, then as complete.
+   */
+  sort: z.enum(['complete', 'rating', 'name', 'goal']).default('complete'),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 }).strict();
@@ -93,6 +101,33 @@ export const DirectionRef = z.object({ code: DirectionCode, name: z.string(), ed
 export const DirectionMatchReason = z.object({ viaRsosh: z.boolean(), subjectRelevance: SubjectRelevance.nullable() });
 export const OlympiadDirection = DirectionRef.extend(DirectionMatchReason.shape);
 /**
+ * Why an olympiad suits the pupil's goal, strongest first:
+ * - benefit — a target university gives БВИ or 100 points for the olympiad (series_benefits; a fact, only for cards in the RSOSH list);
+ * - rsosh — the RSOSH list names a target direction or its group for the olympiad's profile (almost a fact);
+ * - core_subject — a subject of the olympiad is a core subject of a target direction (a recommendation);
+ * - related_subject — a close subject (a weaker recommendation).
+ * A direction appears only in its strongest reason.
+ */
+export const GoalReasonKind = z.enum(['benefit', 'rsosh', 'core_subject', 'related_subject']);
+export const GoalReason = z.object({
+  kind: GoalReasonKind,
+  /** Ready to show: «БВИ в КФУ и ВШЭ», «Информатика — профильный предмет для направления «Программная инженерия»». */
+  text: z.string(),
+  /** benefit: the universities of this benefit (same kind and diploma). */
+  universities: z.array(UniversityRef).optional(),
+  benefit: z.object({ kind: BenefitKind, diploma: BenefitDiploma }).optional(),
+  /** rsosh, core_subject, related_subject: the target directions of this reason. */
+  directions: z.array(DirectionRef).optional(),
+  /** core_subject, related_subject: the olympiad subject that links it to the directions. */
+  subject: z.string().optional(),
+});
+export const GoalMatch = z.object({
+  /** For ordering only: 6 per university with a benefit (up to 3), 4 per RSOSH direction, 3 per core subject direction, 1 per related one. */
+  score: z.number().int(),
+  reasons: z.array(GoalReason),
+});
+export const OlympiadGoalQuery = z.object({ goalUniversities: list(Slug), goalDirections: list(DirectionCode) }).strict();
+/**
  * «На N из M направлений» of a university: rules — from its admission rules (a fact), exams — estimated by the exams of its programs.
  */
 export const DirectionCoverage = z.object({ matched: z.number().int(), total: z.number().int(), source: z.enum(['rules', 'exams']) });
@@ -127,6 +162,8 @@ export const OlympiadCard = z.object({
   statusRaw: z.string(), sourceUrl: z.string().url(), sourceGroup: z.string().nullable(),
   nextEvent: NextEvent.nullable(), calendarState: CalendarState,
   upcomingStage: UpcomingStage.nullable().optional(),
+  /** Only when the request carries a goal (goalUniversities/goalDirections): null — nothing in common with the goal. */
+  goalMatch: GoalMatch.nullable().optional(),
 });
 export const OlympiadDetail = OlympiadCard.extend({
   organizers: z.array(z.string()), contacts: z.array(z.string()), documents: z.array(z.string()),
