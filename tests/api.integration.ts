@@ -325,7 +325,7 @@ test('plan status and stage results are saved together, validated and removed wi
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenB), payload: { status: 'in_progress', results } })).statusCode, 204);
   plan = contracts.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: auth(tokenB) })).json());
   assert.equal(plan.items[0]!.status, 'in_progress');
-  assert.deepEqual(plan.items[0]!.results.map(r => r.stage).sort(), ['Заключительный этап', 'Отборочный этап']);
+  assert.deepEqual(plan.items[0]!.results.map((r: { stage: string }) => r.stage).sort(), ['Заключительный этап', 'Отборочный этап']);
   // Only the owner's item; unknown statuses, duplicate stages and an empty stage name are rejected.
   assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenA), payload: { status: 'done' } })).statusCode, 404);
   for (const payload of [{ status: 'won' }, { results: [results[0], results[0]] }, { results: [{ stage: ' ', result: 'passed' }] }, { results: [{ stage: 'Финал', result: 'bronze' }] }]) {
