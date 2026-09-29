@@ -234,6 +234,34 @@ test('goal match: reasons come with the card, sort=goal puts the best match firs
   assert.equal((await app.inject(`/olympiads?goalDirections=bad`)).statusCode, 400);
 });
 
+test('a series benefit counts for the goal only where the olympiad leads: «Высшая проба» по дизайну is not a software engineering pick', async () => {
+  const id = async (title: string) => (await connection.pool.query('select id from olympiads where title = $1', [title])).rows[0].id as number;
+  const [design, informatics, finance] = await Promise.all([id('Олимпиада «Высшая проба» по дизайну'), id('Олимпиада «Высшая проба» по информатике'),
+    id('Олимпиада «Высшая проба» по финансовой грамотности')]);
+  const goal = 'goalUniversities=hse,itmo&goalDirections=09.03.04';
+  const match = async (olympiad: number, query = goal) => (await get(c.OlympiadDetail, `/olympiads/${olympiad}?${query}`)).goalMatch;
+  assert.equal(await match(design), null, 'the series gives БВИ in ИТМО, but not for software engineering');
+  assert.ok((await match(informatics))?.reasons.some(r => r.kind === 'benefit'));
+  // Mathematics is only a tag of the finance card (the RSOSH list names economics): a close profile, no benefit.
+  assert.deepEqual((await match(finance))?.reasons.map(r => r.kind), ['related_subject']);
+  // Without target directions the benefit counts where the university has programs the olympiad suits (design at ВШЭ).
+  assert.ok((await match(design, 'goalUniversities=hse'))?.reasons.some(r => r.kind === 'benefit'));
+  const top = await get(c.CatalogResponse, `/olympiads?${goal}&sort=goal&pageSize=30`);
+  assert.ok(!top.items.some(item => /по (дизайну|финансовой грамотности)/.test(item.title)), top.items.map(item => item.title).join('\n'));
+});
+
+test('extra subject tags are secondary where the RSOSH profile names the real subjects', async () => {
+  const link = async (title: string, code: string) => (await connection.pool.query(`select od.subject_relevance, od.subject from olympiad_directions od
+    join olympiads o on o.id = od.olympiad_id join directions d on d.id = od.direction_id where o.title = $1 and d.code = $2`, [title, code])).rows[0];
+  assert.deepEqual(await link('Олимпиада «Высшая проба» по финансовой грамотности', '09.03.04'), { subject_relevance: 'related', subject: 'Математика' });
+  assert.deepEqual(await link('Олимпиада «Высшая проба» по финансовой грамотности', '38.03.01'), { subject_relevance: 'core', subject: 'Экономика' });
+  // A single subject stays the card's topic even when the list names the exam («право» → «обществознание»).
+  assert.equal((await link('Межрегиональная олимпиада по праву «Фемида»', '40.03.01'))?.subject_relevance, 'core');
+  // The direction's own order: «Математика» is the main subject of ПМИ.
+  assert.equal(await count(`select count(*) from direction_subjects ds join directions d on d.id = ds.direction_id join subjects s on s.id = ds.subject_id
+    where d.code = '01.03.02' and ds.relevance = 'core' and ds.position = 0 and s.name = 'Математика'`), 1);
+});
+
 test('sort=goal for «Программная инженерия»: ВсОШ по информатике first, I level above robotics and III level', async () => {
   const page = await get(c.CatalogResponse, '/olympiads?goalDirections=09.03.04&sort=goal&pageSize=8');
   const titles = page.items.map(item => item.title);

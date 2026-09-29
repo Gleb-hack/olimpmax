@@ -78,3 +78,18 @@ test('«Программная инженерия»: informatics of ВсОШ and
   // Listed from the best: each card must score strictly more than the next one.
   scores.slice(1).forEach((next, i) => assert.ok(scores[i]! > next, `${Object.keys(cards)[i]} (${scores[i]}) > ${Object.keys(cards)[i + 1]} (${next})`));
 });
+
+test('the stored linking subject names the reason; a close profile gets no main-subject weight', () => {
+  // «Высшая проба» по финансовой грамотности: mathematics is only a tag, so «Программная инженерия» is a close profile.
+  const finance = buildGoalMatch({ inRsoshList: true, benefits: [], subjects: ['Математика', 'Экономика'], level: 'I',
+    directions: [{ ...pi(false, 'related'), subject: 'Математика' }] });
+  assert.deepEqual(finance?.reasons.map(r => r.text), ['Близкий профиль для направления «Программная инженерия» (математика)']);
+  assert.equal(finance?.score, 1 + 3);
+  // A card with both subjects: the stored subject (the direction's main one) is named and weighs.
+  const both = buildGoalMatch({ inRsoshList: true, benefits: [], subjects: ['Информатика', 'Математика'], level: 'I',
+    directions: [{ ...pi(false, 'core'), subject: 'Информатика' }] });
+  assert.equal(both?.reasons[0]?.subject, 'Информатика');
+  assert.equal(both?.score, 4 + 1 + 3);
+  const second = buildGoalMatch({ inRsoshList: true, benefits: [], subjects: ['Математика'], level: 'I', directions: [{ ...pi(false, 'core'), subject: 'Математика' }] });
+  assert.equal(second?.score, 4 + 3);
+});

@@ -29,7 +29,8 @@ async function summaries(db: Database, ids?: number[]) {
   const [rows, subjectRows, counts] = await Promise.all([
     db.select().from(directions).where(where).orderBy(asc(directions.code)),
     db.select({ directionId: directionSubjects.directionId, relevance: directionSubjects.relevance, name: subjects.name })
-      .from(directionSubjects).innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId)).where(ids ? inArray(directionSubjects.directionId, ids) : undefined),
+      .from(directionSubjects).innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId)).where(ids ? inArray(directionSubjects.directionId, ids) : undefined)
+      .orderBy(directionSubjects.directionId, directionSubjects.position),
     db.select({ directionId: universityPrograms.directionId, programCount: sql<number>`count(*)::int`,
       universityCount: sql<number>`count(distinct ${universityPrograms.universityId})::int` })
       .from(universityPrograms).where(ids ? inArray(universityPrograms.directionId, ids) : undefined).groupBy(universityPrograms.directionId),

@@ -232,6 +232,8 @@ export const directionSubjects = pgTable('direction_subjects', {
   directionId: integer('direction_id').notNull().references(() => directions.id, { onDelete: 'cascade' }),
   subjectId: integer('subject_id').notNull().references(() => subjects.id),
   relevance: subjectRelevanceEnum('relevance').notNull(),
+  /** Order within the relevance as in directions.csv: position 0 of core is the direction's main subject. */
+  position: smallint('position').notNull().default(0),
 }, t => [primaryKey({ columns: [t.directionId, t.subjectId] }), index('direction_subjects_subject_idx').on(t.subjectId)]);
 export const universityPrograms = pgTable('university_programs', {
   id: serial('id').primaryKey(),
@@ -258,6 +260,8 @@ export const olympiadDirections = pgTable('olympiad_directions', {
   olympiadId: integer('olympiad_id').notNull().references(() => olympiads.id, { onDelete: 'cascade' }),
   directionId: integer('direction_id').notNull().references(() => directions.id, { onDelete: 'cascade' }),
   viaRsosh: boolean('via_rsosh').notNull(), subjectRelevance: subjectRelevanceEnum('subject_relevance'),
+  /** The card subject behind subject_relevance: a subject its RSOSH profile names for core (reference/directions.ts, matchDirections). */
+  subject: text('subject'),
 }, t => [
   primaryKey({ columns: [t.olympiadId, t.directionId] }),
   index('olympiad_directions_direction_idx').on(t.directionId, t.olympiadId),

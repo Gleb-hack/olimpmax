@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  matchesFieldsOfStudy, matchDirections, examsForSubject, programTakesSubjects, levelFromCode, parseEducationLevel, ugsnCodeOf,
+  matchesFieldsOfStudy, matchDirections, profileSubjects, examsForSubject, programTakesSubjects, levelFromCode, parseEducationLevel, ugsnCodeOf,
 } from '../apps/api/src/reference/directions.js';
 import { buildReference, readReferenceDir, checkDirectionSubjects, referenceFiles, type ReferenceInput } from '../apps/api/src/reference/load.js';
 
@@ -41,13 +41,43 @@ test('an olympiad suits a direction by the RSOSH list or by subjects, core befor
   ];
   const physics = matchDirections({ subjects: ['Физика'], fieldsOfStudy: ['физика'] }, list);
   assert.deepEqual(physics, [
-    { code: '09.03.04', viaRsosh: false, subjectRelevance: 'related' },
-    { code: '03.03.02', viaRsosh: true, subjectRelevance: 'core' },
+    { code: '09.03.04', viaRsosh: false, subjectRelevance: 'related', subject: 'Физика' },
+    { code: '03.03.02', viaRsosh: true, subjectRelevance: 'core', subject: 'Физика' },
   ]);
   // A technology profile names the group of 09.03.04 although the card's subject is not one of its subjects.
   assert.deepEqual(matchDirections({ subjects: ['Технология'], fieldsOfStudy: [null, 'информатика и вычислительная техника'] }, list),
-    [{ code: '09.03.04', viaRsosh: true, subjectRelevance: null }]);
+    [{ code: '09.03.04', viaRsosh: true, subjectRelevance: null, subject: null }]);
   assert.deepEqual(matchDirections({ subjects: ['История'], fieldsOfStudy: [] }, list), []);
+});
+
+test('profile subjects: extra tags of a card are secondary where its RSOSH profile names the real subjects', () => {
+  // «финансовая грамотность» → «экономика»: the mathematics tag is not a profile subject.
+  assert.deepEqual(profileSubjects(['Математика', 'Экономика'], ['экономика']), ['Экономика']);
+  assert.deepEqual(profileSubjects(['Информатика', 'Математика', 'Обществознание', 'Право', 'Экономика'],
+    ['информатика, обществознание, информационная безопасность, международные отношения']), ['Информатика', 'Обществознание']);
+  // A group of directions is not a subject: «экономика и управление» names no subject, so nothing is left out.
+  assert.deepEqual(profileSubjects(['Математика', 'Экономика'], ['экономика и управление']), ['Математика', 'Экономика']);
+  // The list may name the exam, not the topic («право» → «обществознание»): a single subject is always the card's topic.
+  assert.deepEqual(profileSubjects(['Право'], ['обществознание']), ['Право']);
+  // Every covered profile on its own: one without named subjects keeps them all (НТО covers all its profiles).
+  assert.deepEqual(profileSubjects(['Информатика', 'Химия'], ['химия', 'информатика и вычислительная техника']), ['Информатика', 'Химия']);
+  // No covered profile (ВсОШ, cards outside the list): every tag counts.
+  assert.deepEqual(profileSubjects(['Информатика', 'Робототехника'], []), ['Информатика', 'Робототехника']);
+  assert.deepEqual(profileSubjects(['Английский язык', 'Немецкий язык', 'История'], ['иностранный язык']), ['Английский язык', 'Немецкий язык']);
+  assert.deepEqual(profileSubjects(['ИЗО', 'Технология'], ['изобразительное искусство']), ['ИЗО']);
+});
+
+test('a secondary tag links a direction as a close profile only; the linking subject follows the direction order', () => {
+  const list = [
+    { code: '09.03.04', name: 'Программная инженерия', ugsnName: 'Информатика и вычислительная техника', core: ['Информатика', 'Математика'], related: ['Физика'] },
+    { code: '38.03.01', name: 'Экономика', ugsnName: 'Экономика и управление', core: ['Математика', 'Экономика', 'Обществознание'], related: [] },
+  ];
+  assert.deepEqual(matchDirections({ subjects: ['Математика', 'Экономика'], fieldsOfStudy: ['экономика'] }, list), [
+    { code: '09.03.04', viaRsosh: false, subjectRelevance: 'related', subject: 'Математика' },
+    { code: '38.03.01', viaRsosh: true, subjectRelevance: 'core', subject: 'Экономика' },
+  ]);
+  // The direction's main subject is named first when the card has several of its core subjects.
+  assert.equal(matchDirections({ subjects: ['Математика', 'Информатика'], fieldsOfStudy: [] }, list)[0]!.subject, 'Информатика');
 });
 
 test('diploma subjects map to the exams they usually count for', () => {

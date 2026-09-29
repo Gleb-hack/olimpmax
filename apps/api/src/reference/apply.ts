@@ -120,8 +120,8 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
   const subjectId = new Map((await tx.select().from(subjects)).map(s => [s.name, s.id]));
   await tx.delete(directionSubjects);
   const directionSubjectRows = bundle.directions.flatMap(d => [
-    ...d.core.map(name => ({ directionId: directionId.get(d.code)!, subjectId: subjectId.get(name)!, relevance: 'core' as const })),
-    ...d.related.map(name => ({ directionId: directionId.get(d.code)!, subjectId: subjectId.get(name)!, relevance: 'related' as const })),
+    ...d.core.map((name, position) => ({ directionId: directionId.get(d.code)!, subjectId: subjectId.get(name)!, relevance: 'core' as const, position })),
+    ...d.related.map((name, position) => ({ directionId: directionId.get(d.code)!, subjectId: subjectId.get(name)!, relevance: 'related' as const, position })),
   ]);
   for (let i = 0; i < directionSubjectRows.length; i += 500) await tx.insert(directionSubjects).values(directionSubjectRows.slice(i, i + 500));
   await tx.delete(universityPrograms);
@@ -190,7 +190,7 @@ export async function recomputeOlympiadDirections(tx: Executor) {
   // Sequential on purpose: a transaction is a single connection.
   const directionRows = await tx.select({ id: directions.id, code: directions.code, name: directions.name, ugsnName: directions.ugsnName }).from(directions);
   const directionSubjectRows = await tx.select({ directionId: directionSubjects.directionId, relevance: directionSubjects.relevance, name: subjects.name })
-    .from(directionSubjects).innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId));
+    .from(directionSubjects).innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId)).orderBy(directionSubjects.directionId, directionSubjects.position);
   const cards = await tx.select({ id: olympiads.id }).from(olympiads);
   const cardSubjects = await tx.select({ olympiadId: olympiadSubjects.olympiadId, name: subjects.name }).from(olympiadSubjects).innerJoin(subjects, eq(subjects.id, olympiadSubjects.subjectId));
   const links = await tx.select().from(olympiadSeriesLinks);
@@ -219,7 +219,7 @@ export async function recomputeOlympiadDirections(tx: Executor) {
     // Only the RSOSH profiles this card covers: [] — none, ['*'] — all profiles of the series.
     const covered = !link || !seriesFields ? [] : link.profiles.includes(ALL_PROFILES) ? [...seriesFields.values()] : link.profiles.map(p => seriesFields.get(p) ?? null);
     for (const m of matchDirections({ subjects: subjectsByCard.get(card.id) ?? [], fieldsOfStudy: covered }, list))
-      rows.push({ olympiadId: card.id, directionId: idByCode.get(m.code)!, viaRsosh: m.viaRsosh, subjectRelevance: m.subjectRelevance });
+      rows.push({ olympiadId: card.id, directionId: idByCode.get(m.code)!, viaRsosh: m.viaRsosh, subjectRelevance: m.subjectRelevance, subject: m.subject });
   }
   for (let i = 0; i < rows.length; i += 1000) await tx.insert(olympiadDirections).values(rows.slice(i, i + 1000));
   return { rows: rows.length, viaRsosh: rows.filter(r => r.viaRsosh).length,
