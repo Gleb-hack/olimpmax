@@ -79,6 +79,59 @@ export function dueReminders(items: ReminderItem[], today: string, options: { in
   return unique(due.sort(order));
 }
 
+/**
+ * The dates of one plan olympiad the pupil should know about, as stable keys (`eventKey`): future events that the
+ * reminders would cover — tracked, not finished, registration dates only until the pupil registered. Sorted, unique.
+ * Stored in `plan_items.events_snapshot`; a later difference means the schedule changed.
+ */
+export function eventsSnapshot(item: ReminderItem, today: string, options: { includeEstimated: boolean }) {
+  const registered = item.status !== undefined && item.status !== 'planned';
+  const keys = item.events.filter(event => event.date >= today && (!event.estimated || options.includeEstimated)
+    && !(registered && event.stageKind === 'registration')).map(event => `${event.stageKind}:${event.kind}:${event.date}`);
+  return [...new Set(keys)].sort();
+}
+
+/** How long after a date passed a new date of the same kind still counts as its extension. */
+export const EXTENSION_DAYS = 14;
+/** A date that moved or appeared: the event as it is now and, when it replaced exactly one old date of the same kind, that date. */
+export type ChangedEvent = DueReminder & { previousDate: string | null };
+export type ScheduleChange = { olympiadId: number; title: string; events: ChangedEvent[]; snapshot: string[] };
+
+/**
+ * What changed in the dates of a plan olympiad since the stored snapshot. Only new or moved dates make a notice:
+ * a date that simply vanished from the source is more often a data slip than a cancelled round, so it only
+ * updates the snapshot quietly (`events` empty). null — nothing to do (no snapshot yet is handled by the caller,
+ * no dates at all now, or no difference).
+ */
+export function scheduleChange(item: ReminderItem, previous: readonly string[], today: string, options: { includeEstimated: boolean }): ScheduleChange | null {
+  if (!item.tracking || item.status === 'done') return null;
+  const snapshot = eventsSnapshot(item, today, options);
+  // Everything disappeared at once: an empty or broken import, not a real change. Keep the old snapshot.
+  if (!snapshot.length) return null;
+  const dateOf = (key: string) => key.split(':')[2] ?? '';
+  const kindOf = (key: string) => key.split(':').slice(0, 2).join(':');
+  const now = new Set(snapshot);
+  const added = snapshot.filter(key => !previous.includes(key));
+  const vanished = previous.filter(key => dateOf(key) >= today && !now.has(key));
+  // Dates simply passing is no change; the snapshot keeps them until something else moves.
+  if (!added.length && !vanished.length) return null;
+  // Old dates a new one may replace: the future ones that vanished and ones that passed lately — a deadline is often
+  // extended after it passed («регистрация продлена до 12 октября»). An older past date is history: a new date then
+  // is a new round, not a move.
+  const replaced = previous.filter(key => !now.has(key) && daysBetween(dateOf(key), today) <= EXTENSION_DAYS);
+  const events: ChangedEvent[] = [];
+  for (const key of added) {
+    const event = item.events.find(e => `${e.stageKind}:${e.kind}:${e.date}` === key);
+    if (!event) continue;
+    const sameKindAdded = added.filter(k => kindOf(k) === kindOf(key)).length;
+    const sameKindReplaced = replaced.filter(k => kindOf(k) === kindOf(key));
+    // «Регистрация до 12 октября (было 4 октября)» only when the pairing is unambiguous.
+    const previousDate = sameKindAdded === 1 && sameKindReplaced.length === 1 ? dateOf(sameKindReplaced[0]!) : null;
+    events.push({ ...toDue(item, event, daysBetween(today, event.date), 0), previousDate });
+  }
+  return { olympiadId: item.olympiadId, title: item.title, events: events.sort(order), snapshot };
+}
+
 /** Future events of tracked items within `horizon` days, nearest first: the /plan command and the test message. */
 export function upcomingEvents(items: ReminderItem[], today: string, horizon: number, options: { includeEstimated: boolean }) {
   const list: DueReminder[] = [];

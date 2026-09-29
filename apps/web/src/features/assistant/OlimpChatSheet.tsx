@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Dialog, Button, Notice, Icon } from '@olimp/ui';
 import { isMock, type Olympiad } from '../../lib/api';
 import { max } from '../../lib/max';
@@ -37,6 +37,19 @@ export function OlimpChatSheet({ onClose }: { onClose: () => void }) {
   const sheet = useBottomSheet(onClose, heading);
   const [confirmReset, setConfirmReset] = useState(false);
   const titleId = useId();
+  // A question written to the bot arrives as `?ask=` (start-param.ts): it is typed in for the pupil to send, once,
+  // and never over a draft of their own.
+  const [params, setParams] = useSearchParams();
+  const { state } = useLocation();
+  const asked = params.get('ask');
+  const { draft, setDraft } = chat;
+  useEffect(() => {
+    if (asked === null) return;
+    if (!draft.trim()) setDraft(asked.slice(0, 2000));
+    const next = new URLSearchParams(params);
+    next.delete('ask');
+    setParams(next, { replace: true, state });
+  }, [asked, draft, setDraft, params, setParams, state]);
   const hasConversation = chat.messages.some(m => m.role === 'user');
   const last = chat.messages.at(-1);
   const scrollWithReply = useCallback(() => {

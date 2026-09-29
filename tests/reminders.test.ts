@@ -1,15 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { bucketFor, dueReminders, upcomingEvents, type ReminderItem } from '../apps/api/src/features/reminders/schedule.js';
-import { describeEvent, formatDay, pluralDays, reminderKeyboard, reminderText, ESTIMATE_NOTE } from '../apps/api/src/features/reminders/format.js';
+import { bucketFor, dueReminders, eventsSnapshot, scheduleChange, upcomingEvents, type ReminderItem } from '../apps/api/src/features/reminders/schedule.js';
+import { describeEvent, formatDay, pluralDays, reminderKeyboard, reminderText, startParam, ESTIMATE_NOTE } from '../apps/api/src/features/reminders/format.js';
 import { MaxError, toDeliveryError } from '../apps/api/src/features/reminders/max.js';
-import { moscowHour } from '../apps/bot/src/scheduler.js';
+import { ALL_TIMEZONES, isKnownRegion, localDay, localHour, regionTimezone, withinHours } from '../apps/api/src/features/reminders/timezones.js';
+import { anyoneWithinHours, moscowHour } from '../apps/bot/src/scheduler.js';
+import { fallbackMessage, parseStartPayload, registeredNotice, welcomeMessage } from '../apps/bot/src/messages.js';
+import { regionNames } from '../apps/web/src/lib/regions.js';
 
 const event = (stageKind: 'registration' | 'competition' | 'other', kind: 'starts' | 'ends' | 'day', date: string, extra: { stageId?: string; name?: string | null; estimated?: boolean } = {}) =>
   ({ stageId: extra.stageId ?? randomUUID(), name: extra.name ?? null, stageKind, kind, date, estimated: extra.estimated ?? false });
 const item = (events: ReminderItem['events'], extra: Partial<ReminderItem> = {}): ReminderItem => ({ olympiadId: 88, title: 'Высшая проба', tracking: true, events, ...extra });
 const TODAY = '2026-10-01';
+/** Callback and open_app buttons carry a payload; the union type of MAX buttons does not say so for every kind. */
+const payloadOf = (button: unknown) => (button as { payload?: string }).payload;
 
 test('a threshold fires once: the smallest one that still covers the days left', () => {
   const offsets = [7, 3, 1, 0];
@@ -84,17 +89,20 @@ test('one message per user: grouped by olympiad, escaped, with a note on estimat
   assert.doesNotMatch(reminderText(due.filter(d => !d.estimated)), /каталоге/);
 });
 
-test('keyboard: one olympiad — open and mute; several — one button each; no identity — no open buttons', () => {
+test('keyboard: «registered» first for a registration date, then open and mute; several — a pair of rows each', () => {
   const identity = { username: 'olimp_bot', userId: 42 };
   const one = dueReminders([item([event('registration', 'ends', '2026-10-03')])], TODAY, { includeEstimated: true });
   assert.deepEqual(reminderKeyboard(one, identity).payload.buttons, [
+    [{ type: 'callback', text: '✅ Я зарегистрировался', payload: 'reg:88' }],
     [{ type: 'open_app', text: 'Открыть карточку', web_app: 'olimp_bot', contact_id: 42, payload: 'olympiad_88' }],
     [{ type: 'callback', text: '🔕 Не напоминать об этой олимпиаде', payload: 'mute:88' }],
   ]);
-  const two = [...one, ...dueReminders([item([event('registration', 'ends', '2026-10-03')], { olympiadId: 5, title: 'Физтех' })], TODAY, { includeEstimated: true })];
+  const stage = dueReminders([item([event('competition', 'starts', '2026-10-03')])], TODAY, { includeEstimated: true });
+  assert.ok(reminderKeyboard(stage, identity).payload.buttons.flat().every(button => payloadOf(button) !== 'reg:88'), 'no registration date — no button');
+  const two = [...one, ...dueReminders([item([event('competition', 'starts', '2026-10-03')], { olympiadId: 5, title: 'Физтех' })], TODAY, { includeEstimated: true })];
   const rows = reminderKeyboard(two, identity).payload.buttons;
-  assert.equal(rows.length, 3);
-  assert.deepEqual(rows[1], [{ type: 'open_app', text: 'Физтех', web_app: 'olimp_bot', contact_id: 42, payload: 'olympiad_5' }]);
+  assert.deepEqual(rows.map(row => row.map(payloadOf)), [['olympiad_88'], ['reg:88'], ['olympiad_5'], ['plan', 'settings']]);
+  assert.equal(rows[1]![0]!.text, '✅ Зарегистрировался · Высшая проба');
   assert.ok(reminderKeyboard(two, null).payload.buttons.flat().every(button => button.type === 'callback'));
 });
 
@@ -105,9 +113,33 @@ test('MAX refusals stop retries, other failures are retried', () => {
   assert.equal(toDeliveryError(new Error('socket hang up')).unreachable, false);
 });
 
-test('sending hours are Moscow hours', () => {
+test('sending hours are the local hours of the profile region, Moscow when the region is unknown', () => {
   assert.equal(moscowHour(new Date('2026-10-01T07:00:00Z')), 10);
   assert.equal(moscowHour(new Date('2026-10-01T21:30:00Z')), 0);
+  assert.equal(regionTimezone('Приморский край'), 'Asia/Vladivostok');
+  assert.equal(regionTimezone('  приморский   КРАЙ '), 'Asia/Vladivostok', 'case and spaces do not matter');
+  assert.equal(regionTimezone('Кемеровская область — Кузбасс'), 'Asia/Novokuznetsk');
+  assert.equal(regionTimezone('Москва'), 'Europe/Moscow');
+  assert.equal(regionTimezone(''), 'Europe/Moscow');
+  assert.equal(isKnownRegion(''), false);
+  assert.equal(isKnownRegion('Москва'), true, 'Moscow is a region too: no «fill in your region» hint');
+  const at = new Date('2026-10-01T07:00:00Z'); // 10:00 Moscow, 17:00 Vladivostok, 09:00 Kaliningrad
+  assert.equal(localHour(at, regionTimezone('Приморский край')), 17);
+  assert.equal(localHour(at, regionTimezone('Калининградская область')), 9);
+  const hours = { from: 16, until: 21 };
+  assert.equal(withinHours(at, 'Asia/Vladivostok', hours), true);
+  assert.equal(withinHours(at, 'Europe/Moscow', hours), false);
+  // 01:00 UTC: 04:00 Moscow … 13:00 Kamchatka — before 16:00 everywhere.
+  assert.equal(anyoneWithinHours(new Date('2026-10-01T01:00:00Z'), hours), false);
+  assert.equal(anyoneWithinHours(at, hours), true);
+  assert.equal(localDay(new Date('2026-10-01T13:30:00Z'), 'Asia/Kamchatka'), '2026-10-02', 'Kamchatka is already on the next day');
+  for (const zone of ALL_TIMEZONES) assert.doesNotThrow(() => localHour(at, zone), zone);
+});
+
+test('every region of the profile list maps to a zone that exists; regions east of the Urals are not left on Moscow time', () => {
+  const east = regionNames.filter(name => /Сибирск|Дальневост|Уральск/.test(name) || ['Омская область', 'Иркутская область', 'Приморский край', 'Камчатский край', 'Свердловская область', 'Новосибирская область', 'Красноярский край'].includes(name));
+  for (const name of east) assert.notEqual(regionTimezone(name), 'Europe/Moscow', name);
+  for (const name of regionNames) assert.equal(isKnownRegion(name), true, name);
 });
 
 test('plan status: a registered pupil gets no registration reminders, a finished olympiad none at all', () => {
@@ -118,4 +150,70 @@ test('plan status: a registered pupil gets no registration reminders, a finished
   assert.deepEqual(kinds('registered'), ['competition']);
   assert.deepEqual(kinds('in_progress'), ['competition']);
   assert.deepEqual(kinds('done'), []);
+});
+
+test('date changes: first sight only records, a moved date is announced with the old one, a vanished date is quiet', () => {
+  const today = TODAY;
+  const before = item([event('registration', 'ends', '2026-10-04'), event('competition', 'day', '2026-11-15', { name: 'отборочный этап' })]);
+  const snapshot = eventsSnapshot(before, today, { includeEstimated: true });
+  assert.deepEqual(snapshot, ['competition:day:2026-11-15', 'registration:ends:2026-10-04']);
+  assert.equal(scheduleChange(before, snapshot, today, { includeEstimated: true }), null, 'nothing changed');
+
+  const moved = item([event('registration', 'ends', '2026-10-12'), event('competition', 'day', '2026-11-15', { name: 'отборочный этап' })]);
+  const change = scheduleChange(moved, snapshot, today, { includeEstimated: true });
+  assert.deepEqual(change?.events.map(e => [e.eventKey, e.previousDate]), [['registration:ends:2026-10-12', '2026-10-04']]);
+  assert.deepEqual(change?.snapshot, ['competition:day:2026-11-15', 'registration:ends:2026-10-12']);
+  assert.match(reminderText([], { changes: [change!] }), /Изменились сроки олимпиад из вашего плана[\s\S]*Регистрация закрывается через 11 дней — 12 октября, пн \(было 4 октября\)/);
+
+  const vanished = scheduleChange(item([event('competition', 'day', '2026-11-15')]), snapshot, today, { includeEstimated: true });
+  assert.deepEqual(vanished?.events, [], 'a vanished date updates the snapshot without a message');
+  assert.equal(scheduleChange(item([]), snapshot, today, { includeEstimated: true }), null, 'all dates gone at once — an empty import, keep the snapshot');
+  assert.equal(scheduleChange(moved, ['registration:ends:2026-09-28', ...snapshot.slice(0, 1)], today, { includeEstimated: true })?.events[0]?.previousDate, '2026-09-28',
+    'a deadline extended after it passed is still a move');
+  assert.equal(scheduleChange(moved, ['registration:ends:2026-08-20', ...snapshot.slice(0, 1)], today, { includeEstimated: true })?.events[0]?.previousDate, null,
+    'a long-past date is history: the new one is a new round');
+  assert.equal(scheduleChange(item([event('competition', 'day', '2026-11-15')]), ['competition:day:2026-11-15', 'registration:ends:2026-09-20'], today, { includeEstimated: true }), null,
+    'dates simply passing change nothing');
+  assert.equal(scheduleChange({ ...moved, tracking: false }, snapshot, today, { includeEstimated: true }), null);
+  assert.deepEqual(eventsSnapshot({ ...before, status: 'registered' }, today, { includeEstimated: true }), ['competition:day:2026-11-15'],
+    'after registration, registration dates no longer matter');
+});
+
+test('a moved date that is due today is said once, in the reminder line', () => {
+  const moved = item([event('registration', 'ends', '2026-10-04')]);
+  const change = scheduleChange(moved, ['registration:ends:2026-10-20'], TODAY, { includeEstimated: true })!;
+  const text = reminderText(dueReminders([moved], TODAY, { includeEstimated: true }), { changes: [change] });
+  assert.match(text, /Регистрация закрывается через 3 дня — 4 октября, вс \(было 20 октября\)/);
+  assert.doesNotMatch(text, /Изменились сроки/);
+});
+
+test('bot companion: free text opens the app with the text in the search or in Olimp\'s chat', () => {
+  const identity = { username: 'olimp_bot', userId: 42 };
+  const decode = (payload: string) => Buffer.from(payload.replace(/^(ask|search)_/, ''), 'base64url').toString('utf8');
+  assert.match(startParam.search('олимпиады по химии'), /^search_[A-Za-z0-9_-]+$/);
+  assert.equal(decode(startParam.search('олимпиады по химии')), 'олимпиады по химии');
+  assert.ok(startParam.ask('а'.repeat(400)).length <= 512, 'MAX takes up to 512 characters');
+
+  const search = fallbackMessage(identity, 'физтех').keyboard!.payload.buttons;
+  assert.deepEqual(search.slice(0, 2).map(row => [row[0]!.text, decode(payloadOf(row[0])!)]), [['🔎 Найти в каталоге', 'физтех'], ['💬 Спросить Олимпа', 'физтех']]);
+  const question = fallbackMessage(identity, 'Какие льготы даёт Высшая проба в ВШЭ?').keyboard!.payload.buttons;
+  assert.equal(question[0]![0]!.text, '💬 Спросить Олимпа', 'a question goes to Olimp first');
+  assert.equal(payloadOf(fallbackMessage(identity, '/unknown').keyboard!.payload.buttons[0]![0]), 'olimp', 'unknown commands get the plain hint');
+  assert.equal(payloadOf(fallbackMessage(identity).keyboard!.payload.buttons[0]![0]), 'olimp');
+});
+
+test('bot start links and the «registered» button texts', () => {
+  assert.deepEqual(parseStartPayload('notify'), { kind: 'notify' });
+  assert.deepEqual(parseStartPayload('olympiad_88'), { kind: 'olympiad', id: 88 });
+  for (const value of [null, undefined, '', 'olympiad_0', 'something']) assert.deepEqual(parseStartPayload(value), { kind: 'plain' });
+  const identity = { username: 'olimp_bot', userId: 42 };
+  const base = { firstName: 'Аня', registered: true, enabled: true, schedule: { hour: 16, localTime: true } };
+  assert.match(welcomeMessage(identity, { ...base, reason: { kind: 'notify' } }).text, /Бот подключён/);
+  assert.match(welcomeMessage(identity, base).text, /после 16:00 по вашему времени/);
+  assert.match(welcomeMessage(identity, { ...base, schedule: { hour: 16, localTime: false } }).text, /по Москве\. Укажите регион/);
+  const link = welcomeMessage(identity, { ...base, reason: { kind: 'olympiad', id: 88, title: 'Высшая проба' } });
+  assert.equal(payloadOf(link.keyboard!.payload.buttons[0]![0]), 'olympiad_88');
+  assert.equal(registeredNotice({ status: 'registered', changed: true }), 'Отметил: вы зарегистрированы');
+  assert.equal(registeredNotice({ status: 'in_progress', changed: false }), 'В плане уже стоит статус «участвую»');
+  assert.equal(registeredNotice(null), 'Этой олимпиады уже нет в вашем плане');
 });

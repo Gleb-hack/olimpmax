@@ -99,6 +99,9 @@ export const planItems = pgTable('plan_items', {
   olympiadId: integer('olympiad_id').notNull().references(() => olympiads.id, { onDelete: 'cascade' }),
   tracking: boolean('tracking').notNull().default(true), note: text('note'), savedAt: timestampNow('saved_at'),
   status: planStatusEnum('status').notNull().default('planned'),
+  // Future dates of this olympiad the bot last saw («registration:ends:2026-10-04», …); null until the first reminder run.
+  // When dates move after an import, the bot writes «сроки изменились» and stores the new list (see reminders/schedule.ts).
+  eventsSnapshot: jsonb('events_snapshot').$type<string[]>(),
 }, t => [primaryKey({ columns: [t.userId, t.olympiadId] }), check('plan_note_length', sql`${t.note} is null or length(${t.note}) <= 2000`)]);
 export const stageResultEnum = pgEnum('stage_result', ['passed', 'failed', 'prize', 'winner']);
 /**

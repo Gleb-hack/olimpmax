@@ -988,6 +988,9 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .notice--info { background: var(--olimp-notice-info-bg); color: var(--olimp-on-blue-soft); }
 .notice--warning { background: var(--olimp-warning-soft); color: var(--olimp-on-warning-soft); }
 .notice--error { background: var(--olimp-danger-soft); color: var(--olimp-notice-error-text); }
+.bot-prompt .notice { margin: 4px 0 14px; }
+.bot-prompt__title { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 13px; }
+.bot-prompt .button-pair { margin-top: 12px; }
 .empty-state { text-align: center; padding: 38px 15px; }
 .empty-state__icon { display: flex; align-items: center; justify-content: center; width: 65px; height: 65px; margin: 0 auto 17px; border-radius: 21px; background: var(--olimp-blue-soft); color: var(--olimp-empty-icon); }
 .empty-state h2 { font-size: 17px; letter-spacing: -.3px; }

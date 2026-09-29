@@ -65,14 +65,14 @@ test('reminders: due today, once per threshold, retries and refusals, settings A
   const options = { now, includeEstimated: false, pauseMs: 0 };
   assert.deepEqual((await previewReminders(db, options)).map(p => p.maxUserId).sort(), ['901', '904', '905']);
   const first = await runReminders(db, messenger, options);
-  assert.deepEqual(first, { users: 3, messages: 1, reminders: 1, failed: 2, unreachable: 1 });
+  assert.deepEqual(first, { users: 3, messages: 1, reminders: 1, changes: 0, failed: 2, unreachable: 1 });
   assert.deepEqual(messenger.sent.map(s => s.userId), [901]);
   assert.match(messenger.sent[0]!.text, /Регистрация закрывается через 3 дня — 4 октября, вс/);
   assert.doesNotMatch(messenger.sent[0]!.text, /каталоге/, 'a verified date carries no estimate note');
 
   // Second pass the same morning: nothing repeats, the transient failure is retried, the refusal is not.
   const second = await runReminders(db, messenger, options);
-  assert.deepEqual(second, { users: 1, messages: 1, reminders: 1, failed: 0, unreachable: 0 });
+  assert.deepEqual(second, { users: 1, messages: 1, reminders: 1, changes: 0, failed: 0, unreachable: 0 });
   assert.deepEqual(messenger.sent.map(s => s.userId), [901, 905]);
   assert.deepEqual((await runReminders(db, messenger, options)).users, 0);
   const blocked = await pool.query(`select bot_blocked_at from user_profiles where max_user_id = '904'`);
@@ -118,6 +118,15 @@ test('reminders: due today, once per threshold, retries and refusals, settings A
   const welcome = calls.find(call => call.path.startsWith('/messages'));
   assert.match(welcome!.body.text, /Привет, Аня!/);
   assert.equal(welcome!.body.attachments[0].payload.buttons[0][0].type, 'open_app');
+  // Links with a start payload: «Подключить напоминания» from the mini-app and a link to an olympiad.
+  calls.length = 0;
+  await handle({ update_type: 'bot_started', chat_id: 1001, user: user(907), payload: 'notify' });
+  assert.match(calls.find(call => call.path.startsWith('/messages'))!.body.text, /Бот подключён[\s\S]*по Москве\. Укажите регион/);
+  calls.length = 0;
+  await handle({ update_type: 'bot_started', chat_id: 1001, user: user(908), payload: 'olympiad_88' });
+  const linked = calls.find(call => call.path.startsWith('/messages'))!.body;
+  assert.match(linked.text, /по ссылке на олимпиаду «Всероссийская олимпиада по английскому языку»/);
+  assert.equal(linked.attachments[0].payload.buttons[0][0].payload, 'olympiad_88');
 
   calls.length = 0;
   await handle(message(901, '/plan'));
@@ -133,7 +142,54 @@ test('reminders: due today, once per threshold, retries and refusals, settings A
   assert.match(answer.body.message.text, /выключены/, 'the settings message is redrawn in place');
   assert.equal(c.NotificationSettings.parse((await app.inject({ url: '/me/notifications', headers: a.headers })).json()).enabled, false);
   await handle(message(901, 'когда олимпиада по физике?'));
-  assert.match(calls.filter(call => call.path.startsWith('/messages')).at(-1)!.body.text, /Олимп — чат-помощник/);
+  const hint = calls.filter(call => call.path.startsWith('/messages')).at(-1)!.body;
+  assert.match(hint.text, /Сам я на вопросы не отвечаю/);
+  const ask = hint.attachments[0].payload.buttons[0][0];
+  assert.equal(ask.type, 'open_app');
+  assert.equal(Buffer.from(ask.payload.replace(/^ask_/, ''), 'base64url').toString('utf8'), 'когда олимпиада по физике?', 'the question opens Olimp\'s chat already typed in');
+
+  // «✅ Я зарегистрировался»: planned → registered once, undo back; a status set further in the app is kept.
+  const status = async (maxUserId: string) => (await pool.query(`select status from plan_items p join user_profiles u on u.id = p.user_id where u.max_user_id = $1 and p.olympiad_id = 88`, [maxUserId])).rows[0]?.status;
+  const lastAnswer = () => calls.filter(call => call.path.startsWith('/answers')).at(-1)!.body;
+  await handle(press(901, 'reg:88'));
+  assert.equal(await status('901'), 'registered');
+  assert.equal(lastAnswer().notification, 'Отметил: вы зарегистрированы');
+  assert.match(calls.filter(call => call.path.startsWith('/messages')).at(-1)!.body.text, /О регистрации больше не напоминаю/);
+  await handle(press(901, 'reg:88'));
+  assert.match(lastAnswer().notification, /уже стоит статус «зарегистрирован»/);
+  await handle(press(901, 'unreg:88'));
+  assert.equal(await status('901'), 'planned');
+  await pool.query(`update plan_items set status = 'in_progress' where olympiad_id = 88 and user_id = (select id from user_profiles where max_user_id = '901')`);
+  await handle(press(901, 'unreg:88'));
+  assert.equal(await status('901'), 'in_progress', 'undo never moves a status set in the app');
+  await handle(press(906, 'reg:88'));
+  assert.match(lastAnswer().notification, /нет в вашем плане/);
+
+  // The registration deadline moves from 4 to 12 October: one «сроки изменились» notice per pupil, retried after a failure.
+  await pool.query(`update olympiad_stages set ends_on = '2026-10-12' where source_key = 'test-registration'`);
+  const flaky = new Set<number>([905]);
+  const moving = fakeMessenger(userId => flaky.delete(userId) ? new DeliveryError('MAX 502 bad gateway', false) : null);
+  // 904 is blocked here (its test message was refused above), so only 905 is written to — and the first try fails.
+  const moved = await runReminders(db, moving, { ...options, now: later });
+  assert.deepEqual(moved, { users: 1, messages: 0, reminders: 0, changes: 0, failed: 1, unreachable: 0 });
+  assert.deepEqual((await runReminders(db, moving, { ...options, now: later })).changes, 1, 'the failed notice goes out on the next pass');
+  assert.deepEqual(moving.sent.map(s => s.userId), [905]);
+  assert.match(moving.sent[0]!.text, /Изменились сроки олимпиад из вашего плана[\s\S]*Регистрация закрывается через 9 дней — 12 октября, пн \(было 4 октября\)/);
+  assert.equal((await runReminders(db, moving, { ...options, now: later })).users, 0, 'and never again');
+
+  // Sending hours are local: at 10:00 Moscow it is 17:00 in Vladivostok. 904 has no region — Moscow time.
+  await pool.query(`update user_profiles set region = 'Приморский край' where max_user_id = '905'`);
+  const hours = { from: 16, until: 21 };
+  const weekBefore = fakeMessenger();
+  await runReminders(db, weekBefore, { ...options, hours, now: new Date('2026-10-05T07:00:00Z') });
+  assert.deepEqual(weekBefore.sent.map(s => s.userId), [905]);
+  assert.match(weekBefore.sent[0]!.text, /закрывается через 7 дней/);
+  // 904 starts the bot again: its week-before reminder and the move it has not heard of are one line.
+  await recordBotStarted(db, { maxUserId: '904', displayName: 'Тест' }, now);
+  await runReminders(db, weekBefore, { ...options, hours, now: new Date('2026-10-05T13:00:00Z') });
+  assert.deepEqual(weekBefore.sent.map(s => s.userId), [905, 904], '16:00 in Moscow');
+  assert.match(weekBefore.sent[1]!.text, /закрывается через 7 дней — 12 октября, пн \(было 4 октября\)/);
+  assert.doesNotMatch(weekBefore.sent[1]!.text, /Изменились сроки/);
   await handle({ update_type: 'bot_stopped', chat_id: 1001, user: user(906) });
   assert.notEqual((await pool.query(`select bot_blocked_at from user_profiles where max_user_id = '906'`)).rows[0].bot_blocked_at, null);
 
