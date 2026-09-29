@@ -37,7 +37,7 @@ export function welcomeMessage(identity: BotIdentity | null, input: { firstName:
       input.registered ? 'Добавляйте олимпиады в «План» в приложении и оставляйте у них отслеживание — остальное я возьму на себя.'
         : 'Откройте Olimp, заполните профиль и добавьте олимпиады в «План». Напоминания включатся сами.'];
   if (reason.kind === 'olympiad') lines.push('', `Вы пришли по ссылке на олимпиаду «${escapeHtml(clip(reason.title, 120))}». Добавьте её в план в приложении — и я напомню о сроках.`);
-  lines.push('', `Пишу раз в день, ${whenText(input.schedule)}.${input.schedule.localTime ? '' : ` ${REGION_HINT}`}`);
+  lines.push('', `Пишу только когда подходит срок, ${whenText(input.schedule)}.${input.schedule.localTime ? '' : ` ${REGION_HINT}`}`);
   if (!input.enabled) lines.push('', '⚠️ Сейчас напоминания выключены. Включить: /settings');
   lines.push('', '/plan — ближайшие сроки\n/settings — настройки напоминаний');
   const open = reason.kind === 'olympiad' ? appRow(identity, 'Открыть олимпиаду', startParam.olympiad(reason.id)) : null;
@@ -68,7 +68,7 @@ export function planMessage(identity: BotIdentity | null, input: { tracked: numb
 export function settingsMessage(identity: BotIdentity | null, input: { enabled: boolean; tracked: { id: number; title: string }[]; schedule: Schedule }): Reply {
   const lines = [
     `<b>Напоминания:</b> ${input.enabled ? 'включены ✅' : 'выключены'}`, '',
-    input.enabled ? `Пишу раз в день ${whenText(input.schedule)}: за 7, 3 и 1 день до конца регистрации и в сам день; о начале этапа — за 3 дня, накануне и в день; о перенесённых датах — сразу после изменения.`
+    input.enabled ? `Пишу только когда подходит срок, ${whenText(input.schedule)}: за неделю, за 3 дня, накануне и в последний день регистрации; об этапе — накануне и в день; о перенесённых датах — сразу после изменения.`
       : 'Пока напоминания выключены, я не пишу первым. Команда /plan по-прежнему работает.',
     ...(input.enabled && !input.schedule.localTime ? ['', REGION_HINT] : []),
     '', input.tracked.length ? `Отслеживаю олимпиад: ${input.tracked.length}. Чтобы больше не напоминать о какой-то из них, нажмите на неё ниже.`

@@ -27,17 +27,28 @@ test('a threshold fires once: the smallest one that still covers the days left',
   assert.equal(bucketFor(offsets, -1), null);
 });
 
-test('registration deadlines are reminded a week ahead, stage starts three days ahead', () => {
+test('only deadlines and event days: registration a week ahead, a stage the day before, no openings or other dates', () => {
   const due = dueReminders([item([
     event('registration', 'ends', '2026-10-06'),
     event('competition', 'starts', '2026-10-04', { name: 'отборочный этап' }),
-    event('competition', 'starts', '2026-10-05'),
+    event('competition', 'starts', '2026-10-02', { name: 'заключительный этап' }),
     event('registration', 'ends', '2026-09-30'),
+    event('registration', 'starts', '2026-10-01'),
+    event('other', 'day', '2026-10-02'),
   ])], TODAY, { includeEstimated: true });
   assert.deepEqual(due.map(d => [d.eventKey, d.bucket, d.daysLeft]), [
-    ['competition:starts:2026-10-04', 3, 3],
+    ['competition:starts:2026-10-02', 1, 1],
     ['registration:ends:2026-10-06', 7, 5],
   ]);
+});
+
+test('the cadence of a deadline: 7, 3, 1 and 0 days — nothing on the days in between', () => {
+  const deadline = [event('registration', 'ends', '2026-10-11')];
+  const fired = ['2026-10-01', '2026-10-03', '2026-10-04', '2026-10-06', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11']
+    .map(today => [today, dueReminders([item(deadline)], today, { includeEstimated: true })[0]?.bucket ?? null]);
+  // The run on each day claims its threshold once (the reminders table), so «7» fires on 4 October and not again on 6 October.
+  assert.deepEqual(fired, [['2026-10-01', null], ['2026-10-03', null], ['2026-10-04', 7], ['2026-10-06', 7], ['2026-10-08', 3],
+    ['2026-10-09', 3], ['2026-10-10', 1], ['2026-10-11', 0]]);
 });
 
 test('untracked olympiads and, when asked, estimated dates are skipped', () => {
@@ -97,9 +108,9 @@ test('keyboard: «registered» first for a registration date, then open and mute
     [{ type: 'open_app', text: 'Открыть карточку', web_app: 'olimp_bot', contact_id: 42, payload: 'olympiad_88' }],
     [{ type: 'callback', text: '🔕 Не напоминать об этой олимпиаде', payload: 'mute:88' }],
   ]);
-  const stage = dueReminders([item([event('competition', 'starts', '2026-10-03')])], TODAY, { includeEstimated: true });
+  const stage = dueReminders([item([event('competition', 'starts', '2026-10-02')])], TODAY, { includeEstimated: true });
   assert.ok(reminderKeyboard(stage, identity).payload.buttons.flat().every(button => payloadOf(button) !== 'reg:88'), 'no registration date — no button');
-  const two = [...one, ...dueReminders([item([event('competition', 'starts', '2026-10-03')], { olympiadId: 5, title: 'Физтех' })], TODAY, { includeEstimated: true })];
+  const two = [...one, ...dueReminders([item([event('competition', 'starts', '2026-10-02')], { olympiadId: 5, title: 'Физтех' })], TODAY, { includeEstimated: true })];
   const rows = reminderKeyboard(two, identity).payload.buttons;
   assert.deepEqual(rows.map(row => row.map(payloadOf)), [['olympiad_88'], ['reg:88'], ['olympiad_5'], ['plan', 'settings']]);
   assert.equal(rows[1]![0]!.text, '✅ Зарегистрировался · Высшая проба');
@@ -216,4 +227,14 @@ test('bot start links and the «registered» button texts', () => {
   assert.equal(registeredNotice({ status: 'registered', changed: true }), 'Отметил: вы зарегистрированы');
   assert.equal(registeredNotice({ status: 'in_progress', changed: false }), 'В плане уже стоит статус «участвую»');
   assert.equal(registeredNotice(null), 'Этой олимпиады уже нет в вашем плане');
+});
+
+test('a moved date the bot never reminds about (registration opening, «other») makes no notice', () => {
+  const before = item([event('registration', 'starts', '2026-10-05'), event('other', 'day', '2026-10-20'), event('registration', 'ends', '2026-10-25')]);
+  const snapshot = eventsSnapshot(before, TODAY, { includeEstimated: true });
+  assert.deepEqual(snapshot, ['registration:ends:2026-10-25']);
+  const moved = item([event('registration', 'starts', '2026-10-09'), event('other', 'day', '2026-10-22'), event('registration', 'ends', '2026-10-25')]);
+  assert.equal(scheduleChange(moved, snapshot, TODAY, { includeEstimated: true }), null);
+  // An old snapshot that still lists the opening only shrinks quietly.
+  assert.deepEqual(scheduleChange(moved, ['registration:starts:2026-10-05', ...snapshot], TODAY, { includeEstimated: true })?.events, []);
 });

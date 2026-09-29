@@ -10,7 +10,7 @@ function UniversityCard({ group, olympiadId }: { group: Group; olympiadId: numbe
   return <li className="university-benefit">
     <Link className="university-benefit__head" to={`/universities/${group.slug}`} state={{ fromOlympiad: olympiadId }}>
       <UniversityLogo className="university-benefit__avatar" slug={group.slug} initials={group.initials} />
-      <span className="university-benefit__copy"><strong>{group.name}{group.organizer && <em className="university-benefit__badge">организатор</em>}</strong><span>{group.summary}</span>{group.coverage && <small className="university-benefit__coverage">{group.coverage}</small>}</span>
+      <span className="university-benefit__copy"><strong>{group.name}{group.organizer && <em className="university-benefit__badge">организатор</em>}</strong><span>{group.summary}</span>{group.coverage && <small className="university-benefit__coverage" title={group.coverageEstimated ? 'Оценка по экзаменам программ вуза' : undefined}>{group.coverage}</small>}</span>
       <Icon name="chevron-right" size={18} className="university-benefit__chevron" />
     </Link>
   </li>;
@@ -26,6 +26,5 @@ export function UniversityBenefits({ groups, note, olympiadId }: { groups: Group
     {groups.length > 0 && <ul className="university-benefits">{shown.map(group => <UniversityCard key={group.slug} group={group} olympiadId={olympiadId} />)}</ul>}
     {groups.length > COLLAPSED && <button type="button" className="text-button olympiad-universities__more" onClick={() => setAll(!all)}>{all ? 'Свернуть' : `Показать все вузы (${groups.length})`}</button>}
     {note && <p className="olympiad-schedule__hint olympiad-universities__note">{note}</p>}
-    {groups.some(group => group.coverageEstimated) && <p className="olympiad-schedule__hint olympiad-universities__note">«≈» — оценка по экзаменам программ вуза; точное число направлений — в правилах приёма.</p>}
   </section>;
 }

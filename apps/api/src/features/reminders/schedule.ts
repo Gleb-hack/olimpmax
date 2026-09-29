@@ -21,15 +21,17 @@ export type DueReminder = {
 };
 
 /**
- * How many days before an event the bot writes. A reminder fires once per threshold: a user who adds an olympiad
- * five days before the deadline gets the «7» reminder next morning, then «3», «1» and «0».
- * The end of a competition stage matters only for long windows (an online round «с 1 по 20 октября»);
- * see `WINDOW_DAYS`.
+ * How many days before an event the bot writes: only deadlines and the event itself, never a daily digest.
+ * The registration deadline — a week, 3 days, the day before and the day itself; a stage — the day before and the day;
+ * the last day of a long online window (an online round «с 1 по 20 октября», see `WINDOW_DAYS`) — the day before.
+ * Registration openings and «other» dates stay in the plan calendar and /plan, but the bot does not write about them.
+ * A reminder fires once per threshold: a user who adds an olympiad five days before the deadline gets the «7»
+ * reminder on the next run, then «3», «1» and «0».
  */
 export const REMINDER_OFFSETS: Record<StageKind, Partial<Record<EventKind, readonly number[]>>> = {
-  registration: { ends: [7, 3, 1, 0], day: [3, 1, 0], starts: [0] },
-  competition: { starts: [3, 1, 0], day: [3, 1, 0], ends: [1] },
-  other: { starts: [1], day: [1] },
+  registration: { ends: [7, 3, 1, 0], day: [7, 3, 1, 0] },
+  competition: { starts: [1, 0], day: [1, 0], ends: [1] },
+  other: {},
 };
 /** A competition stage this long or longer is a window for submitting work: its last day deserves a reminder. */
 export const WINDOW_DAYS = 5;
@@ -55,21 +57,32 @@ function unique(list: DueReminder[]) {
   return list.filter(due => { const key = `${due.olympiadId}|${due.eventKey}`; if (seen.has(key)) return false; seen.add(key); return true; });
 }
 
+/**
+ * The thresholds of one event of a plan olympiad, or null when the bot does not remind about it: estimated dates
+ * when they are off, registration after the pupil registered, kinds without offsets, the end of a short stage.
+ */
+function remindable(item: ReminderItem, options: { includeEstimated: boolean }) {
+  const registered = item.status !== undefined && item.status !== 'planned';
+  const starts = new Map(item.events.filter(e => e.kind === 'starts').map(e => [e.stageId, e.date]));
+  return (event: Event): readonly number[] | null => {
+    if (event.estimated && !options.includeEstimated) return null;
+    if (registered && event.stageKind === 'registration') return null;
+    if (event.stageKind === 'competition' && event.kind === 'ends') {
+      const start = starts.get(event.stageId);
+      if (!start || daysBetween(start, event.date) < WINDOW_DAYS - 1) return null;
+    }
+    return REMINDER_OFFSETS[event.stageKind][event.kind] ?? null;
+  };
+}
+
 /** Everything the morning run should remind about today. Only tracked plan items; estimated dates are optional. */
 export function dueReminders(items: ReminderItem[], today: string, options: { includeEstimated: boolean }) {
   const due: DueReminder[] = [];
   for (const item of items) {
     if (!item.tracking || item.status === 'done') continue;
-    const registered = item.status !== undefined && item.status !== 'planned';
-    const starts = new Map(item.events.filter(e => e.kind === 'starts').map(e => [e.stageId, e.date]));
+    const offsetsOf = remindable(item, options);
     for (const event of item.events) {
-      if (event.estimated && !options.includeEstimated) continue;
-      if (registered && event.stageKind === 'registration') continue;
-      if (event.stageKind === 'competition' && event.kind === 'ends') {
-        const start = starts.get(event.stageId);
-        if (!start || daysBetween(start, event.date) < WINDOW_DAYS - 1) continue;
-      }
-      const offsets = REMINDER_OFFSETS[event.stageKind][event.kind];
+      const offsets = offsetsOf(event);
       if (!offsets) continue;
       const daysLeft = daysBetween(today, event.date);
       const bucket = bucketFor(offsets, daysLeft);
@@ -81,13 +94,13 @@ export function dueReminders(items: ReminderItem[], today: string, options: { in
 
 /**
  * The dates of one plan olympiad the pupil should know about, as stable keys (`eventKey`): future events that the
- * reminders would cover — tracked, not finished, registration dates only until the pupil registered. Sorted, unique.
+ * reminders cover (`REMINDER_OFFSETS`) — registration dates only until the pupil registered, no registration openings
+ * or «other» dates, so a moved date the bot never reminds about does not make a message either. Sorted, unique.
  * Stored in `plan_items.events_snapshot`; a later difference means the schedule changed.
  */
 export function eventsSnapshot(item: ReminderItem, today: string, options: { includeEstimated: boolean }) {
-  const registered = item.status !== undefined && item.status !== 'planned';
-  const keys = item.events.filter(event => event.date >= today && (!event.estimated || options.includeEstimated)
-    && !(registered && event.stageKind === 'registration')).map(event => `${event.stageKind}:${event.kind}:${event.date}`);
+  const offsetsOf = remindable(item, options);
+  const keys = item.events.filter(event => event.date >= today && offsetsOf(event) !== null).map(event => `${event.stageKind}:${event.kind}:${event.date}`);
   return [...new Set(keys)].sort();
 }
 
