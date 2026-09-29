@@ -187,3 +187,68 @@ export const referenceSources = pgTable('reference_sources', {
   sha256: text('sha256').notNull(), season: text('season').notNull(), status: text('status'), url: text('url'),
   importedAt: timestampNow('imported_at'),
 });
+
+// ---- Directions of study and university programs (data/reference/directions.csv, sources/university_programs.csv) ----
+// Rewritten by the reference import like the tables above; directions and universities keep their ids between runs,
+// so the goals users picked (user_directions, user_universities) survive a re-import.
+export const educationLevelEnum = pgEnum('education_level', ['bachelor', 'specialist']);
+export const subjectRelevanceEnum = pgEnum('subject_relevance', ['core', 'related']);
+export const programFundingEnum = pgEnum('program_funding', ['budget', 'paid_only', 'quota_only']);
+export const directions = pgTable('directions', {
+  id: serial('id').primaryKey(), code: text('code').notNull().unique(), name: text('name').notNull(),
+  educationLevel: educationLevelEnum('education_level').notNull(),
+  ugsnCode: text('ugsn_code').notNull(), ugsnName: text('ugsn_name').notNull(),
+  // Typical profile exams (Unified State Exam); the exact set of a university is in university_programs.
+  egeSubjects: jsonb('ege_subjects').$type<string[]>().notNull(),
+  popular: boolean('popular').notNull().default(false),
+  aliases: jsonb('aliases').$type<string[]>().notNull(), note: text('note'),
+}, t => [
+  check('directions_code_format', sql`${t.code} ~ '^[0-9]{2}\\.0[35]\\.[0-9]{2}$'`),
+  check('directions_ugsn_matches_code', sql`${t.ugsnCode} = substr(${t.code}, 1, 2) || '.00.00'`),
+  index('directions_ugsn_idx').on(t.ugsnCode),
+]);
+/** Olympiad subjects of a direction: core — the olympiad leads to it directly, related — a close profile. */
+export const directionSubjects = pgTable('direction_subjects', {
+  directionId: integer('direction_id').notNull().references(() => directions.id, { onDelete: 'cascade' }),
+  subjectId: integer('subject_id').notNull().references(() => subjects.id),
+  relevance: subjectRelevanceEnum('relevance').notNull(),
+}, t => [primaryKey({ columns: [t.directionId, t.subjectId] }), index('direction_subjects_subject_idx').on(t.subjectId)]);
+export const universityPrograms = pgTable('university_programs', {
+  id: serial('id').primaryKey(),
+  universityId: integer('university_id').notNull().references(() => universities.id, { onDelete: 'cascade' }),
+  directionId: integer('direction_id').notNull().references(() => directions.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(), faculty: text('faculty'),
+  examsRequired: jsonb('exams_required').$type<string[]>().notNull(),
+  // Groups to choose from: [["Информатика", "Физика"]] — one exam of each group.
+  examsChoice: jsonb('exams_choice').$type<string[][]>().notNull(),
+  internalExam: boolean('internal_exam').notNull().default(false),
+  passingScore: smallint('passing_score'), passingScoreForm: text('passing_score_form'), passingYear: smallint('passing_year'),
+  funding: programFundingEnum('funding').notNull(),
+  sourceUrl: text('source_url').notNull(), sourceId: text('source_id'),
+}, t => [
+  index('university_programs_university_idx').on(t.universityId, t.directionId),
+  index('university_programs_direction_idx').on(t.directionId),
+  check('university_programs_score_valid', sql`${t.passingScore} is null or (${t.passingScore} between 0 and 500 and ${t.passingYear} is not null)`),
+]);
+/**
+ * Derived: which directions an olympiad card suits. Recomputed after every catalog or reference import.
+ * via_rsosh — a covered RSOSH profile of the card names the direction or its group; subject_relevance — by subjects.
+ */
+export const olympiadDirections = pgTable('olympiad_directions', {
+  olympiadId: integer('olympiad_id').notNull().references(() => olympiads.id, { onDelete: 'cascade' }),
+  directionId: integer('direction_id').notNull().references(() => directions.id, { onDelete: 'cascade' }),
+  viaRsosh: boolean('via_rsosh').notNull(), subjectRelevance: subjectRelevanceEnum('subject_relevance'),
+}, t => [
+  primaryKey({ columns: [t.olympiadId, t.directionId] }),
+  index('olympiad_directions_direction_idx').on(t.directionId, t.olympiadId),
+  check('olympiad_directions_has_reason', sql`${t.viaRsosh} or ${t.subjectRelevance} is not null`),
+]);
+// The user's goal: where and what to study. Removed with the account (cascade).
+export const userDirections = pgTable('user_directions', {
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  directionId: integer('direction_id').notNull().references(() => directions.id, { onDelete: 'cascade' }),
+}, t => [primaryKey({ columns: [t.userId, t.directionId] })]);
+export const userUniversities = pgTable('user_universities', {
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  universityId: integer('university_id').notNull().references(() => universities.id, { onDelete: 'cascade' }),
+}, t => [primaryKey({ columns: [t.userId, t.universityId] })]);

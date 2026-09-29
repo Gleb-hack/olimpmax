@@ -17,6 +17,14 @@ erDiagram
   olympiad_series ||--o{ series_profiles : "RSOSH profiles"
   olympiad_series ||--o{ series_benefits : gives
   universities ||--o{ series_benefits : accepts
+  universities ||--o{ university_programs : offers
+  directions ||--o{ university_programs : "program of"
+  directions ||--o{ direction_subjects : "olympiad subjects"
+  subjects ||--o{ direction_subjects : suits
+  olympiads ||--o{ olympiad_directions : suits
+  directions ||--o{ olympiad_directions : "suited by"
+  user_profiles ||--o{ user_directions : "goal: direction"
+  user_profiles ||--o{ user_universities : "goal: university"
 ```
 
 | Таблица | Назначение и ключ |
@@ -37,6 +45,11 @@ erDiagram
 | `universities` | Вуз: slug, название, город |
 | `series_benefits` | Льгота вуза по серии: БВИ / 100 баллов, для всех дипломантов или только победителей, порог ЕГЭ |
 | `reference_sources` | Какие файлы справочника загружены: SHA-256, сезон, статус и ссылка перечня |
+| `directions` | Направление подготовки: код `XX.03.XX` / `XX.05.XX`, уровень, укрупнённая группа, типичные экзамены ЕГЭ, псевдонимы для поиска, популярность. ID не меняется между импортами |
+| `direction_subjects` | Предметы олимпиад направления: `core` — ведёт напрямую, `related` — близкий профиль |
+| `university_programs` | Программа вуза по направлению: профиль, факультет, экзамены (обязательные и на выбор), внутренний экзамен, проходной балл на бюджет с формой и годом, тип финансирования, источник |
+| `olympiad_directions` | Вычисляемая связь карточки с направлением: `via_rsosh` (профиль РСОШ называет направление или его группу) и/или `subject_relevance` (по предметам). Пересчитывается после каждого импорта каталога или справочника |
+| `user_directions`, `user_universities` | Цель пользователя: выбранные направления и вузы; удаляются вместе с аккаунтом |
 
 Таблицы справочника полностью пересобираются из `data/reference` (`pnpm db:reference`, также часть `pnpm db:import`). Правила выбора уровня и расписания, порядок обновления файлов — в [data/reference/README.md](../data/reference/README.md). Уровень карточки хранится в `olympiads.level*` и пересчитывается при каждом импорте каталога или справочника.
 

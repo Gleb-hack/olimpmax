@@ -11,6 +11,10 @@ import {
   parseBenefits, parseRequirement, type Level, type StageKind, type StageMode, type ScheduleQuality, type ScheduleStage,
   type BenefitKind, type BenefitDiploma,
 } from './model.js';
+import {
+  directionCodePattern, isEgeSubject, levelFromCode, parseEducationLevel, ugsnCodeOf, PROGRAM_FUNDING,
+  type EducationLevel, type ProgramFunding,
+} from './directions.js';
 
 export type ReferenceIssue = { severity: 'error' | 'warning'; code: string; message: string };
 export type SeriesStage = { position: number; name: string; kind: StageKind; rawDates: string; mode: StageMode | null; beginsOn: string | null; endsOn: string | null };
@@ -25,8 +29,18 @@ export type BenefitEntry = {
   minScore: number | null; maxScore: number | null; requirement: string | null; requirementRaw: string | null;
 };
 export type LinkEntry = { olympiadId: number; series: string; profiles: string[]; note: string | null };
+export type DirectionEntry = {
+  code: string; name: string; educationLevel: EducationLevel; ugsnCode: string; ugsnName: string; egeSubjects: string[];
+  core: string[]; related: string[]; popular: boolean; aliases: string[]; note: string | null;
+};
+export type ProgramEntry = {
+  university: string; direction: string; name: string; faculty: string | null; examsRequired: string[]; examsChoice: string[][];
+  internalExam: boolean; passingScore: number | null; passingScoreForm: string | null; passingYear: number | null;
+  funding: ProgramFunding; sourceUrl: string; sourceId: string | null;
+};
 export type ReferenceBundle = {
   manifest: Manifest; series: SeriesEntry[]; universities: UniversityEntry[]; benefits: BenefitEntry[]; links: LinkEntry[];
+  directions: DirectionEntry[]; programs: ProgramEntry[];
   issues: ReferenceIssue[]; files: { path: string; sha256: string }[]; sha256: string;
 };
 
@@ -42,10 +56,13 @@ export const Manifest = z.object({
     schedule: Source,
     rsosh: Source.extend({ status: z.string().min(1), url: z.url().nullable() }),
     benefits: z.union([BenefitSource, z.array(BenefitSource).min(1)]).transform(v => Array.isArray(v) ? v : [v]),
+    /** University programs with exams and passing scores (a third-party aggregator; the source is shown to users). */
+    programs: Source.extend({ status: z.string().min(1), url: z.url().nullable() }).optional(),
   }),
 });
 export type Manifest = z.infer<typeof Manifest>;
-export const referenceFiles = { series: 'series.csv', universities: 'universities.csv', links: 'catalog-links.csv', additions: 'catalog-additions.csv' } as const;
+export const referenceFiles = { series: 'series.csv', universities: 'universities.csv', links: 'catalog-links.csv', additions: 'catalog-additions.csv',
+  directions: 'directions.csv' } as const;
 export const defaultReferenceDir = new URL('../../../../data/reference/', import.meta.url);
 
 type Row = Record<string, string>;
@@ -69,8 +86,9 @@ export function readReferenceDir(dir: string | URL = defaultReferenceDir): Refer
   const manifest: unknown = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'));
   const parsed = Manifest.parse(manifest);
   const files: Record<string, Buffer> = {};
-  for (const path of [referenceFiles.series, referenceFiles.universities, referenceFiles.links,
-    parsed.sources.schedule.file, parsed.sources.rsosh.file, ...parsed.sources.benefits.map(b => b.file)]) {
+  for (const path of [referenceFiles.series, referenceFiles.universities, referenceFiles.links, referenceFiles.directions,
+    parsed.sources.schedule.file, parsed.sources.rsosh.file, ...parsed.sources.benefits.map(b => b.file),
+    ...(parsed.sources.programs ? [parsed.sources.programs.file] : [])]) {
     const full = join(base, path);
     if (!existsSync(full)) throw new Error(`Нет файла справочника: ${path}`);
     files[path] = readFileSync(full);
@@ -247,6 +265,71 @@ export function buildReference(input: ReferenceInput, options: { today: string }
     links.set(id, { olympiadId: id, series: slug, profiles, note: text(row.note) });
   }
 
+  // --- directions.csv: directions of study and their olympiad subjects ---
+  const directions = new Map<string, DirectionEntry>();
+  const directionsFile = input.files[referenceFiles.directions];
+  if (directionsFile) {
+    for (const [i, row] of readCsv(directionsFile, referenceFiles.directions, ['code', 'name', 'education_level', 'ugsn_code', 'ugsn_name', 'ege_subjects',
+      'subjects_core', 'subjects_related', 'popular', 'aliases', 'note']).entries()) {
+      const where = `${referenceFiles.directions}:${i + 2}`;
+      const code = row.code!.trim(), name = row.name!.trim();
+      if (!directionCodePattern.test(code)) { error('bad_direction_code', `${where}: код «${code}» — ожидается XX.03.XX (бакалавриат) или XX.05.XX (специалитет)`); continue; }
+      if (directions.has(code)) { error('duplicate_direction', `${where}: повторный код ${code}`); continue; }
+      if (!name || !row.ugsn_name!.trim()) { error('empty_name', `${where}: нужны name и ugsn_name`); continue; }
+      const level = parseEducationLevel(row.education_level!);
+      if (level !== levelFromCode(code)) { error('level_mismatch', `${where}: уровень «${row.education_level}» не совпадает с кодом ${code}`); continue; }
+      if (row.ugsn_code!.trim() !== ugsnCodeOf(code)) { error('ugsn_mismatch', `${where}: ugsn_code «${row.ugsn_code}» должен быть ${ugsnCodeOf(code)}`); continue; }
+      const ege = list(row.ege_subjects), core = list(row.subjects_core), related = list(row.subjects_related);
+      const badEge = ege.filter(s => !isEgeSubject(s));
+      if (badEge.length) { error('unknown_exam', `${where}: неизвестные предметы ЕГЭ ${badEge.map(s => `«${s}»`).join(', ')}`); continue; }
+      if (!core.length) { error('no_core_subjects', `${where}: пустой subjects_core`); continue; }
+      const both = core.filter(s => related.includes(s));
+      if (both.length) warn('core_and_related', `${where}: ${both.join(', ')} указаны и в core, и в related — учитывается core`);
+      const popular = row.popular!.trim();
+      if (popular !== '0' && popular !== '1') { error('bad_flag', `${where}: popular должен быть 0 или 1`); continue; }
+      directions.set(code, { code, name, educationLevel: level!, ugsnCode: ugsnCodeOf(code), ugsnName: row.ugsn_name!.trim(), egeSubjects: ege,
+        core, related: related.filter(s => !core.includes(s)), popular: popular === '1', aliases: list(row.aliases), note: text(row.note) });
+    }
+  }
+
+  // --- university programs: university × direction, exams and passing scores ---
+  const programs: ProgramEntry[] = [];
+  const programsSource = manifest.sources.programs;
+  if (programsSource) {
+    const path = programsSource.file;
+    const seen = new Set<string>();
+    for (const [i, row] of readCsv(file(path), path, ['university_slug', 'direction_code', 'education_level', 'program', 'faculty', 'exams_required',
+      'exams_choice', 'internal_exam', 'passing_score', 'passing_score_form', 'passing_year', 'funding', 'source_url', 'tabiturient_id']).entries()) {
+      const where = `${path}:${i + 2}`;
+      const university = row.university_slug!.trim(), code = row.direction_code!.trim(), name = row.program!.trim();
+      if (!universities.has(university)) { error('unknown_university', `${where}: вуза «${university}» нет в universities.csv`); continue; }
+      if (!directions.has(code)) { error('unknown_direction', `${where}: направления ${code} нет в directions.csv`); continue; }
+      if (!name) { error('empty_name', `${where}: пустое название программы`); continue; }
+      if (parseEducationLevel(row.education_level!) !== levelFromCode(code)) warn('level_mismatch', `${where}: уровень «${row.education_level}» не совпадает с кодом ${code} — используется код`);
+      const examsRequired = list(row.exams_required);
+      const examsChoice = (row.exams_choice ?? '').split(';').map(list).filter(group => group.length);
+      const badExams = [...examsRequired, ...examsChoice.flat()].filter(s => !isEgeSubject(s));
+      if (badExams.length) { error('unknown_exam', `${where}: неизвестные предметы ЕГЭ ${badExams.map(s => `«${s}»`).join(', ')}`); continue; }
+      const funding = row.funding!.trim() as ProgramFunding;
+      if (!PROGRAM_FUNDING.includes(funding)) { error('bad_funding', `${where}: funding «${row.funding}» — ожидается ${PROGRAM_FUNDING.join(', ')}`); continue; }
+      const internal = row.internal_exam!.trim();
+      if (internal !== '0' && internal !== '1') { error('bad_flag', `${where}: internal_exam должен быть 0 или 1`); continue; }
+      const scoreRaw = row.passing_score!.trim(), yearRaw = row.passing_year!.trim();
+      const passingScore = scoreRaw ? Number(scoreRaw) : null, passingYear = yearRaw ? Number(yearRaw) : null;
+      if (passingScore !== null && (!Number.isInteger(passingScore) || passingScore < 0 || passingScore > 500)) { error('bad_score', `${where}: проходной балл «${scoreRaw}»`); continue; }
+      if (passingScore !== null && (passingYear === null || !Number.isInteger(passingYear) || passingYear < 2000 || passingYear > 2100)) { error('bad_year', `${where}: у проходного балла нужен год`); continue; }
+      const sourceUrl = row.source_url!.trim();
+      if (!z.url().safeParse(sourceUrl).success) { error('bad_url', `${where}: source_url «${sourceUrl}»`); continue; }
+      const key = [university, code, nameKey(name), nameKey(row.faculty ?? ''), examsRequired.join('|'), examsChoice.map(g => g.join('|')).join(';')].join(':');
+      if (seen.has(key)) { warn('duplicate_program', `${where}: повтор программы «${name}» — пропущена`); continue; }
+      seen.add(key);
+      programs.push({ university, direction: code, name, faculty: text(row.faculty), examsRequired, examsChoice, internalExam: internal === '1',
+        passingScore, passingScoreForm: passingScore !== null ? text(row.passing_score_form) : null, passingYear: passingScore !== null ? passingYear : null,
+        funding, sourceUrl, sourceId: text(row.tabiturient_id) });
+    }
+    for (const u of universities.values()) if (!programs.some(p => p.university === u.slug)) warn('university_without_programs', `${u.slug}: нет ни одной программы в ${path}`);
+  }
+
   for (const entry of series.values()) {
     if (!entry.stages.length && !entry.profiles.size && ![...benefits.values()].some(b => b.series === entry.slug) && !entry.generalLevel)
       warn('unused_series', `${entry.slug}: серия не встречается ни в одном источнике`);
@@ -254,11 +337,19 @@ export function buildReference(input: ReferenceInput, options: { today: string }
   const files = Object.entries(input.files).sort(([a], [b]) => a.localeCompare(b)).map(([path, buffer]) => ({ path, sha256: hash(buffer) }));
   return {
     manifest, series: [...series.values()], universities: [...universities.values()], benefits: [...benefits.values()], links: [...links.values()],
-    issues, files, sha256: hash(files.map(f => `${f.path}:${f.sha256}`).join('\n') + JSON.stringify(input.manifest)),
+    directions: [...directions.values()], programs, issues, files, sha256: hash(files.map(f => `${f.path}:${f.sha256}`).join('\n') + JSON.stringify(input.manifest)),
   };
 }
 
 export type CatalogRow = { id: number; title: string; sourceGroup: string | null; rawSource: Record<string, string>; inCatalog?: boolean };
+/** Olympiad subjects of directions.csv must be catalog subjects, otherwise no card can ever match them. */
+export function checkDirectionSubjects(bundle: ReferenceBundle, catalogSubjects: Iterable<string>): ReferenceIssue[] {
+  const known = new Set(catalogSubjects);
+  const unknown = new Map<string, string[]>();
+  for (const d of bundle.directions) for (const s of [...d.core, ...d.related]) if (!known.has(s)) unknown.set(s, [...unknown.get(s) ?? [], d.code]);
+  return [...unknown].map(([subject, codes]) => ({ severity: 'warning' as const, code: 'unknown_direction_subject',
+    message: `${referenceFiles.directions}: предмета «${subject}» нет в каталоге (${codes.slice(0, 5).join(', ')}${codes.length > 5 ? '…' : ''}) — связь по нему не появится` }));
+}
 /** Cross-checks the bundle against catalog cards (from the CSV files or the database). Only warnings: the catalog may lag behind. */
 export function checkAgainstCatalog(bundle: ReferenceBundle, catalog: CatalogRow[]): ReferenceIssue[] {
   const issues: ReferenceIssue[] = [];

@@ -11,6 +11,7 @@ import { users, planItems, olympiads } from './db/schema.js';
 import * as c from '../../../packages/contracts/src/index.js';
 import { catalog, detail, filters } from './features/catalog.js';
 import { seriesDetail, universityDetail, universityList } from './features/reference.js';
+import { directionDetail, directionList, olympiadPrograms } from './features/directions.js';
 import { readPlan, planEvents, planKey } from './features/plan.js';
 import { validateMaxInitData } from './features/auth.js';
 import { readProfile, saveProfile, deleteAccount, ProfileError } from './features/profile.js';
@@ -90,6 +91,18 @@ export async function buildApp(options: AppOptions) {
   api.get('/olympiads/:id', { schema: { params: c.OlympiadParams, response: { 200: c.OlympiadDetail, 404: c.ErrorResponse } } }, async (request, reply) => {
     const result = await detail(db, request.params.id, today());
     if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не найдена' });
+    return result;
+  });
+  api.get('/olympiads/:id/programs', { schema: { params: c.OlympiadParams, querystring: c.OlympiadProgramsQuery,
+    response: { 200: c.OlympiadProgramsResponse, 404: c.ErrorResponse } } }, async (request, reply) => {
+    const result = await olympiadPrograms(db, request.params.id, request.query);
+    if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не найдена' });
+    return result;
+  });
+  api.get('/directions', { schema: { querystring: c.DirectionListQuery, response: { 200: c.DirectionListResponse } } }, request => directionList(db, request.query));
+  api.get('/directions/:code', { schema: { params: c.DirectionParams, response: { 200: c.DirectionResponse, 404: c.ErrorResponse } } }, async (request, reply) => {
+    const result = await directionDetail(db, request.params.code);
+    if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Направление не найдено' });
     return result;
   });
   api.get('/universities', { schema: { response: { 200: c.UniversityListResponse } } }, () => universityList(db));

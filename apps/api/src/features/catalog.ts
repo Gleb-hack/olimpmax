@@ -1,11 +1,12 @@
 import { and, asc, count, eq, inArray, like, or, sql, type SQL } from 'drizzle-orm';
 import type { z } from 'zod';
 import type { Database } from '../db/client.js';
-import { olympiads, olympiadSubjects, subjects, stages, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesBenefits, universities } from '../db/schema.js';
+import { olympiads, olympiadSubjects, subjects, stages, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesBenefits, universities, olympiadDirections, directions } from '../db/schema.js';
 import { olympiadLevelOptions, type CatalogQuery, type Stage, type OlympiadCard } from '../../../../packages/contracts/src/index.js';
 import { normalizeSearch } from '../import/csv.js';
 import { anchorDay, calendarSummary, moscowToday, scheduleEvents, upcomingStage } from './calendar.js';
 import { olympiadBenefits, seriesInfo } from './reference.js';
+import { olympiadDirectionList, strongMatch } from './directions.js';
 
 type Olympiad = typeof olympiads.$inferSelect;
 type CardStage = z.infer<typeof Stage>;
@@ -104,6 +105,8 @@ export function catalogConditions(db: Database, query: CatalogQuery, options: { 
       .innerJoin(seriesBenefits, eq(seriesBenefits.seriesId, olympiadSeriesLinks.seriesId))
       .innerJoin(universities, eq(universities.id, seriesBenefits.universityId)).where(inArray(universities.slug, query.universities))));
   }
+  if (query.directions) conditions.push(inArray(olympiads.id, db.select({ id: olympiadDirections.olympiadId }).from(olympiadDirections)
+    .innerJoin(directions, eq(directions.id, olympiadDirections.directionId)).where(and(inArray(directions.code, query.directions), strongMatch))));
   if (options.requireSchedule) conditions.push(or(
     sql`nullif(trim(${olympiads.calendarRaw}), '') is not null`,
     inArray(olympiads.id, db.select({ id: stages.olympiadId }).from(stages)
@@ -186,11 +189,14 @@ export async function detail(db: Database, id: number, today = moscowToday()) {
   const item = (await enrich(db, rows, today))[0];
   if (!item) return null;
   const { row, card, stages, link } = item;
-  const [info, benefits] = link ? await Promise.all([seriesInfo(db, link.seriesId), olympiadBenefits(db, link.seriesId, link.name, card.level ?? null)])
-    : [null, { applicable: false, note: null, items: [] }];
+  const [[info, benefits], directionList] = await Promise.all([
+    link ? Promise.all([seriesInfo(db, link.seriesId), olympiadBenefits(db, link.seriesId, link.name, card.level ?? null)])
+      : Promise.resolve([null, { applicable: false, note: null, items: [] }] satisfies [null, Awaited<ReturnType<typeof olympiadBenefits>>]),
+    olympiadDirectionList(db, id),
+  ]);
   return { ...card, stages, organizers: row.organizers, contacts: row.contacts, documents: row.documents,
     featuresRaw: row.featuresRaw, calendarRaw: card.calendarRaw ?? null, scheduleUpdatedRaw: row.scheduleUpdatedRaw,
-    rawSource: row.rawSource, importedAt: row.importedAt, catalogCalendarRaw: row.calendarRaw, seriesInfo: info, benefits };
+    rawSource: row.rawSource, importedAt: row.importedAt, catalogCalendarRaw: row.calendarRaw, seriesInfo: info, benefits, directions: directionList };
 }
 export async function filters(db: Database) {
   const [subjectRows, rows, universityRows] = await Promise.all([

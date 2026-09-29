@@ -1,8 +1,9 @@
 // Read side of the reference layer: series, RSOSH profiles, universities and admission benefits.
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
-import { olympiads, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesProfiles, seriesBenefits, universities, referenceSources } from '../db/schema.js';
+import { olympiads, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesProfiles, seriesBenefits, universities, referenceSources, universityPrograms } from '../db/schema.js';
 import { universityProfiles } from '../reference/university-profiles.js';
+import { universityProgramList } from './directions.js';
 
 async function currentSeason(db: Database) {
   const [row] = await db.select({ season: referenceSources.season }).from(referenceSources).where(eq(referenceSources.key, 'rsosh'));
@@ -39,7 +40,8 @@ export async function olympiadBenefits(db: Database, seriesId: number, seriesNam
 export async function universityList(db: Database) {
   const rows = await db.select({ slug: universities.slug, name: universities.name, fullName: universities.fullName, city: universities.city,
     seriesCount: sql<number>`count(distinct ${seriesBenefits.seriesId})::int`,
-    olympiadCount: sql<number>`count(distinct ${olympiads.id}) filter (where ${olympiads.inCatalog} and ${olympiads.level} is not null)::int` })
+    olympiadCount: sql<number>`count(distinct ${olympiads.id}) filter (where ${olympiads.inCatalog} and ${olympiads.level} is not null)::int`,
+    programCount: sql<number>`(select count(*) from ${universityPrograms} where ${universityPrograms.universityId} = ${universities.id})::int` })
     .from(universities).leftJoin(seriesBenefits, eq(seriesBenefits.universityId, universities.id))
     .leftJoin(olympiadSeriesLinks, eq(olympiadSeriesLinks.seriesId, seriesBenefits.seriesId))
     .leftJoin(olympiads, eq(olympiads.id, olympiadSeriesLinks.olympiadId))
@@ -67,6 +69,7 @@ export async function universityDetail(db: Database, slug: string) {
     organizersBySeries.set(m.seriesId, set);
   }
   const profile = universityProfiles().get(university.slug);
+  const programs = await universityProgramList(db, university.id);
   return {
     slug: university.slug, name: university.name, fullName: university.fullName, city: university.city,
     type: profile?.type ?? null, description: profile?.description ?? null, site: profile?.site ?? null, rules: profile?.rules ?? null,
@@ -76,6 +79,7 @@ export async function universityDetail(db: Database, slug: string) {
         olympiads: [...list].sort((a, b) => a.title.localeCompare(b.title, 'ru') || a.id - b.id),
         organizers: [...organizersBySeries.get(seriesId) ?? []].slice(0, 10) };
     }),
+    programs,
   };
 }
 
