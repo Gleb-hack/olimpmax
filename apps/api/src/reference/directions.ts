@@ -89,3 +89,23 @@ export function programTakesSubjects(program: { examsRequired: string[]; examsCh
   const exams = new Set([...program.examsRequired, ...program.examsChoice.flat()]);
   return subjects.some(s => examsForSubject(s).some(e => exams.has(e)));
 }
+
+export type CoverageSource = 'rules' | 'exams';
+export type DirectionCoverage = { matched: number; total: number; source: CoverageSource };
+type CoverageProgram = { directionCode: string; examsRequired: string[]; examsChoice: string[][] };
+/**
+ * «На N из M направлений» for one university and one olympiad.
+ * - rules: exact rows from admission rules (direction_benefits) — N is the directions they list;
+ * - exams: an estimate — N is the directions where a program has the exam the diploma counts for.
+ * M is every direction of the university known from programs (plus directions named by the rules).
+ * An estimate of zero is not shown (null): the benefit exists, the exam mapping just does not say where.
+ */
+export function directionCoverage(programs: CoverageProgram[], cardSubjects: string[], ruleDirections: string[] | null): DirectionCoverage | null {
+  const all = new Set(programs.map(p => p.directionCode));
+  if (ruleDirections?.length) {
+    for (const code of ruleDirections) all.add(code);
+    return { matched: new Set(ruleDirections).size, total: all.size, source: 'rules' };
+  }
+  const matched = new Set(programs.filter(p => programTakesSubjects(p, cardSubjects)).map(p => p.directionCode));
+  return matched.size ? { matched: matched.size, total: all.size, source: 'exams' } : null;
+}

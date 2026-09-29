@@ -243,6 +243,21 @@ export const olympiadDirections = pgTable('olympiad_directions', {
   index('olympiad_directions_direction_idx').on(t.directionId, t.olympiadId),
   check('olympiad_directions_has_reason', sql`${t.viaRsosh} or ${t.subjectRelevance} is not null`),
 ]);
+/**
+ * Exact benefits by direction from admission rules (optional source `directionBenefits` in manifest.json).
+ * Where rows exist for a university and a series, «на N из M направлений» comes from here instead of the exam estimate.
+ */
+export const directionBenefits = pgTable('direction_benefits', {
+  id: serial('id').primaryKey(),
+  universityId: integer('university_id').notNull().references(() => universities.id, { onDelete: 'cascade' }),
+  seriesId: integer('series_id').notNull().references(() => olympiadSeries.id, { onDelete: 'cascade' }),
+  directionId: integer('direction_id').notNull().references(() => directions.id, { onDelete: 'cascade' }),
+  kind: benefitKindEnum('kind').notNull(), diploma: benefitDiplomaEnum('diploma').notNull(),
+  sourceUrl: text('source_url').notNull(), sourcePage: text('source_page'),
+}, t => [
+  uniqueIndex('direction_benefits_unique').on(t.universityId, t.seriesId, t.directionId, t.kind, t.diploma),
+  index('direction_benefits_series_idx').on(t.seriesId, t.universityId),
+]);
 // The user's goal: where and what to study. Removed with the account (cascade).
 export const userDirections = pgTable('user_directions', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),

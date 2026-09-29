@@ -190,7 +190,7 @@ export async function detail(db: Database, id: number, today = moscowToday()) {
   if (!item) return null;
   const { row, card, stages, link } = item;
   const [[info, benefits], directionList] = await Promise.all([
-    link ? Promise.all([seriesInfo(db, link.seriesId), olympiadBenefits(db, link.seriesId, link.name, card.level ?? null)])
+    link ? Promise.all([seriesInfo(db, link.seriesId), olympiadBenefits(db, link.seriesId, link.name, card.level ?? null, id)])
       : Promise.resolve([null, { applicable: false, note: null, items: [] }] satisfies [null, Awaited<ReturnType<typeof olympiadBenefits>>]),
     olympiadDirectionList(db, id),
   ]);

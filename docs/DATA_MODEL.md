@@ -23,6 +23,8 @@ erDiagram
   subjects ||--o{ direction_subjects : suits
   olympiads ||--o{ olympiad_directions : suits
   directions ||--o{ olympiad_directions : "suited by"
+  directions ||--o{ direction_benefits : "benefit on"
+  universities ||--o{ direction_benefits : "rules of"
   user_profiles ||--o{ user_directions : "goal: direction"
   user_profiles ||--o{ user_universities : "goal: university"
 ```
@@ -49,6 +51,7 @@ erDiagram
 | `direction_subjects` | Предметы олимпиад направления: `core` — ведёт напрямую, `related` — близкий профиль |
 | `university_programs` | Программа вуза по направлению: профиль, факультет, экзамены (обязательные и на выбор), внутренний экзамен, проходной балл на бюджет с формой и годом, тип финансирования, источник |
 | `olympiad_directions` | Вычисляемая связь карточки с направлением: `via_rsosh` (профиль РСОШ называет направление или его группу) и/или `subject_relevance` (по предметам). Пересчитывается после каждого импорта каталога или справочника |
+| `direction_benefits` | Точные льготы по направлениям из правил приёма вуза: вуз, серия, направление, БВИ / 100 баллов, ссылка и страница документа. Необязательный источник `directionBenefits`; где строк нет, «на N из M направлений» оценивается по экзаменам программ |
 | `user_directions`, `user_universities` | Цель пользователя: выбранные направления и вузы; удаляются вместе с аккаунтом |
 
 Таблицы справочника полностью пересобираются из `data/reference` (`pnpm db:reference`, также часть `pnpm db:import`). Правила выбора уровня и расписания, порядок обновления файлов — в [data/reference/README.md](../data/reference/README.md). Уровень карточки хранится в `olympiads.level*` и пересчитывается при каждом импорте каталога или справочника.
