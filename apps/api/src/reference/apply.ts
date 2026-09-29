@@ -4,10 +4,12 @@ import { eq, notInArray, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import {
   olympiads, olympiadSeries, seriesStages, seriesProfiles, olympiadSeriesLinks, universities, seriesBenefits, referenceSources, importRuns,
+  subjects, olympiadSubjects, directions, directionSubjects, universityPrograms, olympiadDirections,
 } from '../db/schema.js';
+import { matchDirections } from './directions.js';
 import { catalogLevel, resolveLevel, type ResolvedLevel, type RsoshMeta } from './levels.js';
 import { checkAgainstCatalog, type ReferenceBundle, type ReferenceIssue } from './load.js';
-import { scheduleConflicts, type Level } from './model.js';
+import { ALL_PROFILES, scheduleConflicts, type Level } from './model.js';
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
 export type Executor = Database | Transaction;
@@ -46,6 +48,7 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
     { key: 'rsosh', ...manifest.sources.rsosh },
     // The first benefits file keeps the historical key «benefits»; later deliveries get «benefits-2», «benefits-3», …
     ...manifest.sources.benefits.map((source, index) => ({ key: index ? `benefits-${index + 1}` : 'benefits', ...source, status: null, url: null })),
+    ...(manifest.sources.programs ? [{ key: 'programs', ...manifest.sources.programs }] : []),
   ];
   await tx.insert(referenceSources).values(sources.map(source => ({ key: source.key, file: source.file, description: source.description ?? null,
     sha256: sha.get(source.file) ?? '', season: manifest.season, status: source.status, url: source.url, importedAt: now })));
@@ -101,7 +104,31 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
   });
   for (let i = 0; i < linkRows.length; i += 500) await tx.insert(olympiadSeriesLinks).values(linkRows.slice(i, i + 500));
 
+  // Directions keep their ids (users' goals point at them); their subjects and the programs are rewritten.
+  const directionCodes = bundle.directions.map(d => d.code);
+  await tx.delete(directions).where(directionCodes.length ? notInArray(directions.code, directionCodes) : sql`true`);
+  for (const d of bundle.directions) {
+    const value = { code: d.code, name: d.name, educationLevel: d.educationLevel, ugsnCode: d.ugsnCode, ugsnName: d.ugsnName,
+      egeSubjects: d.egeSubjects, popular: d.popular, aliases: d.aliases, note: d.note };
+    await tx.insert(directions).values(value).onConflictDoUpdate({ target: directions.code, set: value });
+  }
+  const directionId = new Map((await tx.select({ id: directions.id, code: directions.code }).from(directions)).map(r => [r.code, r.id]));
+  // A direction may name a subject no card has yet: it is created so the relation is kept (the catalog lists only subjects with cards).
+  const subjectNames = [...new Set(bundle.directions.flatMap(d => [...d.core, ...d.related]))];
+  if (subjectNames.length) await tx.insert(subjects).values(subjectNames.map(name => ({ name }))).onConflictDoNothing();
+  const subjectId = new Map((await tx.select().from(subjects)).map(s => [s.name, s.id]));
+  await tx.delete(directionSubjects);
+  const directionSubjectRows = bundle.directions.flatMap(d => [
+    ...d.core.map(name => ({ directionId: directionId.get(d.code)!, subjectId: subjectId.get(name)!, relevance: 'core' as const })),
+    ...d.related.map(name => ({ directionId: directionId.get(d.code)!, subjectId: subjectId.get(name)!, relevance: 'related' as const })),
+  ]);
+  for (let i = 0; i < directionSubjectRows.length; i += 500) await tx.insert(directionSubjects).values(directionSubjectRows.slice(i, i + 500));
+  await tx.delete(universityPrograms);
+  const programRows = bundle.programs.map(({ university, direction, ...p }) => ({ ...p, universityId: universityId.get(university)!, directionId: directionId.get(direction)! }));
+  for (let i = 0; i < programRows.length; i += 500) await tx.insert(universityPrograms).values(programRows.slice(i, i + 500));
+
   const levels = await recomputeLevels(tx);
+  const olympiadDirectionStats = await recomputeOlympiadDirections(tx);
   const issues = [...bundle.issues, ...checkAgainstCatalog(bundle, catalog)];
   const count = <T,>(items: T[], key: (item: T) => string) => items.reduce<Record<string, number>>((acc, item) => { acc[key(item)] = (acc[key(item)] ?? 0) + 1; return acc; }, {});
   return {
@@ -110,6 +137,7 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
     scheduleQuality: count(bundle.series.filter(s => s.stages.length), s => s.scheduleQuality),
     seriesInRsoshList: bundle.series.filter(s => s.profiles.size).length, rsoshProfiles: profileRows.length,
     universities: bundle.universities.length, benefits: benefitRows.length,
+    directions: bundle.directions.length, programs: programRows.length, olympiadDirections: olympiadDirectionStats,
     links: linkRows.length, linksSkipped: bundle.links.length - linkRows.length,
     // Only where it changes what the card shows: the series schedule would otherwise be primary.
     scheduleConflicts: linkRows.filter(l => l.scheduleConflict && bundle.series.find(s => seriesId.get(s.slug) === l.seriesId)?.scheduleQuality === 'ok').map(l => l.olympiadId),
@@ -146,4 +174,49 @@ export async function recomputeLevels(tx: Executor) {
     }
   }
   return { bySource: stats, changed };
+}
+
+/**
+ * Recomputes olympiad_directions from the stored cards, their subjects and RSOSH profiles (see matchDirections).
+ * Runs after every catalog or reference import: both change subjects, links or profiles.
+ */
+export async function recomputeOlympiadDirections(tx: Executor) {
+  const [directionRows, directionSubjectRows, cards, cardSubjects, links, profiles, sources] = await Promise.all([
+    tx.select({ id: directions.id, code: directions.code, name: directions.name, ugsnName: directions.ugsnName }).from(directions),
+    tx.select({ directionId: directionSubjects.directionId, relevance: directionSubjects.relevance, name: subjects.name })
+      .from(directionSubjects).innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId)),
+    tx.select({ id: olympiads.id }).from(olympiads),
+    tx.select({ olympiadId: olympiadSubjects.olympiadId, name: subjects.name }).from(olympiadSubjects).innerJoin(subjects, eq(subjects.id, olympiadSubjects.subjectId)),
+    tx.select().from(olympiadSeriesLinks),
+    tx.select().from(seriesProfiles),
+    tx.select().from(referenceSources).where(eq(referenceSources.key, 'rsosh')),
+  ]);
+  await tx.delete(olympiadDirections);
+  if (!directionRows.length) return { rows: 0, viaRsosh: 0, core: 0, related: 0 };
+  const season = sources[0]?.season;
+  const byDirection = new Map(directionRows.map(d => [d.id, { code: d.code, name: d.name, ugsnName: d.ugsnName, core: [] as string[], related: [] as string[] }]));
+  for (const s of directionSubjectRows) byDirection.get(s.directionId)?.[s.relevance].push(s.name);
+  const idByCode = new Map(directionRows.map(d => [d.code, d.id]));
+  const subjectsByCard = new Map<number, string[]>();
+  for (const s of cardSubjects) subjectsByCard.set(s.olympiadId, [...subjectsByCard.get(s.olympiadId) ?? [], s.name]);
+  const fieldsBySeries = new Map<number, Map<string, string | null>>();
+  for (const p of profiles) {
+    if (p.season !== season) continue;
+    const map = fieldsBySeries.get(p.seriesId) ?? new Map<string, string | null>();
+    map.set(p.profile, p.fieldsOfStudy); fieldsBySeries.set(p.seriesId, map);
+  }
+  const linkByCard = new Map(links.map(l => [l.olympiadId, l]));
+  const list = [...byDirection.values()];
+  const rows: (typeof olympiadDirections.$inferInsert)[] = [];
+  for (const card of cards) {
+    const link = linkByCard.get(card.id);
+    const seriesFields = link ? fieldsBySeries.get(link.seriesId) : undefined;
+    // Only the RSOSH profiles this card covers: [] — none, ['*'] — all profiles of the series.
+    const covered = !link || !seriesFields ? [] : link.profiles.includes(ALL_PROFILES) ? [...seriesFields.values()] : link.profiles.map(p => seriesFields.get(p) ?? null);
+    for (const m of matchDirections({ subjects: subjectsByCard.get(card.id) ?? [], fieldsOfStudy: covered }, list))
+      rows.push({ olympiadId: card.id, directionId: idByCode.get(m.code)!, viaRsosh: m.viaRsosh, subjectRelevance: m.subjectRelevance });
+  }
+  for (let i = 0; i < rows.length; i += 1000) await tx.insert(olympiadDirections).values(rows.slice(i, i + 1000));
+  return { rows: rows.length, viaRsosh: rows.filter(r => r.viaRsosh).length,
+    core: rows.filter(r => r.subjectRelevance === 'core').length, related: rows.filter(r => r.subjectRelevance === 'related').length };
 }

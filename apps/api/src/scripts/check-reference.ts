@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseCsv } from '../import/csv.js';
-import { buildReference, checkAgainstCatalog, defaultReferenceDir, readReferenceDir, referenceFiles } from '../reference/load.js';
+import { buildReference, checkAgainstCatalog, checkDirectionSubjects, defaultReferenceDir, readReferenceDir, referenceFiles } from '../reference/load.js';
 import { referenceSummary } from '../reference/summary.js';
 import { moscowToday } from '../features/calendar.js';
 
@@ -13,8 +13,10 @@ const additionsPath = fileURLToPath(new URL(referenceFiles.additions, defaultRef
 const extra = existsSync(additionsPath) ? parseCsv(readFileSync(additionsPath)) : [];
 const ids = new Set(main.map(r => r.olympiad.id));
 const catalog = [...main, ...extra.filter(r => !ids.has(r.olympiad.id))].map(r => ({ id: r.olympiad.id, title: r.olympiad.title, sourceGroup: r.olympiad.sourceGroup, rawSource: r.olympiad.rawSource }));
-const issues = [...bundle.issues, ...checkAgainstCatalog(bundle, catalog)];
+const catalogSubjects = new Set([...main, ...extra].flatMap(r => r.subjectNames));
+const issues = [...bundle.issues, ...checkAgainstCatalog(bundle, catalog), ...checkDirectionSubjects(bundle, catalogSubjects)];
 const report = { checkedAt: new Date().toISOString(), referenceSha256: bundle.sha256, ...referenceSummary(bundle, catalog),
+  directions: bundle.directions.length, programs: bundle.programs.length,
   errors: issues.filter(i => i.severity === 'error').map(i => `${i.code}: ${i.message}`),
   warnings: issues.filter(i => i.severity === 'warning').map(i => `${i.code}: ${i.message}`) };
 writeFileSync(new URL('../../../../data/reference-report.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');

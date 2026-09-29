@@ -19,6 +19,8 @@
 | `sources/vuzi_olympiad_benefits_cleaned.csv` | Льготы 10 вузов по олимпиадам | Заменяется целиком новой версией |
 | `sources/vuzi_olympiad_benefits_2026.csv` | Льготы ещё 13 вузов (МГТУ им. Баумана, НИЯУ МИФИ, МГИМО, Финансовый университет, СПбПУ, МИСИС, РЭУ, РАНХиГС, УрФУ, РУДН, МГЮА, РХТУ, МИРЭА) | Заменяется целиком новой версией |
 | `sources/vuzi_olympiad_benefits_2026_part2.csv` | Льготы ещё 15 вузов (ТПУ, ТГУ, РНИМУ им. Пирогова, МАИ, СФУ, НИУ МЭИ, ДВФУ, Горный университет, ПСПбГМУ им. Павлова, НИУ МГСУ, ЮФУ, ННГУ им. Лобачевского, СПбГЭТУ «ЛЭТИ», ВАВТ, СПбГЭУ). «БВИ / 300 / 200 / 100 баллов» — БВИ и высший балл вступительного испытания | Заменяется целиком новой версией |
+| `sources/university_programs.csv` | Программы 38 вузов: направление, профиль, факультет, экзамены ЕГЭ, проходной балл на бюджет 2025 года | Заменяется целиком новой версией |
+| `directions.csv` | Направления бакалавриата и специалитета: код, группа, экзамены, предметы олимпиад, псевдонимы для поиска | Вручную |
 | `series.csv` | **Реестр олимпиад-«серий»** и все варианты их названий | Вручную |
 | `catalog-links.csv` | Какая карточка каталога (ID olimpiada.ru) к какой серии и профилю относится | Вручную |
 | `universities.csv` | Вузы: короткое и полное название, город | Вручную |
@@ -62,6 +64,18 @@ catalog-links.csv     5285 → ranepa, профиль «история»;  5412 
 
 Льготы хранятся у серии и показываются на карточке, только если у карточки есть уровень. Если профиль не входит в перечень, карточка пишет, что льготы серии на неё не распространяются. «БВИ» и «100 баллов» считаются льготой для победителей и призёров, «БВИ победителям» — только для победителей. Условие «ЕГЭ от75 до 85 баллов» превращается в диапазон 75–85 (порог зависит от программы). Пометка «не видно на предоставленных скриншотах» означает «порог не указан» и пользователю так и показывается.
 
+## Направления и программы вузов
+
+- **`directions.csv`** — справочник направлений бакалавриата (`XX.03.XX`) и специалитета (`XX.05.XX`): `code;name;education_level;ugsn_code;ugsn_name;ege_subjects;subjects_core;subjects_related;popular;aliases;note`. Предметы — через `|`. `ege_subjects` — только предметы ЕГЭ (Математика, Информатика, Физика, Химия, Биология, Обществознание, История, Литература, География, Иностранный язык, Русский язык); `subjects_core` и `subjects_related` — предметы каталога (как в поле «Предмет» `olimpiady.csv`). `data:check` проверяет, что код совпадает с уровнем и группой, коды не повторяются, а предметы есть в каталоге. Соответствие «предмет → направление» — типичное для большинства вузов, поэтому в интерфейсе это **рекомендация**.
+- **`sources/university_programs.csv`** (источник `programs` в `manifest.json`) — программы вузов: `university_slug;direction_code;direction_name;education_level;program;faculty;exams_required;exams_choice;internal_exam;passing_score;passing_score_form;passing_year;funding;source_url;tabiturient_id`. `exams_choice` — группы экзаменов на выбор через `;`, внутри группы через `|`. `funding`: `budget`, `paid_only`, `quota_only`. Вуз должен быть в `universities.csv`, код — в `directions.csv`. Проходные баллы — кампании 2025 года по данным [Табитуриента](https://tabiturient.ru); Иннополиса там нет, его программы взяты с сайта приёмной комиссии.
+
+Связь олимпиады с направлением (`olympiad_directions`) вычисляется при импорте:
+
+1. **По перечню РСОШ** (`via_rsosh`): у профиля в перечне есть список «соответствующих направлений подготовки» — смесь предметов, укрупнённых групп и отдельных направлений. Направление подходит, если в этом списке целиком стоит название его группы («информатика и вычислительная техника») или его собственное название. Учитываются только профили, которые покрывает карточка (`catalog-links.csv`).
+2. **По предметам** (`subject_relevance`): предмет карточки входит в `subjects_core` (`core`) или `subjects_related` (`related`) направления.
+
+Программа подходит олимпиаде, если вуз даёт льготу по её серии, направление программы подходит олимпиаде по перечню или основному предмету, а при `examMatch` в экзаменах программы есть предмет диплома (правила — `apps/api/src/reference/directions.ts`).
+
 ## Как обновлять
 
 После любой правки:
@@ -96,7 +110,11 @@ pnpm db:import
 
 ### Новый вуз
 
-Строка в `universities.csv`. Все варианты написания вуза в файле льгот — в `aliases` через `|`.
+Строка в `universities.csv`. Все варианты написания вуза в файле льгот — в `aliases` через `|`. Программы вуза — строки в `sources/university_programs.csv` с его `slug`; без них `data:check` предупредит `university_without_programs`.
+
+### Новое направление или программа
+
+Направление — строка в `directions.csv` (код и название по перечню Минобрнауки). Программа с кодом, которого нет в справочнике, — ошибка `unknown_direction`: сначала добавьте направление.
 
 ## Отчёт `data/reference-report.json`
 
@@ -113,8 +131,10 @@ pnpm db:import
 | --- | --- |
 | Разбор и проверка файлов | `apps/api/src/reference/load.ts` |
 | Правила: названия, даты, шаблоны, льготы | `apps/api/src/reference/model.ts` |
+| Правила: направления, перечень РСОШ, экзамены программ | `apps/api/src/reference/directions.ts` |
 | Уровни | `apps/api/src/reference/levels.ts` |
 | Запись в PostgreSQL | `apps/api/src/reference/apply.ts` |
-| Таблицы | `apps/api/src/db/schema.ts`, миграция `apps/api/drizzle/0005_reference_layer.sql` |
+| Таблицы | `apps/api/src/db/schema.ts`, миграции `apps/api/drizzle/0005_reference_layer.sql`, `0008_directions_programs.sql` |
 | API: `/series/:slug`, `/universities`, фильтры `universities`, `series` | `apps/api/src/features/reference.ts`, `features/catalog.ts` |
-| Тесты | `tests/reference.test.ts`, `tests/reference.integration.ts` |
+| API: `/directions`, `/directions/:code`, `/olympiads/:id/programs`, фильтр `directions` | `apps/api/src/features/directions.ts` |
+| Тесты | `tests/reference.test.ts`, `tests/reference.integration.ts`, `tests/directions.test.ts`, `tests/directions.integration.ts` |

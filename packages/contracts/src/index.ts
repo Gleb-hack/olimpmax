@@ -10,6 +10,11 @@ export const olympiadLevelOptions = [
   { value: 'unknown', label: 'Не указан' },
 ] as const;
 export const Slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(80);
+/** Code of a direction of study: XX.03.XX — bachelor, XX.05.XX — specialist («09.03.04»). */
+export const DirectionCode = z.string().regex(/^\d{2}\.0[35]\.\d{2}$/);
+export const EducationLevel = z.enum(['bachelor', 'specialist']);
+export const SubjectRelevance = z.enum(['core', 'related']);
+export const ProgramFunding = z.enum(['budget', 'paid_only', 'quota_only']);
 export const StageMode = z.enum(['online', 'onsite', 'mixed']);
 export const ScheduleSource = z.enum(['catalog', 'reference']);
 export const ScheduleQuality = z.enum(['ok', 'placeholder', 'outdated', 'hidden']);
@@ -39,6 +44,8 @@ export const CatalogQuery = z.object({
   universities: list(Slug),
   /** Only olympiads of these series (slugs from /series/:slug). */
   series: list(Slug),
+  /** Only olympiads that suit one of these directions: by the RSOSH list or by a core subject of the direction. */
+  directions: list(DirectionCode),
   scheduleStatus: ScheduleStatus.optional(),
   /** complete — cards with the most data first (dated stages, days to the next stage, university benefits); then by rating. */
   sort: z.enum(['complete', 'rating', 'name']).default('complete'),
@@ -81,6 +88,10 @@ export const UpcomingStage = z.object({
 });
 export const SeriesRef = z.object({ slug: Slug, name: z.string() });
 export const UniversityRef = z.object({ slug: Slug, name: z.string(), city: z.string() });
+export const DirectionRef = z.object({ code: DirectionCode, name: z.string(), educationLevel: EducationLevel });
+/** Why an olympiad suits a direction: the RSOSH list names it (viaRsosh) and/or by subjects (a recommendation). */
+export const DirectionMatchReason = z.object({ viaRsosh: z.boolean(), subjectRelevance: SubjectRelevance.nullable() });
+export const OlympiadDirection = DirectionRef.extend(DirectionMatchReason.shape);
 export const Benefit = z.object({
   university: UniversityRef.extend({ fullName: z.string().nullable().optional() }), kind: BenefitKind, diploma: BenefitDiploma,
   minScore: z.number().int().nullable(), maxScore: z.number().int().nullable(), requirement: z.string().nullable(),
@@ -119,6 +130,8 @@ export const OlympiadDetail = OlympiadCard.extend({
   catalogCalendarRaw: z.string().nullable().optional(),
   seriesInfo: SeriesInfo.nullable().optional(),
   benefits: OlympiadBenefits.optional(),
+  /** Directions of study the olympiad suits, strongest reasons first. */
+  directions: z.array(OlympiadDirection).optional(),
 });
 export const CatalogResponse = z.object({
   items: z.array(OlympiadCard), total: z.number().int(), page: z.number().int(), pageSize: z.number().int(),
@@ -134,8 +147,17 @@ export const FiltersResponse = z.object({
 });
 export const SlugParams = z.object({ slug: Slug });
 export const UniversityListResponse = z.object({
-  items: z.array(UniversityRef.extend({ fullName: z.string().nullable(), seriesCount: z.number().int(), olympiadCount: z.number().int() })),
+  items: z.array(UniversityRef.extend({ fullName: z.string().nullable(), seriesCount: z.number().int(), olympiadCount: z.number().int(),
+    programCount: z.number().int().optional() })),
 });
+/** A university program: exams of the Unified State Exam and the budget passing score of the last campaign. */
+export const ProgramInfo = z.object({
+  id: z.number().int(), name: z.string(), faculty: z.string().nullable(),
+  examsRequired: z.array(z.string()), examsChoice: z.array(z.array(z.string())), internalExam: z.boolean(),
+  passingScore: z.number().int().nullable(), passingScoreForm: z.string().nullable(), passingYear: z.number().int().nullable(),
+  funding: ProgramFunding, sourceUrl: z.string().url(),
+});
+export const UniversityProgram = ProgramInfo.extend({ direction: DirectionRef });
 export const SeriesBenefit = Benefit.omit({ university: true }).extend({
   series: SeriesRef, olympiadIds: z.array(z.number().int()),
   /** Catalog cards of the series the benefit applies to (they have a level). */
@@ -151,6 +173,8 @@ export const UniversityResponse = UniversityRef.extend({
   /** Admission rules (a page or a PDF) of the university. */
   rules: z.string().url().nullable().optional(),
   benefits: z.array(SeriesBenefit),
+  /** Bachelor and specialist programs, by direction code. */
+  programs: z.array(UniversityProgram).optional(),
 });
 export const SeriesStage = z.object({
   id: z.string().uuid(), position: z.number().int(), name: z.string(), kind: z.enum(['registration', 'competition', 'other']),
@@ -160,6 +184,41 @@ export const SeriesResponse = SeriesInfo.extend({
   aliases: z.array(z.string()), stages: z.array(SeriesStage), benefits: z.array(Benefit),
   olympiads: z.array(z.object({ id: z.number().int(), title: z.string(), inCatalog: z.boolean(),
     profiles: z.array(z.string()), level: z.string().nullable() })),
+});
+export const DirectionSummary = DirectionRef.extend({
+  ugsnCode: z.string(), ugsnName: z.string(), popular: z.boolean(), aliases: z.array(z.string()), note: z.string().nullable(),
+  /** Typical profile exams; the exact set of a university is in its programs. */
+  egeSubjects: z.array(z.string()),
+  /** Olympiad subjects: core — the olympiad leads to the direction directly, related — a close profile. */
+  subjectsCore: z.array(z.string()), subjectsRelated: z.array(z.string()),
+  universityCount: z.number().int(), programCount: z.number().int(),
+});
+export const DirectionListQuery = z.object({
+  /** Search by name, code or a colloquial alias («прога», «врач»). */
+  q: z.string().trim().max(100).optional(),
+  popular: z.enum(['true', 'false']).transform(v => v === 'true').optional(),
+  /** Only directions with programs at these universities. */
+  universities: list(Slug),
+}).strict();
+export const DirectionListResponse = z.object({ items: z.array(DirectionSummary) });
+export const DirectionParams = z.object({ code: DirectionCode });
+export const DirectionResponse = DirectionSummary.extend({
+  universities: z.array(UniversityRef.extend({ programs: z.array(ProgramInfo) })),
+  /** Catalog olympiads suiting the direction (RSOSH or a core subject), those with a level first. */
+  olympiads: z.object({ total: z.number().int(), items: z.array(z.object({ id: z.number().int(), title: z.string(), level: z.string().nullable(),
+    subjects: z.array(z.string()) }).extend(DirectionMatchReason.shape)) }),
+});
+export const OlympiadProgramsQuery = z.object({ universities: list(Slug), directions: list(DirectionCode) }).strict();
+/**
+ * Programs an olympiad helps to enter: the university gives a benefit for its series, the program's direction suits the olympiad,
+ * examMatch — the program has the exam the diploma counts for.
+ */
+export const OlympiadProgramsResponse = z.object({
+  applicable: z.boolean(), note: z.string().nullable(),
+  items: z.array(z.object({
+    university: UniversityRef, benefits: z.array(Benefit.omit({ university: true })),
+    programs: z.array(UniversityProgram.extend(DirectionMatchReason.shape).extend({ examMatch: z.boolean() })),
+  })),
 });
 export const PlanPatch = z.object({ tracking: z.boolean().optional(), note: z.string().trim().max(2000).nullable().optional() })
   .strict().refine(v => Object.keys(v).length > 0, 'Укажите tracking или note');
@@ -190,6 +249,9 @@ export const ProfilePreferences = z.object({
   region: z.string().trim().max(100),
   subjects: z.array(z.number().int().positive()).max(35).refine(ids => new Set(ids).size === ids.length, 'Предметы не должны повторяться'),
   online: z.boolean(), onsite: z.boolean(),
+  /** The goal: directions of study (codes from /directions) and universities (slugs from /universities). */
+  directions: z.array(DirectionCode).max(10).refine(v => new Set(v).size === v.length, 'Направления не должны повторяться').optional(),
+  universities: z.array(Slug).max(20).refine(v => new Set(v).size === v.length, 'Вузы не должны повторяться').optional(),
 }).strict();
 export const Avatar = z.string().max(1400000).refine(value => {
   const match = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);

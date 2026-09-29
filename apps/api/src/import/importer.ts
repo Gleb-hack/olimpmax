@@ -2,7 +2,7 @@ import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { olympiads, subjects, olympiadSubjects, stages, importRuns } from '../db/schema.js';
 import { auditCsv, parseCsv, hash, type ParsedRow } from './csv.js';
-import { applyReferenceTx, assertValid, importLockId, recomputeLevels, type Executor } from '../reference/apply.js';
+import { applyReferenceTx, assertValid, importLockId, recomputeLevels, recomputeOlympiadDirections, type Executor } from '../reference/apply.js';
 import { catalogLevel } from '../reference/levels.js';
 import type { ReferenceBundle } from '../reference/load.js';
 
@@ -29,7 +29,8 @@ export async function importCsv(db: Database, buffer: Buffer, sourceFile: string
   return db.transaction(async tx => {
     await tx.execute(sql`select pg_advisory_xact_lock(${importLockId})`);
     const result = { ...report, ...await importRows(tx, rows, options.replaceCatalog ?? false) };
-    const reference = options.reference ? await applyReferenceTx(tx, options.reference) : { levels: await recomputeLevels(tx) };
+    const reference = options.reference ? await applyReferenceTx(tx, options.reference)
+      : { levels: await recomputeLevels(tx), olympiadDirections: await recomputeOlympiadDirections(tx) };
     const full = { ...result, reference };
     const digest = hash(Buffer.concat([buffer, options.additions?.buffer ?? Buffer.alloc(0), Buffer.from(options.reference?.sha256 ?? '')]));
     await tx.insert(importRuns).values({ sourceFile, sha256: digest, rowCount: rows.length, report: full });
