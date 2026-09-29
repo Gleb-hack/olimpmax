@@ -1,4 +1,4 @@
-import { Award, ArrowUpLeft, ClipboardList, Copy, ExternalLink, Globe, History, MapPin, MessageSquare, Pause, Phone, Plus, RotateCcw, type LucideIcon } from 'lucide-react';
+import { Award, ArrowUpLeft, ClipboardList, Copy, ExternalLink, Globe, History, MapPin, MessageSquare, Pause, Phone, Plus, RotateCcw, Target, TrendingUp, type LucideIcon } from 'lucide-react';
 import barChart from './icons/bar-chart.svg?raw';
 import bell from './icons/bell.svg?raw';
 import book from './icons/book.svg?raw';
@@ -34,6 +34,7 @@ const figmaIcons = {
 const lucideIcons = {
   award: Award, 'arrow-up-left': ArrowUpLeft, 'clipboard-list': ClipboardList, copy: Copy, 'external-link': ExternalLink, globe: Globe,
   history: History, 'map-pin': MapPin, 'message-square': MessageSquare, pause: Pause, phone: Phone, plus: Plus, 'rotate-ccw': RotateCcw,
+  target: Target, 'trending-up': TrendingUp,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof figmaIcons | keyof typeof lucideIcons;
