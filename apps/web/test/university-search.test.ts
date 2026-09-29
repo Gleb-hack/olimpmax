@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { filterUniversities, universityCities, universityFacts } from '../src/features/catalog/university-search.ts';
+import { filterUniversities, parseUniversitySort, universityCities, universityFacts } from '../src/features/catalog/university-search.ts';
 import type { University } from '../src/features/profile/goal-format.ts';
 
 const university = (slug: string, name: string, city: string, programCount: number, olympiadCount: number, fullName: string | null = null): University =>
@@ -17,6 +17,10 @@ test('without a query universities go by name or by the chosen order', () => {
   assert.deepEqual(names(filterUniversities(list, { q: '', city: '', sort: 'name' })), ['msu', 'mipt', 'hse', 'spbu']);
   assert.deepEqual(names(filterUniversities(list, { q: '', city: '', sort: 'programs' })), ['spbu', 'msu', 'hse', 'mipt']);
   assert.deepEqual(names(filterUniversities(list, { q: '', city: '', sort: 'olympiads' })), ['msu', 'hse', 'mipt', 'spbu']);
+  assert.deepEqual(names(filterUniversities(list, { q: '', city: '', sort: 'city' })), ['mipt', 'msu', 'hse', 'spbu'], 'grouped by city, by name inside');
+  assert.deepEqual(names(filterUniversities(list, { q: '', city: '', sort: 'targets', targets: ['spbu', 'mipt'] })), ['mipt', 'spbu', 'msu', 'hse']);
+  assert.equal(parseUniversitySort('city'), 'city');
+  assert.equal(parseUniversitySort('anything'), 'name');
 });
 
 test('search by name, full name and city; the city filter and «Мои вузы»', () => {

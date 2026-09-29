@@ -15,7 +15,7 @@ export function NotificationsDialog({ onClose }: { onClose: () => void }) {
       {!data.botConnected && <Notice tone="warning">Чтобы бот мог писать вам, откройте чат с ботом Olimp в MAX и нажмите «Начать».</Notice>}
       <label className="switch-row"><span><strong>Напоминания о сроках</strong><small>Сообщения от бота Olimp в MAX</small></span>
         <Switch aria-label="Напоминания о сроках" checked={data.enabled} disabled={toggle.isPending} onChange={event => { test.reset(); toggle.mutate(event.target.checked); }} /></label>
-      <div className="prose"><p>Бот пишет раз в день, после уроков по времени региона из профиля (если регион не указан — по Москве): за 7, 3 и 1 день до конца регистрации и в сам день, о начале этапа — за 3 дня, накануне и в день. Если организатор переносит даты, бот сообщает об этом. Все новости дня приходят одним сообщением.</p>
+      <div className="prose"><p>Бот пишет только когда подходит срок — после уроков по времени региона из профиля (если регион не указан — по Москве): за неделю, за 3 дня, накануне и в последний день регистрации, об этапе — накануне и в день. Если организатор переносит эти даты, бот сообщает об этом. Всё, что пришлось на один день, приходит одним сообщением.</p>
         <p>Напоминания приходят только по олимпиадам из «Плана» с включённым отслеживанием. Если у даты в источнике нет года, он подставляется по учебному сезону — такие даты сверяйте на сайте олимпиады.</p></div>
       {test.data && <div role="status"><Notice tone="info">{test.data.message}</Notice></div>}
       {error && <Notice tone="error">{error.message}</Notice>}

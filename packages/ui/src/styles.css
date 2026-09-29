@@ -1478,3 +1478,96 @@ button.overview-outline-button { width: 100%; gap: 6px; cursor: pointer; }
 .picks-sheet__more { margin-top: 12px; }
 .picks-sheet__log > .notice { margin-top: 12px; }
 .picks-sheet__footer { padding-top: 10px; border-top: 1px solid var(--olimp-border); }
+
+/* Figma «📱 Каталог» (1439:14510), «подборка применена» (1342:12222), «подборка недоступна» (1449:2959) and «Каталог — Вузы» (1439:14396, 1444:2655). */
+.catalog-controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.catalog-controls .catalog-mode-switch { margin: 0; }
+.catalog-controls--universities { gap: 12px; }
+.personal-banner { display: flex; flex-direction: column; gap: 12px; padding: 12px 12px 12px 14px; border-radius: 14px; border: 1.5px solid var(--olimp-blue); background: var(--olimp-blue-soft); color: var(--olimp-muted); }
+.personal-banner__row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.personal-banner__icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--olimp-blue-text); }
+.personal-banner__copy { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.personal-banner__copy strong { color: var(--olimp-blue-text); font-size: 14px; font-weight: 650; line-height: 1.3; }
+.personal-banner__copy small { display: -webkit-box; overflow: hidden; font-size: 11px; line-height: 1.35; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.personal-banner__action { display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex-shrink: 0; min-height: 32px; padding: 6px 14px; border-radius: 20px; background: var(--olimp-blue); color: var(--olimp-on-primary); font-size: 12px; font-weight: 650; white-space: nowrap; }
+.personal-banner__action:hover { filter: brightness(1.06); }
+.personal-banner.is-applied { border-color: var(--olimp-blue); background: var(--olimp-blue); color: rgb(255 255 255 / 82%); }
+.personal-banner.is-applied .personal-banner__icon, .personal-banner.is-applied .personal-banner__copy strong { color: var(--olimp-on-primary); }
+.personal-banner.is-applied .personal-banner__action { background: rgb(255 255 255 / 20%); color: var(--olimp-on-primary); }
+.personal-banner--unavailable { border-color: var(--olimp-danger); background: var(--olimp-danger-soft); }
+.personal-banner--unavailable .personal-banner__row { align-items: flex-start; }
+.personal-banner--unavailable .personal-banner__icon, .personal-banner--unavailable .personal-banner__copy strong { color: var(--olimp-danger); }
+.personal-banner--unavailable .personal-banner__copy small { -webkit-line-clamp: unset; font-size: 12px; }
+.personal-banner--unavailable .personal-banner__action { background: var(--olimp-danger); }
+.personal-banner__action--wide { width: 100%; min-height: 36px; }
+
+.filter-chips { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 1px 16px; }
+.filter-chips::-webkit-scrollbar { display: none; }
+.filter-chips--fill { overflow: visible; margin: 0; padding: 0; }
+.filter-chips--fill .filter-chip { flex: 1; max-width: none; min-width: 0; }
+.filter-chip { display: inline-flex; align-items: center; flex-shrink: 0; max-width: 230px; min-height: 36px; border-radius: 20px; border: 1px solid var(--olimp-border-strong); background: var(--olimp-control-bg); color: var(--olimp-text); }
+.filter-chip__main { display: inline-flex; align-items: center; gap: 6px; flex: 1; min-width: 0; min-height: 34px; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+.filter-chip__main > .icon:first-child { color: var(--olimp-icon-muted); flex-shrink: 0; }
+.filter-chip__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-chip__chevron { color: var(--olimp-icon-muted); flex-shrink: 0; }
+.filter-chip.is-active { border-color: var(--olimp-blue); background: var(--olimp-tile-blue-bg); color: var(--olimp-tile-blue-fg); }
+.filter-chip.is-active .icon { color: currentColor; }
+.filter-chip:has(.filter-chip__clear) .filter-chip__main { padding-right: 4px; }
+.filter-chip__clear { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin-right: 5px; border-radius: 50%; color: currentColor; }
+.filter-chip__clear:hover { background: var(--olimp-surface); }
+.filter-chip__main:focus-visible, .filter-chip__clear:focus-visible { outline: 2px solid var(--olimp-focus-alt); outline-offset: -2px; }
+
+/* «Сбросить» and «Сортировать» are text buttons, as in the mockup. */
+.catalog-utils { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.catalog-util { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 0; color: var(--olimp-blue-text); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.catalog-util:hover:not(:disabled) { opacity: .8; }
+.catalog-util--reset { color: var(--olimp-muted); font-weight: 550; }
+.catalog-util:disabled { opacity: .55; cursor: default; }
+
+.catalog-result { display: flex; align-items: center; gap: 7px; margin: 0 2px 12px; font-size: 13px; font-weight: 600; }
+.catalog-result--preset { color: var(--olimp-on-green-soft); }
+.catalog-result--preset .icon { color: var(--olimp-green); }
+.catalog-result-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 2px 12px; }
+.catalog-result-row > span { color: var(--olimp-text); font-size: 15px; font-weight: 650; }
+.catalog-caption { margin: -2px 2px 10px; color: var(--olimp-muted); font-size: 12px; line-height: 1.45; }
+.scope-toggle { display: flex; gap: 8px; }
+.scope-toggle button { min-height: 38px; padding: 8px 18px; border-radius: 20px; border: 1px solid var(--olimp-border-strong); background: var(--olimp-surface); color: var(--olimp-text); font-size: 13px; font-weight: 650; }
+.scope-toggle button.is-active { border-color: var(--olimp-blue); background: var(--olimp-blue); color: var(--olimp-on-primary); }
+
+.university-card__actions { margin-top: 12px; }
+.university-card__more { pointer-events: none; color: var(--olimp-blue-text); font-weight: 650; }
+.olympiad-card.university-card .university-card__facts .chip { border-color: transparent; background: var(--olimp-surface-muted); color: var(--olimp-muted); font-weight: 550; }
+.target-button { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 6px 13px; border-radius: 20px; border: 1px solid var(--olimp-blue); color: var(--olimp-blue-text); background: var(--olimp-surface); font-size: 12px; font-weight: 650; }
+.target-button.is-on { border-color: transparent; background: var(--olimp-green-soft); color: var(--olimp-on-green-soft); }
+.target-button:disabled { opacity: .5; cursor: default; }
+.university-group + .university-group { margin-top: 18px; }
+.university-group__title { margin: 0 2px 10px; color: var(--olimp-muted); font-size: 12px; font-weight: 650; letter-spacing: .2px; text-transform: uppercase; }
+.match-explainer { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 14px; border-radius: 16px; background: var(--olimp-blue-soft); color: var(--olimp-on-blue-soft); }
+.match-explainer__icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px; background: var(--olimp-surface); color: var(--olimp-blue-text); }
+.match-explainer__copy { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.match-explainer__copy strong { color: var(--olimp-text); font-size: 13px; font-weight: 650; }
+.match-explainer__copy small { font-size: 11.5px; line-height: 1.45; }
+.match-explainer__chevron { flex-shrink: 0; }
+
+/* Popups of the catalog: Figma «Popup — Выбор класса», «Формат», «Уровень», «Сортировка», «Сортировка (Вузы)». */
+.catalog-dialog { width: min(calc(100% - 32px), 320px); border-radius: 20px; }
+.catalog-dialog .dialog__header .icon-button { width: 30px; height: 30px; border-radius: 50%; background: var(--olimp-surface-muted); }
+.catalog-dialog .subjects-dialog__list { margin-bottom: 16px; }
+.catalog-dialog__list--pick { max-height: min(276px, 52dvh); margin-bottom: 4px; }
+.catalog-pick { width: 100%; text-align: left; }
+.catalog-pick__check { color: var(--olimp-blue-text); flex-shrink: 0; }
+.catalog-pick.is-selected .catalog-pick__check { color: currentColor; }
+.sort-dialog__list { display: flex; flex-direction: column; gap: 2px; margin: 4px -8px 0; }
+.sort-row { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 8px; border-radius: 12px; cursor: pointer; }
+.sort-row:hover { background: var(--olimp-choice-hover); }
+.sort-row__copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sort-row__copy strong { font-size: 13px; font-weight: 600; }
+.sort-row__copy small { color: var(--olimp-dialog-hint); font-size: 11px; }
+.sort-row input { position: absolute; opacity: 0; pointer-events: none; }
+.sort-row__radio { width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%; border: 1.5px solid var(--olimp-choice-check-border); }
+.sort-row.is-selected { background: var(--olimp-blue-soft); }
+.sort-row.is-selected .sort-row__radio { border-color: var(--olimp-blue); background: var(--olimp-blue); }
+.sort-row.is-selected strong { color: var(--olimp-blue-text); }
+.sort-row:has(input:focus-visible) { outline: 2px solid var(--olimp-focus-alt); outline-offset: 1px; }
+@media (max-width: 359px) { .filter-chips { margin-inline: -12px; padding-inline: 12px; } .filter-chips--fill { margin-inline: 0; padding-inline: 0; } .personal-banner__action { padding-inline: 10px; } }
+.university-search:not(:focus-within) { border-color: var(--olimp-border-strong); }
