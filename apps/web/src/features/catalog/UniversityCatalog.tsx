@@ -99,22 +99,22 @@ export function UniversityCatalog({ params, setParams }: { params: URLSearchPara
       {q && <button type="button" aria-label="Очистить поиск" onClick={() => set('q', '')}><Icon name="x" size={13} /></button>}
     </form>
     <div className="catalog-controls catalog-controls--universities">
-      <div className="filter-chips" role="group" aria-label="Фильтры">
+      <div className="filter-chips filter-chips--fill" role="group" aria-label="Фильтры">
         <FilterChip icon="map-pin" label={city || 'Город'} active={Boolean(city)} onClick={() => setPopup('city')} />
         {!isMock && <FilterChip icon="book" label={directionItem?.name ?? (direction || 'Направление')} active={Boolean(direction)} onClick={() => setPopup('direction')} />}
       </div>
-      <div className="catalog-utils catalog-utils--single">
-        <button type="button" className="catalog-util" disabled={!hasFilters} onClick={reset}><Icon name="refresh" size={15} />Сбросить</button>
+      <div className="catalog-utils">
+        <button type="button" className="catalog-util catalog-util--reset" disabled={!hasFilters} onClick={reset}><Icon name="refresh" size={15} />Сбросить</button>
       </div>
-      <div className="segmented segmented--scope" role="tablist" aria-label="Какие вузы показать">
+      <div className="scope-toggle" role="tablist" aria-label="Какие вузы показать">
         <button type="button" role="tab" aria-selected={!mine} className={!mine ? 'is-active' : ''} onClick={() => set('mine', '')}>Все вузы</button>
         <button type="button" role="tab" aria-selected={mine} className={mine ? 'is-active' : ''} onClick={() => set('mine', '1')}>Целевые вузы</button>
       </div>
     </div>
-    {mine && <p className="catalog-caption">Из твоего профиля · {targets.length} из {goalLimits.universities}. Отмечай вузы кнопкой «В целевые» — по ним подбираются олимпиады.</p>}
+    {mine && <p className="catalog-caption">Вуз становится целевым, когда ты выбираешь его в профиле или нажимаешь «В целевые» на карточке · {targets.length} из {goalLimits.universities}</p>}
     <div className="catalog-result-row" aria-live="polite">
       <span>{source.data ? `${mine ? 'Целевые вузы' : 'Найдено'}: ${items.length}` : 'Вузы'}</span>
-      <button type="button" className={`catalog-util catalog-util--inline ${sort !== 'name' ? 'is-active' : ''}`} aria-haspopup="dialog" onClick={() => setPopup('sort')}>
+      <button type="button" className="catalog-util" aria-haspopup="dialog" onClick={() => setPopup('sort')}>
         <Icon name="sort" size={15} />{sort === 'name' ? 'Сортировать' : universitySorts.find(option => option.value === sort)?.label ?? 'Сортировать'}</button>
     </div>
     {storageError && <Notice tone="error">{storageError}</Notice>}

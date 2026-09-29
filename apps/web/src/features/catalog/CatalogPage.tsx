@@ -103,8 +103,8 @@ function OlympiadCatalog({ params, setParams, header, modeSwitch }: { params: UR
         {chosenDirections.length > 0 && <FilterChip icon="target" label={`Направления: ${chosenDirections.length}`} active onClick={() => updateParam('directions', '')} onClear={() => updateParam('directions', '')} />}
       </div>
       <div className="catalog-utils">
-        <button type="button" className="catalog-util" disabled={!hasFilters} onClick={reset}><Icon name="refresh" size={15} />Сбросить</button>
-        <button type="button" className={`catalog-util ${sort !== 'relevant' ? 'is-active' : ''}`} aria-haspopup="dialog" onClick={() => setPopup('sort')}>
+        <button type="button" className="catalog-util catalog-util--reset" disabled={!hasFilters} onClick={reset}><Icon name="refresh" size={15} />Сбросить</button>
+        <button type="button" className="catalog-util" aria-haspopup="dialog" onClick={() => setPopup('sort')}>
           <Icon name="sort" size={15} />{sort === 'relevant' ? 'Сортировать' : olympiadSorts.find(option => option.value === sort)?.label}</button>
       </div>
     </div>
@@ -131,7 +131,7 @@ function OlympiadCatalog({ params, setParams, header, modeSwitch }: { params: UR
 function PersonalBanner({ available, applied, summary, onApply, onUndo }: { available: boolean; applied: boolean; summary: string; onApply: () => void; onUndo: () => void }) {
   if (!available) return <section className="personal-banner personal-banner--unavailable" aria-labelledby="personal-banner-title">
     <div className="personal-banner__row">
-      <span className="personal-banner__icon" aria-hidden="true"><Icon name="alert-circle" size={18} /></span>
+      <span className="personal-banner__icon" aria-hidden="true"><Icon name="alert-triangle" size={20} /></span>
       <span className="personal-banner__copy"><strong id="personal-banner-title">Персональная подборка недоступна</strong><small>Заполни класс и предметы в профиле — это займёт 1 минуту</small></span>
     </div>
     <Link className="personal-banner__action personal-banner__action--wide" to="/profile/edit">Заполнить профиль</Link>
@@ -141,7 +141,7 @@ function PersonalBanner({ available, applied, summary, onApply, onUndo }: { avai
       <span className="personal-banner__icon" aria-hidden="true"><Icon name="sparkle" size={18} /></span>
       <span className="personal-banner__copy"><strong id="personal-banner-title">{applied ? 'Персональная подборка применена' : 'Персональная подборка'}</strong>{summary && <small>{summary}</small>}</span>
       <button type="button" className="personal-banner__action" aria-pressed={applied} onClick={applied ? onUndo : onApply}
-        aria-label={applied ? 'Персональная подборка применена. Нажмите, чтобы снять' : undefined}>{applied ? '✓ Применено' : 'Применить'}</button>
+        aria-label={applied ? 'Персональная подборка применена. Нажмите, чтобы снять' : undefined}>{applied ? <><Icon name="check" size={13} />Применено</> : 'Применить'}</button>
     </div>
   </section>;
 }

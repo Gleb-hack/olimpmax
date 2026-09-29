@@ -71,7 +71,7 @@ export function SortDialog<T extends string>({ options, value, onPick, onClose }
       return <label key={option.value} className={`sort-row ${checked ? 'is-selected' : ''}`}>
         <span className="sort-row__copy"><strong>{option.label}</strong><small>{option.description}</small></span>
         <input type="radio" name="catalog-sort" checked={checked} onChange={() => { onPick(option.value); onClose(); }} />
-        <span className="sort-row__radio" aria-hidden="true">{checked && <Icon name="check" size={12} />}</span>
+        <span className="sort-row__radio" aria-hidden="true" />
       </label>;
     })}</div>
   </Dialog>;
