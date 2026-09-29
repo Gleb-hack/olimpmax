@@ -15,7 +15,7 @@ try {
   if (dryRun) {
     const preview = await previewReminders(db, { includeEstimated });
     if (!preview.length) console.log('Сегодня отправлять нечего.');
-    for (const item of preview) console.log(`\n=== MAX user ${item.maxUserId}: ${item.reminders.length} ===\n${item.text.replace(/<\/?[bi]>/g, '')}`);
+    for (const item of preview) console.log(`\n=== MAX user ${item.maxUserId}: сроков ${item.reminders.length}, изменений ${item.changes.length} ===\n${item.text.replace(/<\/?[bi]>/g, '')}`);
   } else {
     const token = process.env.MAX_BOT_TOKEN;
     if (!token) throw new Error('Укажите MAX_BOT_TOKEN или запустите с --dry-run');

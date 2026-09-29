@@ -11,6 +11,7 @@ import { soonCount } from './calendar-model';
 import { eventRelevant, groupByStatus, resultStageOptions, statusSections, type PlanStatus } from './plan-card-format';
 import { moscowToday } from '../../lib/format';
 import type { PlanEntry } from '../../lib/api';
+import { BotPrompt } from './BotPrompt';
 
 type StageResult = keyof typeof stageResultLabels;
 type Result = { stage: string; result: StageResult };
@@ -126,6 +127,7 @@ export function PlanPage() {
     {plan.isPending ? <Loading label="Загружаем ваш план…" /> : plan.isError ? <EmptyState icon="clipboard-list" title="План пока недоступен" action={<Button onClick={() => { plan.refetch(); events.refetch(); }}>Попробовать снова</Button>}>{plan.error.message}</EmptyState> : <>
       <div className="stats"><div className="stat"><span className="stat-icon tone-blue"><Icon name="book" size={14} /></span><strong>{entries.length}</strong><span>в плане</span></div><div className="stat"><span className="stat-icon tone-green"><Icon name="check" size={14} /></span><strong>{entries.filter(entry => entry.tracking).length}</strong><span>отслеживаются</span></div><div className="stat"><span className="stat-icon tone-amber"><Icon name="bell" size={14} /></span><strong>{soonCount(entries, moscowToday())}</strong><span>скоро</span></div></div>
       {!entries.length ? <EmptyState icon="calendar" title="Большие планы начинаются здесь" action={<Link className="button-link" to="/catalog">Найти олимпиаду</Link>}>Сохраните интересные олимпиады из каталога — они появятся в вашем плане.</EmptyState> : <>
+        <BotPrompt tracked={entries.filter(entry => entry.tracking).length} />
         {events.isError && <Notice tone="warning">Не удалось загрузить ближайшие события. <button className="text-button" onClick={() => events.refetch()}>Повторить</button></Notice>}
         {(events.isPending || shownEvents.length > 0) && <section className="section"><h2 className="section-caption">Ближайшие этапы · 90 дней</h2>
           {events.isPending ? <Loading /> : <div className="plan-card-list">{shownEvents.map(event => <PlanCard key={`${event.stageId}-${event.kind}`} entry={shownById.get(event.olympiadId)!} event={event} onOpen={() => setEditingId(event.olympiadId)} />)}</div>}

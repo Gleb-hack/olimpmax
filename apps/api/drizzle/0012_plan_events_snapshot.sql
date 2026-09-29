@@ -1,0 +1,1 @@
+ALTER TABLE "plan_items" ADD COLUMN "events_snapshot" jsonb;

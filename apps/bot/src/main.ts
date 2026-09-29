@@ -21,11 +21,12 @@ catch (error) {
 log('Бот MAX подключён', { username: me.username, userId: me.user_id });
 await bot.api.setMyCommands(BOT_COMMANDS).catch(error => log('Не удалось обновить список команд', { error: String(error) }));
 
+const hours = { from: config.reminderHour, until: config.untilHour };
 const loop = startReminderLoop({
-  hour: config.reminderHour, untilHour: config.untilHour, everyMinutes: config.checkMinutes, log,
-  run: () => runReminders(db, messenger, { includeEstimated: config.includeEstimated, log }),
+  hours, everyMinutes: config.checkMinutes, log,
+  run: () => runReminders(db, messenger, { includeEstimated: config.includeEstimated, hours, log }),
 });
-log('Напоминания по расписанию', { from: `${config.reminderHour}:00`, until: `${config.untilHour}:00`, timezone: 'Europe/Moscow', everyMinutes: config.checkMinutes });
+log('Напоминания по расписанию', { from: `${config.reminderHour}:00`, until: `${config.untilHour}:00`, timezone: 'регион профиля, иначе Europe/Moscow', everyMinutes: config.checkMinutes });
 
 let stopping = false;
 async function shutdown() {
