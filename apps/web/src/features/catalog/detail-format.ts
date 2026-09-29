@@ -71,7 +71,7 @@ export function coverageText(coverage: z.infer<typeof DirectionCoverage> | null 
   if (!coverage || !coverage.total) return null;
   const word = new Intl.PluralRules('ru').select(coverage.total) === 'one' ? 'направления' : 'направлений';
   // «≈» marks the estimate by exams; the rules give an exact number.
-  return `Подходит к ${coverage.source === 'rules' ? '' : '≈'}${coverage.matched} из ${coverage.total} ${word}`;
+  return `Подходит к ${coverage.source === 'rules' ? '' : '≈\u00a0'}${coverage.matched} из ${coverage.total} ${word}`;
 }
 
 const prefixes = new Set(['НИУ', 'НИЯУ', 'НИТУ', 'РТУ', 'ФГБОУ', 'им.', 'им']);

@@ -78,6 +78,13 @@
       "when": 1790690000000,
       "tag": "0010_plan_status_calendar",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790699756269,
+      "tag": "0011_direction_subject_order",
+      "breakpoints": true
     }
   ]
 }

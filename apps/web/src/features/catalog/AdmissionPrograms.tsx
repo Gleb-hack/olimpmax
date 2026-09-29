@@ -19,14 +19,14 @@ export function AdmissionPrograms({ olympiadId, goal }: { olympiadId: number; go
   const programs = useQuery({ queryKey: ['olympiad-programs', olympiadId, goal.universities, goal.directions], enabled: withGoal,
     queryFn: ({ signal }) => api.olympiadPrograms(olympiadId, goal, signal), staleTime: 3_600_000 });
   const rows = programs.data ? programRows(programs.data) : [];
-  // Nothing to say: the card gives no benefits, or the request failed (the university list below still shows the benefits).
-  if (programs.isError || (programs.data && !programs.data.applicable)) return null;
+  // The card gives no benefits, or the request failed: the university list below still shows the benefits.
+  // Nothing to show when the goal leads to no program of this olympiad: the block is left out, not left empty.
+  if (programs.isError || (programs.data && (!programs.data.applicable || !rows.length))) return null;
   const shown = all ? rows : rows.slice(0, COLLAPSED);
   return <section className="olympiad-detail__about admission-programs" aria-labelledby="admission-programs-title">
     <h2 id="admission-programs-title">Куда поможет поступить{rows.length > 0 && <span className="olympiad-universities__count">{rows.length}</span>}</h2>
     {!withGoal ? <p className="admission-programs__empty">Укажи целевые вузы и направления в <Link className="text-link" to="/profile/edit">профиле</Link> — покажем программы, где эта олимпиада даёт льготу, и их проходные баллы.</p>
       : programs.isPending ? <Loading label="Подбираем программы…" />
-      : !rows.length ? <p className="admission-programs__empty">В твоих целевых вузах и направлениях нет программ, куда эта олимпиада даёт льготу.</p>
       : <ul className="admission-programs__list">{shown.map(row => <li key={row.key} className="admission-program">
         <Link className="admission-program__link" to={`/universities/${row.slug}`} state={{ fromOlympiad: olympiadId }}>
           <span className="admission-program__copy"><strong>{row.title}</strong><span>{row.subtitle}</span>

@@ -43,21 +43,53 @@ export function matchesFieldsOfStudy(fieldsOfStudy: string | null, names: string
 
 export type DirectionMatchInput = { code: string; name: string; ugsnName: string; core: string[]; related: string[] };
 export type OlympiadMatchInput = { subjects: string[]; fieldsOfStudy: (string | null)[] };
-export type DirectionMatch = { code: string; viaRsosh: boolean; subjectRelevance: SubjectRelevance | null };
+/** `subject` — the card subject that links the olympiad to the direction (null when only the RSOSH list does). */
+export type DirectionMatch = { code: string; viaRsosh: boolean; subjectRelevance: SubjectRelevance | null; subject: string | null };
+
+/** How the RSOSH list writes a catalog subject when it is not the subject's own name. */
+const subjectSpellings: Record<string, string[]> = { 'ИЗО': ['изобразительное искусство'], 'ОБЗР': ['основы безопасности и защиты родины'] };
+const foreignLanguage = ['иностранный язык', 'иностранные языки'];
+/**
+ * The profile subjects of a card. olimpiada.ru tags a card with every subject its tasks touch («финансовая грамотность» —
+ * математика и экономика), while the RSOSH list names the real ones («финансовая грамотность» → «экономика»). So when a card
+ * has several subjects and its covered RSOSH profiles name some of them, only those are profile subjects; the other tags
+ * are secondary. A single subject is the card's own topic, and a profile that names none of the subjects (it may name the exam,
+ * «право» → «обществознание», or only groups of directions) says nothing about them — every subject counts then.
+ */
+export function profileSubjects(subjects: string[], fieldsOfStudy: (string | null)[]) {
+  const text = fieldsOfStudy.filter((f): f is string => !!f?.trim());
+  if (subjects.length < 2 || !text.length) return subjects;
+  const spellings = (subject: string) => [normalize(subject), ...(subjectSpellings[subject] ?? []), ...(languages.includes(subject) ? foreignLanguage : [])];
+  // Each covered profile on its own (НТО covers all of them): one that names none of the subjects keeps them all.
+  const main = new Set<string>();
+  for (const profile of text) {
+    // Whole items only: «экономика» names the subject, «экономика и управление» is a group of directions.
+    const items = new Set(normalize(profile).split(', '));
+    const named = subjects.filter(subject => spellings(subject).some(name => items.has(name)));
+    for (const subject of named.length ? named : subjects) main.add(subject);
+  }
+  return subjects.filter(subject => main.has(subject));
+}
+
 /**
  * Why an olympiad suits a direction:
  * - viaRsosh — a covered RSOSH profile of the card names the direction or its group (the official correspondence);
  * - subjectRelevance — a subject of the card is a core or a related subject of the direction (directions.csv, a recommendation).
+ *   `core` needs a profile subject (profileSubjects); a tag the RSOSH profile does not name gives `related` at most.
  * Directions with neither are not returned.
  */
 export function matchDirections(olympiad: OlympiadMatchInput, directions: DirectionMatchInput[]): DirectionMatch[] {
-  const subjects = new Set(olympiad.subjects);
+  const all = new Set(olympiad.subjects);
+  const profile = new Set(profileSubjects(olympiad.subjects, olympiad.fieldsOfStudy));
   const fields = olympiad.fieldsOfStudy.filter((f): f is string => !!f?.trim());
   const result: DirectionMatch[] = [];
   for (const d of directions) {
     const viaRsosh = fields.some(f => matchesFieldsOfStudy(f, [d.ugsnName, d.name]));
-    const subjectRelevance = d.core.some(s => subjects.has(s)) ? 'core' : d.related.some(s => subjects.has(s)) ? 'related' : null;
-    if (viaRsosh || subjectRelevance) result.push({ code: d.code, viaRsosh, subjectRelevance });
+    // The direction's own order: its main subject first («Информатика» for «Программная инженерия»).
+    const core = d.core.find(s => profile.has(s));
+    const related = core ? undefined : d.core.find(s => all.has(s)) ?? d.related.find(s => all.has(s));
+    const subjectRelevance = core ? 'core' : related ? 'related' : null;
+    if (viaRsosh || subjectRelevance) result.push({ code: d.code, viaRsosh, subjectRelevance, subject: core ?? related ?? null });
   }
   return result;
 }

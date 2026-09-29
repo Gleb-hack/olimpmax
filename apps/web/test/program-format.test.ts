@@ -5,7 +5,7 @@ import { coverageText } from '../src/features/catalog/detail-format.ts';
 import { programRows } from '../src/features/catalog/program-format.ts';
 
 test('coverage: a fact from the rules, an estimate by the exams, nothing when unknown', () => {
-  assert.equal(coverageText({ matched: 13, total: 28, source: 'exams' }), 'Подходит к ≈13 из 28 направлений');
+  assert.equal(coverageText({ matched: 13, total: 28, source: 'exams' }), 'Подходит к ≈\u00a013 из 28 направлений');
   assert.equal(coverageText({ matched: 5, total: 21, source: 'rules' }), 'Подходит к 5 из 21 направления');
   assert.equal(coverageText(null), null);
   assert.equal(coverageText(undefined), null);

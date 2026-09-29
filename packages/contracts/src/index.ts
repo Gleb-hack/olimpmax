@@ -104,9 +104,10 @@ export const DirectionMatchReason = z.object({ viaRsosh: z.boolean(), subjectRel
 export const OlympiadDirection = DirectionRef.extend(DirectionMatchReason.shape);
 /**
  * Why an olympiad suits the pupil's goal, strongest first:
- * - benefit — a target university gives БВИ or 100 points for the olympiad (series_benefits; a fact, only for cards in the RSOSH list);
+ * - benefit — a target university gives БВИ or 100 points for the olympiad (series_benefits; a fact, only for cards in the RSOSH list)
+ *   and has a program in a direction the olympiad suits (a target one when the goal names directions);
  * - rsosh — the RSOSH list names a target direction or its group for the olympiad's profile (almost a fact);
- * - core_subject — a subject of the olympiad is a core subject of a target direction (a recommendation);
+ * - core_subject — a profile subject of the olympiad is a core subject of a target direction (a recommendation);
  * - related_subject — a close subject (a weaker recommendation).
  * A direction appears only in its strongest reason.
  */
