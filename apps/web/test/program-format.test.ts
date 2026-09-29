@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { OlympiadProgramsResponse } from '@olimp/contracts';
 import { coverageText } from '../src/features/catalog/detail-format.ts';
-import { programRows } from '../src/features/catalog/program-format.ts';
+import { givesTargetBenefit, programRows } from '../src/features/catalog/program-format.ts';
 
 test('coverage: a fact from the rules, an estimate by the exams, nothing when unknown', () => {
   assert.equal(coverageText({ matched: 13, total: 28, source: 'exams' }), 'Подходит к ≈\u00a013 из 28 направлений');
@@ -32,4 +32,11 @@ test('programs: the exam match first, the direction as the title of a program wi
     ['Программная инженерия', 'НИУ ВШЭ · БВИ · 100 баллов ЕГЭ победителям', 'Проходной 297 в 2025', true],
     ['Разработка игр', 'ИТМО · Программная инженерия · БВИ', null, false],
   ]);
+});
+
+test('«Куда поможет поступить» only for a benefit at a target university', () => {
+  const benefits = [{ university: { slug: 'hse' } }, { university: { slug: 'itmo' } }];
+  assert.equal(givesTargetBenefit(benefits, ['itmo', 'msu']), true);
+  assert.equal(givesTargetBenefit(benefits, ['msu']), false);
+  assert.equal(givesTargetBenefit(benefits, []), false);
 });
