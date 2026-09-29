@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Icon, Loading } from '@olimp/ui';
 import { api } from '../../lib/api';
-import { hasGoal, type GoalKeys } from '../../lib/goal';
+import type { GoalKeys } from '../../lib/goal';
 import { programRows } from './program-format';
 
 const COLLAPSED = 5;
@@ -11,22 +11,23 @@ const COLLAPSED = 5;
 /**
  * «Куда поможет поступить»: programs of the pupil's target universities and directions where the olympiad gives a benefit,
  * with the passing score and whether the program has the exam the diploma counts for (/olympiads/:id/programs).
- * Without a goal the list would cover every university, so it asks for the goal instead.
+ * The page shows it only when the olympiad gives a benefit at a target university (givesTargetBenefit). With no program
+ * to list it asks for directions in the profile.
  */
 export function AdmissionPrograms({ olympiadId, goal }: { olympiadId: number; goal: GoalKeys }) {
   const [all, setAll] = useState(false);
-  const withGoal = hasGoal(goal);
-  const programs = useQuery({ queryKey: ['olympiad-programs', olympiadId, goal.universities, goal.directions], enabled: withGoal,
+  const programs = useQuery({ queryKey: ['olympiad-programs', olympiadId, goal.universities, goal.directions],
     queryFn: ({ signal }) => api.olympiadPrograms(olympiadId, goal, signal), staleTime: 3_600_000 });
   const rows = programs.data ? programRows(programs.data) : [];
   // The card gives no benefits, or the request failed: the university list below still shows the benefits.
-  // Nothing to show when the goal leads to no program of this olympiad: the block is left out, not left empty.
-  if (programs.isError || (programs.data && (!programs.data.applicable || !rows.length))) return null;
+  if (programs.isError || (programs.data && !programs.data.applicable)) return null;
   const shown = all ? rows : rows.slice(0, COLLAPSED);
   return <section className="olympiad-detail__about admission-programs" aria-labelledby="admission-programs-title">
     <h2 id="admission-programs-title">Куда поможет поступить{rows.length > 0 && <span className="olympiad-universities__count">{rows.length}</span>}</h2>
-    {!withGoal ? <p className="admission-programs__empty">Укажи целевые вузы и направления в <Link className="text-link" to="/profile/edit">профиле</Link> — покажем программы, где эта олимпиада даёт льготу, и их проходные баллы.</p>
-      : programs.isPending ? <Loading label="Подбираем программы…" />
+    {programs.isPending ? <Loading label="Подбираем программы…" />
+      : !rows.length ? <p className="admission-programs__empty">{goal.directions.length
+        ? <>По выбранным направлениям программ с этой льготой нет. Добавь в <Link className="text-link" to="/profile/edit">профиле</Link> другие интересующие направления — покажем программы, связанные с ними.</>
+        : <>Выбери в <Link className="text-link" to="/profile/edit">профиле</Link> интересующие направления — покажем программы, связанные с ними.</>}</p>
       : <ul className="admission-programs__list">{shown.map(row => <li key={row.key} className="admission-program">
         <Link className="admission-program__link" to={`/universities/${row.slug}`} state={{ fromOlympiad: olympiadId }}>
           <span className="admission-program__copy"><strong>{row.title}</strong><span>{row.subtitle}</span>

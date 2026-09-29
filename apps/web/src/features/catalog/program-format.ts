@@ -29,3 +29,8 @@ export function programRows(response: Response): ProgramRow[] {
   });
   return rows.map((row, index) => ({ row, index })).sort((a, b) => Number(b.row.examMatch) - Number(a.row.examMatch) || a.index - b.index).map(({ row }) => row);
 }
+
+/** «Куда поможет поступить» is shown only when the olympiad gives a benefit at one of the pupil's target universities. */
+export function givesTargetBenefit(benefits: { university: { slug: string } }[], targetUniversities: string[]) {
+  return benefits.some(benefit => targetUniversities.includes(benefit.university.slug));
+}
