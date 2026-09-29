@@ -5,8 +5,12 @@ type Event = z.infer<typeof CalendarEvent>;
 type StageKind = Event['stageKind'];
 type EventKind = Event['kind'];
 
-/** A plan olympiad as the reminder rules see it: the same dated events the plan calendar shows. */
-export type ReminderItem = { olympiadId: number; title: string; tracking: boolean; events: Event[] };
+/**
+ * A plan olympiad as the reminder rules see it: the same dated events the plan calendar shows.
+ * `status` (plan status, default planned): a registered pupil gets no registration reminders, a finished olympiad none at all.
+ */
+export type ReminderItem = { olympiadId: number; title: string; tracking: boolean; events: Event[]; status?: PlanStatus };
+type PlanStatus = 'planned' | 'registered' | 'in_progress' | 'done';
 export type DueReminder = {
   olympiadId: number; title: string;
   /** Stable across re-imports (stage ids of the reference layer are not): kind of stage, kind of event, date. */
@@ -55,10 +59,12 @@ function unique(list: DueReminder[]) {
 export function dueReminders(items: ReminderItem[], today: string, options: { includeEstimated: boolean }) {
   const due: DueReminder[] = [];
   for (const item of items) {
-    if (!item.tracking) continue;
+    if (!item.tracking || item.status === 'done') continue;
+    const registered = item.status !== undefined && item.status !== 'planned';
     const starts = new Map(item.events.filter(e => e.kind === 'starts').map(e => [e.stageId, e.date]));
     for (const event of item.events) {
       if (event.estimated && !options.includeEstimated) continue;
+      if (registered && event.stageKind === 'registration') continue;
       if (event.stageKind === 'competition' && event.kind === 'ends') {
         const start = starts.get(event.stageId);
         if (!start || daysBetween(start, event.date) < WINDOW_DAYS - 1) continue;

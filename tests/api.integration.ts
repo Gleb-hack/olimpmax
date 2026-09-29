@@ -317,3 +317,51 @@ test('web research runs only on the server ticket of the matching user, without 
   const answer = contracts.AssistantResponse.parse(result.json());
   assert.equal(answer.webSources?.[0]?.url, 'https://olimpiada.ru/activity/4357'); assert(answer.webDisclaimer);
 });
+test('plan status and stage results are saved together, validated and removed with the plan item', async () => {
+  assert.equal((await app.inject({ method: 'PUT', url: '/me/plan/88', headers: auth(tokenB) })).statusCode, 204);
+  let plan = contracts.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: auth(tokenB) })).json());
+  assert.equal(plan.items[0]!.status, 'planned'); assert.deepEqual(plan.items[0]!.results, []);
+  const results = [{ stage: 'Отборочный этап', result: 'passed' }, { stage: 'Заключительный этап', result: 'prize' }];
+  assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenB), payload: { status: 'in_progress', results } })).statusCode, 204);
+  plan = contracts.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: auth(tokenB) })).json());
+  assert.equal(plan.items[0]!.status, 'in_progress');
+  assert.deepEqual(plan.items[0]!.results.map(r => r.stage).sort(), ['Заключительный этап', 'Отборочный этап']);
+  // Only the owner's item; unknown statuses, duplicate stages and an empty stage name are rejected.
+  assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenA), payload: { status: 'done' } })).statusCode, 404);
+  for (const payload of [{ status: 'won' }, { results: [results[0], results[0]] }, { results: [{ stage: ' ', result: 'passed' }] }, { results: [{ stage: 'Финал', result: 'bronze' }] }]) {
+    assert.equal((await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenB), payload })).statusCode, 400, JSON.stringify(payload));
+  }
+  // A status change alone keeps the results; results: [] removes them.
+  await app.inject({ method: 'PATCH', url: '/me/plan/88', headers: auth(tokenB), payload: { status: 'done' } });
+  plan = contracts.PlanResponse.parse((await app.inject({ url: '/me/plan', headers: auth(tokenB) })).json());
+  assert.equal(plan.items[0]!.status, 'done'); assert.equal(plan.items[0]!.results.length, 2);
+  await app.inject({ method: 'DELETE', url: '/me/plan/88', headers: auth(tokenB) });
+  const left = await connection.pool.query('select count(*) from plan_stage_results');
+  assert.equal(Number(left.rows[0].count), 0);
+});
+test('calendar feed: a secret link per user, the same until reset, readable without sign-in', async () => {
+  assert.equal((await app.inject({ method: 'POST', url: '/me/calendar-feed', payload: {} })).statusCode, 401);
+  const first = contracts.CalendarFeedResponse.parse((await app.inject({ method: 'POST', url: '/me/calendar-feed', headers: auth(tokenB), payload: {} })).json());
+  const again = contracts.CalendarFeedResponse.parse((await app.inject({ method: 'POST', url: '/me/calendar-feed', headers: auth(tokenB), payload: {} })).json());
+  assert.equal(again.path, first.path);
+  const feed = await app.inject(first.path);
+  assert.equal(feed.statusCode, 200, feed.body);
+  assert.match(String(feed.headers['content-type']), /^text\/calendar/);
+  assert.ok(feed.body.startsWith('BEGIN:VCALENDAR\r\n'));
+  const other = contracts.CalendarFeedResponse.parse((await app.inject({ method: 'POST', url: '/me/calendar-feed', headers: auth(tokenA), payload: {} })).json());
+  assert.notEqual(other.path, first.path);
+  const reset = contracts.CalendarFeedResponse.parse((await app.inject({ method: 'POST', url: '/me/calendar-feed', headers: auth(tokenB), payload: { reset: true } })).json());
+  assert.notEqual(reset.path, first.path);
+  assert.equal((await app.inject(first.path)).statusCode, 404);
+  assert.equal((await app.inject(reset.path)).statusCode, 200);
+  assert.equal((await app.inject('/calendar/not-a-token.ics')).statusCode, 400);
+});
+test('universities can be narrowed to those with programs in a direction', async () => {
+  const all = contracts.UniversityListResponse.parse((await app.inject('/universities')).json());
+  const response = await app.inject('/universities?directions=09.03.04');
+  assert.equal(response.statusCode, 200, response.body);
+  const narrowed = contracts.UniversityListResponse.parse(response.json());
+  assert.ok(narrowed.items.length <= all.items.length);
+  assert.ok(narrowed.items.every(item => all.items.some(u => u.slug === item.slug)));
+  assert.equal((await app.inject('/universities?directions=abc')).statusCode, 400);
+});

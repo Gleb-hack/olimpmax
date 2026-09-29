@@ -90,7 +90,7 @@ export async function mockRequest(path: string, options: RequestInit = {}): Prom
   const item = details.find(value => value.id === id);
   if (!item || !url.pathname.startsWith('/me/plan/')) throw new Error('Запись не найдена.');
   let next = plan;
-  if (options.method === 'PUT' && !plan.some(entry => entry.olympiad.id === id)) next = [...plan, { olympiad: c.OlympiadCard.parse(item), tracking: true, note: null, savedAt: new Date().toISOString(), stages: item.stages, calendarRaw: item.calendarRaw }];
+  if (options.method === 'PUT' && !plan.some(entry => entry.olympiad.id === id)) next = [...plan, { olympiad: c.OlympiadCard.parse(item), tracking: true, note: null, savedAt: new Date().toISOString(), status: 'planned' as const, results: [], stages: item.stages, calendarRaw: item.calendarRaw }];
   if (options.method === 'DELETE') next = plan.filter(entry => entry.olympiad.id !== id);
   if (options.method === 'PATCH') {
     if (!plan.some(entry => entry.olympiad.id === id)) throw new Error('Олимпиада больше не сохранена.');

@@ -61,7 +61,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       }
       return true;
     } catch (cause) {
-      setStorageError(cause instanceof Error ? cause.message : 'Не удалось сохранить профиль. Попробуйте ещё раз.'); return false;
+      setStorageError(cause instanceof z.ZodError ? cause.issues[0]?.message ?? 'Проверьте данные профиля.' : cause instanceof Error ? cause.message : 'Не удалось сохранить профиль. Попробуйте ещё раз.'); return false;
     } finally { busy.current = false; setSaving(false); }
   }
   async function importLegacy() {

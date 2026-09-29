@@ -1,11 +1,11 @@
 import type { z } from 'zod';
-import type { DirectionSummary, UniversityListResponse } from '@olimp/contracts';
+import { GOAL_LIMITS, type DirectionSummary, type UniversityListResponse } from '@olimp/contracts';
 
 export type Direction = z.infer<typeof DirectionSummary>;
 export type University = z.infer<typeof UniversityListResponse>['items'][number];
 
 /** The API limits of the goal in the profile (ProfilePreferences). */
-export const goalLimits = { directions: 10, universities: 20 } as const;
+export const goalLimits = GOAL_LIMITS;
 
 const normalize = (value: string) => value.toLocaleLowerCase('ru').replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
 

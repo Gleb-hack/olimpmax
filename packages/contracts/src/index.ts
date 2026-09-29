@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export { buildIcs, foldLine, icsText, type IcsEvent, type IcsItem, type IcsOptions } from './ics.js';
+
 export const Format = z.enum(['onsite', 'online', 'hybrid', 'unknown']);
 export const OlympiadLevel = z.enum(['I', 'II', 'III', 'I–II', 'II–III', 'I–III', 'ВсОШ', 'unknown']);
 export const olympiadLevelOptions = [
@@ -189,6 +191,8 @@ export const FiltersResponse = z.object({
   universities: z.array(UniversityRef.extend({ count: z.number().int() })).optional(),
 });
 export const SlugParams = z.object({ slug: Slug });
+/** The university list of the catalog: only universities with programs in one of these directions. */
+export const UniversityListQuery = z.object({ directions: list(DirectionCode) }).strict();
 export const UniversityListResponse = z.object({
   items: z.array(UniversityRef.extend({ fullName: z.string().nullable(), seriesCount: z.number().int(), olympiadCount: z.number().int(),
     programCount: z.number().int().optional() })),
@@ -263,15 +267,34 @@ export const OlympiadProgramsResponse = z.object({
     programs: z.array(UniversityProgram.extend(DirectionMatchReason.shape).extend({ examMatch: z.boolean() })),
   })),
 });
-export const PlanPatch = z.object({ tracking: z.boolean().optional(), note: z.string().trim().max(2000).nullable().optional() })
-  .strict().refine(v => Object.keys(v).length > 0, 'Укажите tracking или note');
+/** Where the pupil is with a plan olympiad; set by the user («Зарегистрировался» on the card, the status in the plan dialog). */
+export const PlanStatus = z.enum(['planned', 'registered', 'in_progress', 'done']);
+export const planStatusLabels = { planned: 'Планирую', registered: 'Зарегистрирован', in_progress: 'Участвую', done: 'Завершено' } as const;
+/** The result of one stage: passed to the next one, did not pass, prize-winner or winner. */
+export const StageResult = z.enum(['passed', 'failed', 'prize', 'winner']);
+export const stageResultLabels = { passed: 'Прошёл дальше', failed: 'Не прошёл', prize: 'Призёр', winner: 'Победитель' } as const;
+/** The stage is named, not referenced by id: stage ids of the reference layer change with every import. */
+export const PlanStageResult = z.object({ stage: z.string().trim().min(1).max(200), result: StageResult });
+export const PlanPatch = z.object({
+  tracking: z.boolean().optional(), note: z.string().trim().max(2000).nullable().optional(), status: PlanStatus.optional(),
+  /** Replaces all stage results of the olympiad; [] removes them. */
+  results: z.array(PlanStageResult).max(20).refine(v => new Set(v.map(r => r.stage.toLocaleLowerCase('ru'))).size === v.length, 'Этапы не должны повторяться').optional(),
+}).strict().refine(v => Object.keys(v).length > 0, 'Укажите изменения');
 export const PlanItem = z.object({
   olympiad: OlympiadCard, tracking: z.boolean(), note: z.string().nullable(), savedAt: z.string(),
+  status: PlanStatus.default('planned'), results: z.array(PlanStageResult).default([]),
   stages: z.array(Stage), calendarRaw: z.string().nullable(),
   /** Dated moments of the schedule the card shows, for the plan calendar. */
   calendarEvents: z.array(CalendarEvent).optional(),
 });
 export const PlanResponse = z.object({ items: z.array(PlanItem), total: z.number().int() });
+/**
+ * The plan calendar as a subscription feed: GET /calendar/<token>.ics (no sign-in, the token is the secret).
+ * POST /me/calendar-feed creates the link or returns the existing one; reset=true replaces it, so old subscriptions stop.
+ */
+export const CalendarFeedRequest = z.object({ reset: z.boolean().optional() }).strict();
+export const CalendarFeedResponse = z.object({ path: z.string().regex(/^\/calendar\/[A-Za-z0-9_-]{43}\.ics$/) });
+export const CalendarFeedParams = z.object({ file: z.string().regex(/^[A-Za-z0-9_-]{43}\.ics$/) });
 export const PlanEventsQuery = z.object({ days: z.coerce.number().int().min(1).max(366).default(90) }).strict();
 export const PlanEventsResponse = z.object({
   from: IsoDay, through: IsoDay,
@@ -286,6 +309,8 @@ export const NotificationSettingsPatch = z.object({ enabled: z.boolean() }).stri
 export const NotificationTestResponse = z.object({ sent: z.literal(true), message: z.string() });
 export const AuthBody = z.object({ initData: z.string().min(1).max(16384) }).strict();
 export const ErrorResponse = z.object({ error: z.string(), message: z.string() });
+/** How many target directions and universities a profile may keep (the pickers in the profile show the same numbers). */
+export const GOAL_LIMITS = { directions: 25, universities: 10 } as const;
 export const ProfilePreferences = z.object({
   name: z.string().trim().min(1, 'Укажите имя').max(80),
   grade: z.number().int().min(1).max(11).nullable(),
@@ -293,8 +318,10 @@ export const ProfilePreferences = z.object({
   subjects: z.array(z.number().int().positive()).max(35).refine(ids => new Set(ids).size === ids.length, 'Предметы не должны повторяться'),
   online: z.boolean(), onsite: z.boolean(),
   /** The goal: directions of study (codes from /directions) and universities (slugs from /universities). */
-  directions: z.array(DirectionCode).max(10).refine(v => new Set(v).size === v.length, 'Направления не должны повторяться').optional(),
-  universities: z.array(Slug).max(20).refine(v => new Set(v).size === v.length, 'Вузы не должны повторяться').optional(),
+  directions: z.array(DirectionCode).max(GOAL_LIMITS.directions, `Можно выбрать не больше ${GOAL_LIMITS.directions} направлений`)
+    .refine(v => new Set(v).size === v.length, 'Направления не должны повторяться').optional(),
+  universities: z.array(Slug).max(GOAL_LIMITS.universities, `Можно выбрать не больше ${GOAL_LIMITS.universities} вузов`)
+    .refine(v => new Set(v).size === v.length, 'Вузы не должны повторяться').optional(),
 }).strict();
 export const Avatar = z.string().max(1400000).refine(value => {
   const match = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
@@ -309,6 +336,8 @@ export const Avatar = z.string().max(1400000).refine(value => {
 }, 'Выберите фото JPG, PNG или WebP размером до 1 МБ.').nullable();
 export const ProfilePatch = ProfilePreferences.extend({ avatar: Avatar }).partial().refine(value => Object.keys(value).length > 0, 'Укажите изменения профиля');
 export const UserProfile = ProfilePreferences.extend({
+  // Profiles saved before the limit went down from 20 keep their universities until the user edits the goal.
+  universities: z.array(Slug).max(20).optional(),
   avatar: Avatar.default(null),
   id: z.uuid(), maxUserId: z.string(), registeredAt: z.string().nullable(), createdAt: z.string(),
 });

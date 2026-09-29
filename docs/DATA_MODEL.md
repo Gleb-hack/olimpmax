@@ -11,6 +11,7 @@ erDiagram
   subjects ||--o{ user_subjects : interests
   user_profiles ||--o{ plan_items : saves
   olympiads ||--o{ plan_items : tracked
+  plan_items ||--o{ plan_stage_results : "stage results"
   olympiad_series ||--o{ olympiad_series_links : groups
   olympiads ||--o| olympiad_series_links : "belongs to"
   olympiad_series ||--o{ series_stages : schedule
@@ -35,9 +36,10 @@ erDiagram
 | `subjects` | Уникальный предмет, внутренний числовой ID |
 | `olympiad_subjects` | Связь многие-ко-многим, уникальная пара олимпиада + предмет |
 | `olympiad_stages` | Текстовый или проверенный этап; UUID, ключ внутри олимпиады и типа импорта |
-| `user_profiles` | Внутренний UUID, уникальный ID MAX, имя MAX и профиля, класс, город, форматы, даты регистрации/обновления; для бота — `notifications_enabled`, `bot_started_at` (нажал «Начать»), `bot_blocked_at` (MAX отказал в доставке) |
+| `user_profiles` | Внутренний UUID, уникальный ID MAX, имя MAX и профиля, класс, город, форматы, даты регистрации/обновления; для бота — `notifications_enabled`, `bot_started_at` (нажал «Начать»), `bot_blocked_at` (MAX отказал в доставке); `calendar_token` — секрет ссылки на календарь плана (`/calendar/<token>.ics`), уникален, `null` — ссылки нет |
 | `user_subjects` | Уникальная пара пользователь + предмет, два внешних ключа |
-| `plan_items` | Уникальная пара пользователь + олимпиада, отслеживание, заметка |
+| `plan_items` | Уникальная пара пользователь + олимпиада, отслеживание, заметка, `status` (`planned` — планирует, `registered` — зарегистрирован, `in_progress` — участвует, `done` — завершил; по умолчанию `planned`) |
+| `plan_stage_results` | Итог этапа олимпиады из плана: ключ пользователь + олимпиада + название этапа, `result` — `passed` (прошёл дальше), `failed` (не прошёл), `prize` (призёр), `winner` (победитель). Этап хранится названием, а не ID: этапы справочника получают новые ID при каждом импорте. Составной внешний ключ на `plan_items` удаляет результаты вместе с олимпиадой из плана |
 | `reminders` | Журнал напоминаний бота: пользователь, олимпиада, `event_key` (тип этапа, тип события, дата), порог 7/3/1/0, статус `pending`/`sent`/`failed`, попытки, ошибка. Уникальный ключ делает рассылку идемпотентной |
 | `import_runs` | История успешных импортов, SHA-256 файла, отчёт |
 | `olympiad_series` | Олимпиада как целое («Олимпиада РАНХиГС»): slug, псевдонимы, общий уровень, формат, качество расписания |
