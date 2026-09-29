@@ -1,100 +1,89 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Dialog, Button, Notice, Icon } from '@olimp/ui';
-import { isMock, type Olympiad } from '../../lib/api';
-import { max } from '../../lib/max';
+import { EmptyState, Icon, Loading, Notice, SettingsRow, type IconName } from '@olimp/ui';
+import { api, isMock } from '../../lib/api';
+import { moscowToday } from '../../lib/format';
+import { useProfile } from '../../lib/profile';
+import { useEvents, usePlan } from '../../lib/queries';
+import { useTheme } from '../../lib/theme';
+import { OlympiadCard } from '../catalog/OlympiadCard';
 import { useAssistant } from './AssistantProvider';
-import { MessageReveal } from './MessageReveal';
-import { chatCardMeta } from './chat-card-format';
-import olimpLogo from '../../assets/olimp/logo.jpg';
+import { OlimpChatSheet } from './OlimpChatSheet';
+import { useOlimpChatRoute } from './chat-route';
+import { dueItems, hasPreferences, olimpActions, pickRecommendations, recommendationQuery } from './overview-format';
+import greetLight from '../../assets/olimp/greet-light.webp';
+import greetDark from '../../assets/olimp/greet-dark.webp';
 
-const sourceKinds = { page: 'страница прочитана', pdf: 'документ прочитан', faq: 'база «Вопросы по олимпиадам»' } as const;
-const sourceKind = (kind?: keyof typeof sourceKinds) => sourceKinds[kind ?? 'page'];
-
-/** Figma «Олимп» (177:309): title, «организатор · срок» and «Подробнее ›». Saving happens on the olympiad page. */
-function ChatCard({ item }: { item: Olympiad }) {
-  const meta = chatCardMeta(item);
-  return <article className="chat-card">
-    <h2>{item.title}</h2>
-    {meta && <p className="chat-card__meta">{meta}</p>}
-    <Link className="chat-card__more" to={`/olympiads/${item.id}`} state={{ backTo: '/olimp' }} aria-label={`Подробнее: ${item.title}`}>Подробнее<Icon name="chevron-right" size={15} /></Link>
-  </article>;
+function SectionHead({ icon, title, id }: { icon: IconName; title: string; id: string }) {
+  return <div className="overview-section__head"><span className="overview-section__icon" aria-hidden="true"><Icon name={icon} size={16} /></span><h2 id={id}>{title}</h2></div>;
 }
 
+/**
+ * Figma «📱 Олимп — Обзор» (light 1235:6108, dark 1214:5512): greeting, the nearest plan dates, olympiads picked
+ * by the profile, ready requests to Olimp and the floating «Спросить Олимпа», which opens the chat sheet (1206:1404).
+ */
 export function OlimpPage() {
   const chat = useAssistant();
-  const log = useRef<HTMLDivElement>(null);
-  const field = useRef<HTMLTextAreaElement>(null);
-  const followBottom = useRef(true);
-  const [confirmReset, setConfirmReset] = useState(false);
-  const hasConversation = chat.messages.some(m => m.role === 'user');
-  const last = chat.messages.at(-1);
-  const scrollWithReply = useCallback(() => {
-    if (log.current && followBottom.current) log.current.scrollTop = log.current.scrollHeight;
-  }, []);
+  const route = useOlimpChatRoute();
+  const { profile } = useProfile();
+  const theme = useTheme(state => state.theme);
+  const plan = usePlan();
+  const events = useEvents();
+  const query = recommendationQuery(profile);
+  const catalog = useQuery({ queryKey: ['catalog', query], queryFn: ({ signal }) => api.catalog(query, signal) });
+  const entries = plan.data?.items ?? [];
+  const savedIds = new Set(entries.map(entry => entry.olympiad.id));
+  const due = dueItems(entries, events.data?.items ?? [], moscowToday());
+  const picks = catalog.data ? pickRecommendations(catalog.data.items, savedIds) : [];
+  const personal = hasPreferences(profile);
 
-  useLayoutEffect(() => {
-    const box = log.current;
-    if (box && followBottom.current) box.scrollTop = box.scrollHeight;
-  }, [chat.messages, chat.pending, chat.error]);
-  useEffect(() => {
-    if (!field.current) return;
-    field.current.style.height = 'auto';
-    field.current.style.height = `${Math.min(field.current.scrollHeight, 112)}px`;
-  }, [chat.draft]);
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    const resize = () => {
-      document.documentElement.style.setProperty('--chat-viewport-height', `${viewport?.height ?? window.innerHeight}px`);
-      document.documentElement.style.setProperty('--chat-viewport-top', `${viewport?.offsetTop ?? 0}px`);
-      if (log.current && followBottom.current) log.current.scrollTop = log.current.scrollHeight;
-    };
-    resize(); viewport?.addEventListener('resize', resize); viewport?.addEventListener('scroll', resize);
-    return () => {
-      viewport?.removeEventListener('resize', resize); viewport?.removeEventListener('scroll', resize);
-      document.documentElement.style.removeProperty('--chat-viewport-height');
-      document.documentElement.style.removeProperty('--chat-viewport-top');
-    };
-  }, []);
-  function send(text = chat.draft) { followBottom.current = true; void chat.send(text); }
+  // An action asks its question right away; the answer arrives in the sheet. The demo has no AI, so it only opens the sheet.
+  function ask(prompt?: string) {
+    if (prompt && !isMock && !chat.pending) void chat.send(prompt);
+    route.openChat();
+  }
 
-  return <section className="olimp-chat" aria-label="Чат с Олимпом">
-    <header className="chat-header"><span className="chat-avatar"><img src={olimpLogo} alt="" width={42} height={42} /></span>
-      <div><h1 tabIndex={-1}>Олимп</h1><p><span className={chat.error || isMock ? 'chat-status chat-status--away' : 'chat-status'} />{chat.researching ? 'Ищет в интернете…' : chat.pending ? 'Подбирает ответ…' : isMock ? 'Чат недоступен в деморежиме' : chat.error ? 'Не удалось получить ответ' : 'ИИ-помощник по олимпиадам'}</p></div>
-      {hasConversation && <button type="button" className="chat-reset" aria-label="Новый диалог" title="Новый диалог" onClick={() => setConfirmReset(true)}><Icon name="rotate-ccw" size={18} /></button>}
-    </header>
-    <div className="chat-log" ref={log} role="log" aria-label="Переписка" aria-live="polite" aria-relevant="additions text" onScroll={event => {
-      const element = event.currentTarget; followBottom.current = element.scrollHeight - element.scrollTop - element.clientHeight < 80;
-    }}>
-      <p className="chat-date">Сегодня, {new Date(chat.messages[0]!.at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</p>
-      {chat.messages.map(message => <div key={message.id} className={`chat-turn chat-turn--${message.role}`}>
-        {message.role === 'assistant' ? <MessageReveal message={message} active={last?.id === message.id} onProgress={scrollWithReply}
-          renderCard={index => <ChatCard item={message.olympiads[index]!} />}>
-          {message.webSearch && message.webSearchState === 'failed' && <div className="chat-web-status"><Icon name="globe" size={15} /><span>Поиск в интернете не завершился</span>
-            <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.retryResearch(message.id); }}><Icon name="rotate-ccw" size={13} />Повторить поиск</button></div>}
-          {!!message.webSources?.length && <div className="chat-web-sources"><strong><Icon name={message.webSources.every(s => s.kind === 'faq') ? 'book' : 'globe'} size={14} />{message.webSources.every(s => s.kind === 'faq') ? 'Источники' : 'Источники из интернета'}</strong><ol>{message.webSources.map((source, index) => <li key={source.url}><button type="button" onClick={() => max.openExternal(source.url)}><span>{index + 1}. {source.title}</span><Icon name="external-link" size={13} /></button><small>{new URL(source.url).hostname} · {sourceKind(source.kind)} · {new Date(source.checkedAt).toLocaleDateString('ru-RU')}</small></li>)}</ol></div>}
-          {message.webDisclaimer && <p className="chat-web-disclaimer">{message.webDisclaimer}</p>}
-        </MessageReveal>
-          : <div className="chat-bubble chat-bubble--user"><span className="sr-only">Вы: </span>{message.content}</div>}
-        {message.failed && <small className="chat-failed">Ответ не получен</small>}
-      </div>)}
-      {!hasConversation && <div className="chat-suggestions" aria-label="Подсказки для начала разговора">
-        {['Математика', 'Информатика', 'Ближайшие дедлайны'].map(text => <button type="button" key={text} onClick={() => send(text)} disabled={isMock}><Icon name="sparkle" size={13} />{text}</button>)}
-      </div>}
-      {chat.pending && <div className="chat-pending" role="status" aria-label={chat.researching ? 'Олимп ищет информацию в интернете' : 'Олимп готовит ответ'}><div className="chat-typing" aria-hidden="true"><span /><span /><span /></div>{chat.researching && <small>Открываю сайты вузов и организаторов, читаю правила…</small>}</div>}
-      {chat.error && <div className="chat-error" role="alert"><p>{chat.error}</p>{last?.role === 'user' && last.failed && <button type="button" disabled={chat.pending} onClick={() => { followBottom.current = true; void chat.send(last.content, last.id); }}><Icon name="rotate-ccw" size={14} />Повторить</button>}</div>}
-    </div>
-    <footer className="chat-footer">
-      {isMock && <Notice tone="info">Для общения с Олимпом нужен сервер с подключённым ИИ.</Notice>}
-      <form className="chat-composer" onSubmit={event => { event.preventDefault(); send(); }}>
-        <textarea ref={field} aria-label="Сообщение Олимпу" placeholder="Написать сообщение…" rows={1} maxLength={2000} value={chat.draft} disabled={isMock}
-          onChange={event => chat.setDraft(event.target.value)} onKeyDown={event => {
-            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); }
-          }} />
-        <button type="submit" className="chat-send" aria-label="Отправить сообщение" disabled={chat.pending || !chat.draft.trim() || isMock}><Icon name="send" size={16} /></button>
-      </form>
-      <p className="chat-footer__hint">Сообщения обрабатывает ИИ. <Link to="/profile/privacy">О данных</Link>{chat.draft.length > 1800 && <span> · {chat.draft.length}/2000</span>}</p>
-    </footer>
-    {confirmReset && <Dialog title="Начать новый диалог?" onClose={() => setConfirmReset(false)}><p className="hint">Текущая переписка очистится. Сохранённые в план олимпиады останутся.</p><Button className="full-width" onClick={() => { chat.reset(); setConfirmReset(false); followBottom.current = true; }}>Новый диалог</Button><Button className="full-width dialog-cancel" variant="secondary" onClick={() => setConfirmReset(false)}>Продолжить разговор</Button></Dialog>}
-  </section>;
+  return <div className="olimp-overview">
+    <section className="greet-card">
+      <div className="greet-card__copy"><h1 tabIndex={-1}>Олимп</h1><p>твой проводник в мир олимпиад</p></div>
+      <img className={`greet-card__art greet-card__art--${theme}`} src={theme === 'dark' ? greetDark : greetLight} alt="" />
+    </section>
+
+    <section className="overview-section" aria-labelledby="overview-due">
+      <SectionHead id="overview-due" icon="bell" title="Не пропусти" />
+      <p className="overview-section__lead">Дедлайны и важные точки в твоём плане</p>
+      {plan.isPending ? <Loading label="Загружаем ваш план…" />
+        : plan.isError ? <Notice tone="warning">{plan.error.message} <button type="button" className="text-button" onClick={() => plan.refetch()}>Повторить</button></Notice>
+        : due.length ? <ul className="due-list">{due.map(item => <li key={item.olympiadId}>
+          <Link className="due-row" to={`/olympiads/${item.olympiadId}`} state={{ backTo: '/olimp' }}>
+            <span className="due-row__badge" aria-hidden="true"><small>{item.month}</small><strong>{item.day}</strong></span>
+            <span className="due-row__copy"><strong>{item.title}</strong><small>{item.note}</small></span>
+            <span className="sr-only">, {item.day} {item.month}</span>
+          </Link>
+        </li>)}</ul>
+        : <p className="overview-empty">{entries.length ? 'У отслеживаемых олимпиад пока нет ближайших дат. Мы покажем их здесь, как только они появятся.' : 'В плане пока пусто. Сохрани олимпиады из каталога — здесь появятся их сроки.'}</p>}
+      {events.isError && entries.length > 0 && <Notice tone="warning">Не удалось загрузить ближайшие события. <button type="button" className="text-button" onClick={() => events.refetch()}>Повторить</button></Notice>}
+      {plan.isSuccess && <Link className="overview-outline-button" to={entries.length ? '/plan' : '/catalog'}>{entries.length ? 'Весь план' : 'Найти олимпиаду'}</Link>}
+    </section>
+
+    <section className="overview-section" aria-labelledby="overview-picks">
+      <SectionHead id="overview-picks" icon="target" title="Подобрано для тебя" />
+      <p className="overview-section__lead">{personal ? 'На основании твоего профиля' : <>Популярное в каталоге. <Link className="text-link" to="/profile/edit">Укажи класс и предметы</Link> — подбор станет точнее</>}</p>
+      {catalog.isPending ? <Loading label="Подбираем олимпиады…" />
+        : catalog.isError ? <EmptyState title="Не удалось подобрать олимпиады" action={<button type="button" className="text-button" onClick={() => catalog.refetch()}>Попробовать снова</button>}>{catalog.error.message}</EmptyState>
+        : picks.length ? <div className="catalog-list">{picks.map(item => <OlympiadCard key={item.id} item={item} saved={savedIds.has(item.id)}
+          tracking={entries.find(entry => entry.olympiad.id === item.id)?.tracking} backTo="/olimp" />)}</div>
+        : <p className="overview-empty">По твоему профилю ничего не нашлось. <Link className="text-link" to="/catalog">Открыть каталог</Link></p>}
+    </section>
+
+    <section className="overview-section" aria-labelledby="overview-actions">
+      <SectionHead id="overview-actions" icon="sparkle" title="Поручи это Олимпу" />
+      <p className="overview-section__lead">Умные действия на основе твоих данных</p>
+      <div className="settings-list olimp-actions">{olimpActions.map(action => <SettingsRow key={action.id} icon={action.icon} tone={action.tone}
+        title={action.title} subtitle={action.subtitle} onClick={() => ask(action.prompt)} />)}</div>
+    </section>
+
+    <button type="button" className="olimp-ask-fab" onClick={() => ask()}><Icon name="sparkle" size={13} />Спросить Олимпа</button>
+    {route.open && <OlimpChatSheet onClose={route.closeChat} />}
+  </div>;
 }

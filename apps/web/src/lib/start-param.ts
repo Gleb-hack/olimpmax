@@ -7,6 +7,7 @@ export function startRoute(param: string | null | undefined) {
   const olympiad = /^olympiad_([1-9]\d{0,8})$/.exec(param);
   if (olympiad) return `/olympiads/${olympiad[1]}`;
   if (param === 'plan') return '/plan';
-  if (param === 'olimp') return '/olimp';
+  // «Спросить Олимпа» in the bot opens the chat sheet over the Olimp overview (features/assistant/chat-route.ts).
+  if (param === 'olimp') return '/olimp?chat=1';
   return null;
 }
