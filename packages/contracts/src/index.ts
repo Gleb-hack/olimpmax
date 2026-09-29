@@ -57,8 +57,10 @@ export const CatalogQuery = z.object({
   /**
    * complete — cards with the most data first (dated stages, days to the next stage, university benefits); then by rating.
    * goal — the strongest match with goalUniversities/goalDirections first, then as complete.
+   * deadline — the nearest registration deadline first (cards without one go last), then as complete.
+   * level — level I first (ВсОШ with it), then II and III; cards without a level go last; then as complete.
    */
-  sort: z.enum(['complete', 'rating', 'name', 'goal']).default('complete'),
+  sort: z.enum(['complete', 'rating', 'name', 'goal', 'deadline', 'level']).default('complete'),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 }).strict();

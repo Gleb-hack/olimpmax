@@ -69,7 +69,8 @@ export async function mockRequest(path: string, options: RequestInit = {}): Prom
         && (!query.participation || query.participation.includes(item.participation))
         && (!query.scheduleStatus || query.scheduleStatus === item.scheduleStatus);
     }).sort((a, b) => (query.sort === 'name' ? a.title.localeCompare(b.title, 'ru')
-      : (query.sort === 'complete' ? mockCompleteness(b) - mockCompleteness(a) : 0) || (b.rating ?? -Infinity) - (a.rating ?? -Infinity)) || a.id - b.id);
+      : (query.sort === 'deadline' ? mockDeadlineOrder(a, b) : 0) || (query.sort === 'level' ? mockLevelRank(a) - mockLevelRank(b) : 0)
+        || (query.sort !== 'rating' ? mockCompleteness(b) - mockCompleteness(a) : 0) || (b.rating ?? -Infinity) - (a.rating ?? -Infinity)) || a.id - b.id);
     return { items: items.slice((query.page - 1) * query.pageSize, query.page * query.pageSize), total: items.length, page: query.page, pageSize: query.pageSize };
   }
   if (url.pathname.startsWith('/universities/')) return mockUniversity(decodeURIComponent(url.pathname.split('/').pop() ?? ''));
@@ -127,4 +128,15 @@ function mockCompleteness(card: z.infer<typeof c.OlympiadCard>) {
   return (card.upcomingStage ? 4 : 0) + (detail?.stages.some(stage => stage.beginsOn || stage.endsOn) ? 3 : card.calendarRaw ? 1 : 0)
     + (card.nextEvent ? 1 : 0) + (detail?.benefits?.items.length ? 3 : 0) + (card.level ? 1 : 0)
     + ((card.description?.length ?? 0) >= 40 ? 1 : 0) + (card.organizers?.length ? 1 : 0) - (card.calendarState === 'not_held' ? 4 : 0);
+}
+
+type MockCard = z.infer<typeof c.OlympiadCard>;
+const mockLevelOrder: Record<string, number> = { 'ВсОШ': 0, I: 1, 'I–II': 2, 'I–III': 3, II: 4, 'II–III': 5, III: 6 };
+/** The API «level» order: level I first, then II and III; no level — last. */
+function mockLevelRank(card: MockCard) { return mockLevelOrder[card.level?.trim() ?? ''] ?? 9; }
+/** The API «deadline» order from the counted stage of a demo card: the nearest registration deadline first. */
+function mockDeadlineOrder(a: MockCard, b: MockCard) {
+  const deadline = (card: MockCard) => card.upcomingStage?.kind === 'registration' && card.upcomingStage.event === 'ends' ? card.upcomingStage.date : null;
+  const x = deadline(a), y = deadline(b);
+  return x && y ? x.localeCompare(y) : Number(!x) - Number(!y);
 }

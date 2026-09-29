@@ -1,17 +1,22 @@
 import { universityRank, type University } from '../profile/goal-format';
 
-export type UniversitySort = 'name' | 'programs' | 'olympiads';
-export const universitySorts: { value: UniversitySort; label: string }[] = [
-  { value: 'name', label: 'По названию' },
-  { value: 'olympiads', label: 'Больше олимпиад с льготами' },
-  { value: 'programs', label: 'Больше программ' },
+/** The order of «Вузы» (Figma «Popup — Сортировка (Вузы)»). `programs` stays for old links. */
+export type UniversitySort = 'name' | 'city' | 'targets' | 'olympiads' | 'programs';
+export const universitySorts: { value: UniversitySort; label: string; description: string }[] = [
+  { value: 'name', label: 'По названию', description: 'От А до Я' },
+  { value: 'city', label: 'По городу', description: 'Сгруппировать по городам' },
+  { value: 'targets', label: 'Сначала целевые', description: 'Твои целевые вузы выше в списке' },
+  { value: 'olympiads', label: 'По количеству льгот', description: 'Сначала вузы с большим числом льгот' },
 ];
+export const parseUniversitySort = (value: string | null): UniversitySort =>
+  value === 'city' || value === 'targets' || value === 'olympiads' || value === 'programs' ? value : 'name';
 
-export type UniversityFilter = { q: string; city: string; sort: UniversitySort; only?: string[] };
+/** `targets` — the goal universities of the profile: «Сначала целевые» puts them first, «Целевые вузы» (`only`) shows only them. */
+export type UniversityFilter = { q: string; city: string; sort: UniversitySort; only?: string[]; targets?: string[] };
 
 /**
  * The university list of the catalog: search by name, full name and city (the same match as the goal picker),
- * the city filter, «Мои вузы» (`only`) and the order. With a query the best matches go first.
+ * the city filter, «Целевые вузы» (`only`) and the order. With a query the best matches go first.
  */
 export function filterUniversities(items: University[], filter: UniversityFilter) {
   const ranked = items.flatMap(item => {
@@ -21,9 +26,16 @@ export function filterUniversities(items: University[], filter: UniversityFilter
     return rank === null ? [] : [{ item, rank }];
   });
   const byName = (a: University, b: University) => a.name.localeCompare(b.name, 'ru');
+  const targets = filter.targets ?? [];
   const bySort = (a: University, b: University) => filter.sort === 'programs' ? (b.programCount ?? 0) - (a.programCount ?? 0)
-    : filter.sort === 'olympiads' ? b.olympiadCount - a.olympiadCount : 0;
-  return ranked.sort((a, b) => (filter.q.trim() ? a.rank - b.rank : 0) || bySort(a.item, b.item) || byName(a.item, b.item)).map(entry => entry.item);
+    : filter.sort === 'olympiads' ? b.olympiadCount - a.olympiadCount
+    : filter.sort === 'city' ? a.city.localeCompare(b.city, 'ru')
+    : filter.sort === 'targets' ? Number(targets.includes(b.slug)) - Number(targets.includes(a.slug)) : 0;
+  // Grouped by city, the groups keep their order even with a query; within a group the best matches go first.
+  const byQuery = (a: { rank: number }, b: { rank: number }) => filter.q.trim() ? a.rank - b.rank : 0;
+  return ranked.sort((a, b) => filter.sort === 'city'
+    ? bySort(a.item, b.item) || byQuery(a, b) || byName(a.item, b.item)
+    : byQuery(a, b) || bySort(a.item, b.item) || byName(a.item, b.item)).map(entry => entry.item);
 }
 
 /** Cities with the number of universities, most first, for the city filter. */

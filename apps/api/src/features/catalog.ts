@@ -132,10 +132,21 @@ export function completenessScore(f: CompletenessFacts) {
     + (f.level ? 1 : 0) + (f.description ? 1 : 0) + (f.organizers ? 1 : 0) - (f.notHeld ? 4 : 0);
 }
 
+/** «По уровню»: level I (and the RSOSH, which gives more) first, then mixed and lower levels; none — last. */
+export const LEVEL_ORDER: Record<string, number> = { 'ВсОШ': 0, I: 1, 'I–II': 2, 'I–III': 3, II: 4, 'II–III': 5, III: 6 };
+export const levelRank = (level: string | null) => LEVEL_ORDER[level?.trim() ?? ''] ?? 9;
+/** The nearest registration deadline of a card on or after today: the last day of registration or a one-day registration. */
+export function registrationDeadline(events: { stageKind: string; kind: string; date: string }[], upcoming: { kind: string; event: string; date: string } | null | undefined, today: string) {
+  const dates = events.filter(e => e.stageKind === 'registration' && (e.kind === 'ends' || e.kind === 'day') && e.date >= today).map(e => e.date).sort();
+  if (dates[0]) return dates[0];
+  return upcoming?.kind === 'registration' && upcoming.event === 'ends' && upcoming.date >= today ? upcoming.date : null;
+}
+type CatalogFacts = { scores: Map<number, number>; deadlines: Map<number, string> };
+
 // Scores need the same schedule logic as the cards, so they are computed for the whole catalog at once and kept
-// for ten minutes (and never across a day change: the countdown depends on today).
+// for ten minutes (and never across a day change: the countdown depends on today). Registration deadlines come with them.
 const SCORE_TTL = 10 * 60_000;
-let scoreCache: { today: string; at: number; value: Promise<Map<number, number>> } | null = null;
+let scoreCache: { today: string; at: number; value: Promise<CatalogFacts> } | null = null;
 export function resetCompletenessCache() { scoreCache = null; }
 async function computeScores(db: Database, today: string) {
   const [rows, benefitSeries] = await Promise.all([
@@ -144,16 +155,19 @@ async function computeScores(db: Database, today: string) {
   ]);
   const withBenefits = new Set(benefitSeries.map(b => b.seriesId));
   const scores = new Map<number, number>();
+  const deadlines = new Map<number, string>();
   for (const { row, card, link, events } of await enrich(db, rows, today)) {
+    const deadline = registrationDeadline(events(), card.upcomingStage, today);
+    if (deadline) deadlines.set(row.id, deadline);
     scores.set(row.id, completenessScore({
       countdown: !!card.upcomingStage, datedSchedule: events().length > 0, scheduleText: !!card.calendarRaw?.trim(), verifiedEvent: !!card.nextEvent,
       benefits: !!link && withBenefits.has(link.seriesId) && !!card.level, level: !!card.level,
       description: (card.description?.trim().length ?? 0) >= 40, organizers: (card.organizers?.length ?? 0) > 0, notHeld: card.calendarState === 'not_held',
     }));
   }
-  return scores;
+  return { scores, deadlines };
 }
-export function completenessScores(db: Database, today = moscowToday()) {
+export function catalogFacts(db: Database, today = moscowToday()) {
   if (!scoreCache || scoreCache.today !== today || Date.now() - scoreCache.at > SCORE_TTL) {
     const value = computeScores(db, today);
     scoreCache = { today, at: Date.now(), value };
@@ -174,13 +188,18 @@ export async function catalog(db: Database, query: CatalogQuery, today = moscowT
     const found = matches ?? await goalMatches(db, goal, rows.map(row => row.id));
     return items.map(card => ({ ...card, goalMatch: found.get(card.id) ?? null }));
   };
-  if (query.sort === 'complete' || query.sort === 'goal') {
-    const [matches, scores, goalScores] = await Promise.all([
-      db.select({ id: olympiads.id, rating: olympiads.rating }).from(olympiads).where(where),
-      completenessScores(db, today),
+  if (query.sort === 'complete' || query.sort === 'goal' || query.sort === 'deadline' || query.sort === 'level') {
+    const [matches, { scores, deadlines }, goalScores] = await Promise.all([
+      db.select({ id: olympiads.id, rating: olympiads.rating, level: olympiads.level }).from(olympiads).where(where),
+      catalogFacts(db, today),
       query.sort === 'goal' ? goalMatches(db, goal) : Promise.resolve(undefined),
     ]);
+    const byDeadline = (a: number, b: number) => {
+      const x = deadlines.get(a), y = deadlines.get(b);
+      return x && y ? x.localeCompare(y) : Number(!x) - Number(!y);
+    };
     const ordered = matches.sort((a, b) => (goalScores ? (goalScores.get(b.id)?.score ?? 0) - (goalScores.get(a.id)?.score ?? 0) : 0)
+      || (query.sort === 'deadline' ? byDeadline(a.id, b.id) : 0) || (query.sort === 'level' ? levelRank(a.level) - levelRank(b.level) : 0)
       || (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0) || (b.rating ?? -Infinity) - (a.rating ?? -Infinity) || a.id - b.id);
     const pageIds = ordered.slice(offset, offset + query.pageSize).map(match => match.id);
     const rows = pageIds.length ? await db.select().from(olympiads).where(inArray(olympiads.id, pageIds)) : [];
