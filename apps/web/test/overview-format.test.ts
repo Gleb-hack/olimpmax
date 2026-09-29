@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { OlympiadCard, OlympiadDetail } from '@olimp/contracts';
 import type { Olympiad, PlanEntry } from '../src/lib/api.ts';
-import { dueItems, dueMoment, hasPreferences, pickRecommendations, recommendationQuery } from '../src/features/assistant/overview-format.ts';
+import { dueItems, dueMoment, hasPreferences, morePicks, morePicksQuery, pickRecommendations, recommendationQuery } from '../src/features/assistant/overview-format.ts';
 import details from '../src/lib/mock-details.json';
 
 const detail = OlympiadDetail.parse(details[0]);
@@ -56,4 +56,13 @@ test('with a goal the selection is ordered by it and matching cards come first',
   const match = { score: 6, reasons: [{ kind: 'benefit' as const, text: 'БВИ в НИУ ВШЭ' }] };
   const items = [1, 2, 3].map(id => ({ ...card, id, calendarState: 'unverified' as const, goalMatch: id === 1 ? null : match }));
   assert.deepEqual(pickRecommendations(items, new Set([2])).map(item => item.id), [3, 2]);
+});
+
+test('«Ещё варианты» keeps the server order and drops shown, repeated and no longer held olympiads', () => {
+  const card = (id: number, calendarState = 'unverified') => ({ id, calendarState }) as unknown as Olympiad;
+  const items = morePicks([card(1), card(2), card(3, 'not_held'), card(4), card(2), card(5)], new Set([1, 5]));
+  assert.deepEqual(items.map(item => item.id), [2, 4]);
+  const query = new URLSearchParams(morePicksQuery({ grade: 9, subjects: [8], online: true, onsite: true, universities: ['hse'] }, 3));
+  assert.equal(query.get('page'), '3'); assert.equal(query.get('pageSize'), '10');
+  assert.equal(query.get('sort'), 'goal'); assert.equal(query.get('goalUniversities'), 'hse'); assert.equal(query.get('grades'), '9');
 });

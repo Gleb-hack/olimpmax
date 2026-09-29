@@ -16,7 +16,7 @@ import { HelpPage } from './features/profile/HelpPage';
 import { OlympiadFaqPage } from './features/profile/OlympiadFaqPage';
 import { OlimpPage } from './features/assistant/OlimpPage';
 import { AssistantProvider } from './features/assistant/AssistantProvider';
-import { isOlimpChatOpen, olimpChatPath, useOlimpChatRoute } from './features/assistant/chat-route';
+import { isOlimpChatOpen, isOlimpPicksOpen, olimpChatPath, useOlimpChatRoute, useOlimpPicksRoute } from './features/assistant/chat-route';
 import { max } from './lib/max';
 import { canGoBack } from './lib/history';
 import { isMock } from './lib/api';
@@ -47,6 +47,9 @@ function Layout() {
   // «Чат Олимпа» is a sheet over the overview: MAX «back» closes it.
   const chatOpen = isOlimpChatOpen(pathname, queryString);
   const { closeChat } = useOlimpChatRoute();
+  // «Ещё варианты» is a sheet over the overview too: MAX «back» closes it.
+  const picksOpen = isOlimpPicksOpen(pathname, queryString);
+  const { closePicks } = useOlimpPicksRoute();
   const comparing = useUI(state => state.comparisonIds.length >= 2) && (olympiad || search || pathname === '/catalog' || overview);
   const backTo = typeof state?.backTo === 'string' && /^\/(?:catalog|search|olimp|universities\/[a-z0-9-]+)(?:\?|$)/.test(state.backTo) ? state.backTo : '/catalog';
   const subpage = pathname.startsWith('/profile/');
@@ -56,9 +59,9 @@ function Layout() {
     document.title = `${heading?.textContent || 'Olimp'} · Olimp`;
     heading?.focus({ preventScroll: true });
   }, [pathname]);
-  useEffect(() => max.backButton(chatOpen ? closeChat : subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : historyBack ? () => navigate(-1) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null),
-    // closeChat is rebuilt on every render; chatOpen and state?.chatOpened are what change its behavior.
-    [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo, historyBack, chatOpen, state?.chatOpened]);
+  useEffect(() => max.backButton(chatOpen ? closeChat : picksOpen ? closePicks : subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : historyBack ? () => navigate(-1) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null),
+    // closeChat/closePicks are rebuilt on every render; chatOpen, picksOpen and state?.chatOpened are what change their behavior.
+    [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo, historyBack, chatOpen, picksOpen, state?.chatOpened]);
   return <div className={`app-shell ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${overview ? 'page--overview' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />
     {!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}</div>;
 }

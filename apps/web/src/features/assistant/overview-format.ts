@@ -88,8 +88,29 @@ export function pickRecommendations(items: Olympiad[], savedIds: Set<number>, li
 export const olimpActions = [
   { id: 'plan', icon: 'calendar', tone: 'blue', title: 'Составить план', subtitle: 'Расставить приоритеты и дедлайны',
     prompt: 'Составь план подготовки по олимпиадам из моего плана: расставь приоритеты и ближайшие дедлайны.' },
-  { id: 'chances', icon: 'trending-up', tone: 'green', title: 'Оценить шансы', subtitle: 'Анализ твоей готовности к олимпиаде',
-    prompt: 'Оцени мои шансы на олимпиадах из моего плана с учётом моего класса и предметов.' },
+  // A catalog-wide deadline lookup (intent «deadlines»): registrations of olympiads by the profile's subjects and grade that close soon.
+  { id: 'deadlines', icon: 'bell', tone: 'green', title: 'Успеть зарегистрироваться', subtitle: 'Регистрации по твоим предметам, которые скоро закроются',
+    prompt: 'Какие регистрации на олимпиады по моим предметам и для моего класса закрываются в ближайший месяц?' },
   { id: 'university', icon: 'graduation-cap', tone: 'amber', title: 'Подобрать вуз под цель', subtitle: 'Куда поступить с твоими результатами',
     prompt: 'Какие вузы дают льготы за олимпиады из моего плана? Подбери вузы под мою цель.' },
 ] as const;
+
+/**
+ * «Ещё варианты»: the next olympiads of the same selection, in the server order (by the goal or by completeness),
+ * without the ones already shown on the overview and without olympiads that no longer take place.
+ */
+export function morePicks(items: Olympiad[], shownIds: Set<number>) {
+  const seen = new Set<number>();
+  return items.filter(item => {
+    if (item.calendarState === 'not_held' || shownIds.has(item.id) || seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
+/** One page of the «Ещё варианты» selection: the overview query with a page. */
+export function morePicksQuery(profile: Preferences, page: number, pageSize = 10) {
+  const query = new URLSearchParams(recommendationQuery(profile, pageSize));
+  query.set('page', String(page));
+  return query.toString();
+}

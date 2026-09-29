@@ -1393,3 +1393,14 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 .calendar-export__help p { margin-top: 6px; color: var(--olimp-muted); }
 .calendar-export__url, .calendar-export__hint { margin-top: 8px; font-size: 11px; color: var(--olimp-muted); }
 .calendar-export__url span { word-break: break-all; user-select: all; color: var(--olimp-text); }
+
+/* Profile: «+N» after the first target directions. */
+.chip.chip--more { font-weight: 600; color: var(--olimp-blue-text); cursor: pointer; }
+
+/* Олимп: «Ещё варианты» — a sheet in the style of the chat with more olympiad cards. */
+button.overview-outline-button { width: 100%; gap: 6px; cursor: pointer; }
+.picks-sheet__log .chat-turn { margin-bottom: 14px; }
+.picks-sheet__list { width: 100%; }
+.picks-sheet__more { margin-top: 12px; }
+.picks-sheet__log > .notice { margin-top: 12px; }
+.picks-sheet__footer { padding-top: 10px; border-top: 1px solid var(--olimp-border); }

@@ -9,7 +9,8 @@ import { useTheme } from '../../lib/theme';
 import { OlympiadCard } from '../catalog/OlympiadCard';
 import { useAssistant } from './AssistantProvider';
 import { OlimpChatSheet } from './OlimpChatSheet';
-import { useOlimpChatRoute } from './chat-route';
+import { useOlimpChatRoute, useOlimpPicksRoute } from './chat-route';
+import { MorePicksSheet } from './MorePicksSheet';
 import { dueItems, hasGoalIn, hasPreferences, olimpActions, pickRecommendations, recommendationQuery } from './overview-format';
 import greetLight from '../../assets/olimp/greet-light.webp';
 import greetDark from '../../assets/olimp/greet-dark.webp';
@@ -25,6 +26,7 @@ function SectionHead({ icon, title, id }: { icon: IconName; title: string; id: s
 export function OlimpPage() {
   const chat = useAssistant();
   const route = useOlimpChatRoute();
+  const picksRoute = useOlimpPicksRoute();
   const { profile } = useProfile();
   const theme = useTheme(state => state.theme);
   const plan = usePlan();
@@ -74,6 +76,8 @@ export function OlimpPage() {
         : picks.length ? <div className="catalog-list">{picks.map(item => <OlympiadCard key={item.id} item={item} saved={savedIds.has(item.id)}
           tracking={entries.find(entry => entry.olympiad.id === item.id)?.tracking} backTo="/olimp" />)}</div>
         : <p className="overview-empty">По твоему профилю ничего не нашлось. <Link className="text-link" to="/catalog">Открыть каталог</Link></p>}
+      {catalog.isSuccess && catalog.data.total > picks.length && <button type="button" className="overview-outline-button" onClick={picksRoute.openPicks}>
+        <Icon name="sparkle" size={14} />Ещё варианты</button>}
     </section>
 
     <section className="overview-section" aria-labelledby="overview-actions">
@@ -85,5 +89,6 @@ export function OlimpPage() {
 
     <button type="button" className="olimp-ask-fab" onClick={() => ask()}><Icon name="sparkle" size={13} />Спросить Олимпа</button>
     {route.open && <OlimpChatSheet onClose={route.closeChat} />}
+    {picksRoute.open && <MorePicksSheet shownIds={picks.map(item => item.id)} onClose={picksRoute.closePicks} />}
   </div>;
 }

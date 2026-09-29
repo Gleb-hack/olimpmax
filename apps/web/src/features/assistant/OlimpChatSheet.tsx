@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dialog, Button, Notice, Icon } from '@olimp/ui';
 import { isMock, type Olympiad } from '../../lib/api';
@@ -7,11 +7,11 @@ import { useAssistant } from './AssistantProvider';
 import { MessageReveal } from './MessageReveal';
 import { chatCardMeta } from './chat-card-format';
 import { olimpChatPath } from './chat-route';
+import { useBottomSheet } from './bottom-sheet';
 import olimpAvatar from '../../assets/olimp/avatar.webp';
 
 const sourceKinds = { page: 'страница прочитана', pdf: 'документ прочитан', faq: 'база «Вопросы по олимпиадам»' } as const;
 const sourceKind = (kind?: keyof typeof sourceKinds) => sourceKinds[kind ?? 'page'];
-const closeDelay = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 200;
 
 /** Figma «Олимп» (177:309): title, «организатор · срок» and «Подробнее ›». Saving happens on the olympiad page. */
 function ChatCard({ item }: { item: Olympiad }) {
@@ -29,39 +29,18 @@ function ChatCard({ item }: { item: Olympiad }) {
  */
 export function OlimpChatSheet({ onClose }: { onClose: () => void }) {
   const chat = useAssistant();
-  const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const log = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const followBottom = useRef(true);
-  const drag = useRef<{ start: number; at: number; pointer: number } | null>(null);
-  const closeTimer = useRef<number | undefined>(undefined);
-  const [dragOffset, setDragOffset] = useState<number | null>(null);
-  const [closing, setClosing] = useState(false);
+  // The heading, not the text field, gets the focus: focusing the field would open the keyboard at once.
+  const sheet = useBottomSheet(onClose, heading);
   const [confirmReset, setConfirmReset] = useState(false);
   const titleId = useId();
   const hasConversation = chat.messages.some(m => m.role === 'user');
   const last = chat.messages.at(-1);
   const scrollWithReply = useCallback(() => {
     if (log.current && followBottom.current) log.current.scrollTop = log.current.scrollHeight;
-  }, []);
-  // Slide the sheet out, then leave the chat URL.
-  const close = useCallback(() => {
-    if (closeTimer.current !== undefined) return;
-    setClosing(true); setDragOffset(null);
-    closeTimer.current = window.setTimeout(onClose, closeDelay());
-  }, [onClose]);
-  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
-
-  useEffect(() => {
-    const element = dialog.current;
-    const previous = document.activeElement as HTMLElement | null;
-    element?.showModal();
-    // The heading, not the text field: focusing the field would open the keyboard at once.
-    heading.current?.focus({ preventScroll: true });
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { element?.close(); document.body.style.overflow = overflow; previous?.focus({ preventScroll: true }); };
   }, []);
   useLayoutEffect(() => {
     const box = log.current;
@@ -89,38 +68,17 @@ export function OlimpChatSheet({ onClose }: { onClose: () => void }) {
   }, []);
   function send(text = chat.draft) { followBottom.current = true; void chat.send(text); }
 
-  // Pull the handle or the header down to close, as in any bottom sheet.
-  function startDrag(event: PointerEvent<HTMLDivElement>) {
-    if (event.button !== 0 || closing || (event.target as HTMLElement).closest('button, a')) return;
-    drag.current = { start: event.clientY, at: performance.now(), pointer: event.pointerId };
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setDragOffset(0);
-  }
-  function moveDrag(event: PointerEvent<HTMLDivElement>) {
-    if (drag.current?.pointer === event.pointerId) setDragOffset(Math.max(0, event.clientY - drag.current.start));
-  }
-  function endDrag(event: PointerEvent<HTMLDivElement>) {
-    const current = drag.current;
-    if (current?.pointer !== event.pointerId) return;
-    drag.current = null;
-    const distance = Math.max(0, event.clientY - current.start);
-    const speed = distance / Math.max(1, performance.now() - current.at);
-    if (distance > 110 || (distance > 30 && speed > .6)) close(); else setDragOffset(null);
-  }
-
   const status = chat.researching ? 'Ищет в интернете…' : chat.pending ? 'Подбирает ответ…' : isMock ? 'Чат недоступен в деморежиме'
     : chat.error ? 'Не удалось получить ответ' : 'на связи · отвечает быстро';
-  return <dialog ref={dialog} className={`chat-sheet ${closing ? 'is-closing' : ''}`} aria-labelledby={titleId}
-    onCancel={event => { event.preventDefault(); close(); }}
-    onClick={event => { if (event.target === event.currentTarget) close(); }}>
-    <section className={`chat-sheet__panel olimp-chat ${dragOffset !== null ? 'is-dragging' : ''}`} style={dragOffset ? { transform: `translateY(${dragOffset}px)` } : undefined}>
-      <div className="chat-sheet__top" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+  return <dialog {...sheet.dialogProps} className={`chat-sheet ${sheet.closing ? 'is-closing' : ''}`} aria-labelledby={titleId}>
+    <section className={`chat-sheet__panel olimp-chat ${sheet.dragging ? 'is-dragging' : ''}`} style={sheet.panelStyle}>
+      <div className="chat-sheet__top" {...sheet.dragProps}>
         <span className="chat-sheet__handle" aria-hidden="true" />
         <header className="chat-sheet__header">
           <img className="chat-sheet__avatar" src={olimpAvatar} alt="" width={38} height={38} />
           <div className="chat-sheet__title"><h2 id={titleId} ref={heading} tabIndex={-1}>Олимп</h2><p>{status}</p></div>
           {hasConversation && <button type="button" className="chat-sheet__icon-button" aria-label="Новый диалог" title="Новый диалог" onClick={() => setConfirmReset(true)}><Icon name="rotate-ccw" size={16} /></button>}
-          <button type="button" className="chat-sheet__icon-button chat-sheet__close" aria-label="Закрыть чат" onClick={close}><Icon name="x" size={14} /></button>
+          <button type="button" className="chat-sheet__icon-button chat-sheet__close" aria-label="Закрыть чат" onClick={sheet.close}><Icon name="x" size={14} /></button>
         </header>
       </div>
       <div className="chat-log" ref={log} role="log" aria-label="Переписка" aria-live="polite" aria-relevant="additions text" onScroll={event => {
