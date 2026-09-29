@@ -6,9 +6,11 @@ import { api } from './api';
 import { localKeys } from './local-data';
 import { useSession } from './session';
 
-export type LocalProfile = { name: string; avatar: string | null; grade: number | null; region: string; subjects: number[]; online: boolean; onsite: boolean };
-export const emptyProfile: LocalProfile = { name: '', avatar: null, grade: null, region: '', subjects: [], online: true, onsite: true };
-const LegacyProfile = ProfilePreferences.extend({ name: z.string().max(80).default(''), avatar: Avatar.default(null) });
+/** The goal (directions of study by code, universities by slug) is part of the preferences: «Сбросить» clears it too. */
+export type LocalProfile = { name: string; avatar: string | null; grade: number | null; region: string; subjects: number[]; online: boolean; onsite: boolean; directions: string[]; universities: string[] };
+export const emptyProfile: LocalProfile = { name: '', avatar: null, grade: null, region: '', subjects: [], online: true, onsite: true, directions: [], universities: [] };
+const LegacyProfile = ProfilePreferences.extend({ name: z.string().max(80).default(''), avatar: Avatar.default(null),
+  directions: z.array(z.string()).default([]), universities: z.array(z.string()).default([]) });
 const Context = createContext<{ profile: LocalProfile; update: (patch: Partial<LocalProfile>) => Promise<boolean>; clear: () => Promise<boolean>; storageError: string | null; saving: boolean; legacyAvatar: string | null; legacy: LocalProfile | null; importLegacy: () => Promise<void> } | null>(null);
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user, setUser, deletingAccount } = useSession();
@@ -42,7 +44,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const mounted = useRef(true);
   // ProfileProvider is remounted for each account; ignore a request finishing after logout.
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
-  const profile: LocalProfile = { name: user.name, grade: user.grade, region: user.region, subjects: user.subjects, online: user.online, onsite: user.onsite, avatar: user.avatar };
+  const profile: LocalProfile = { name: user.name, grade: user.grade, region: user.region, subjects: user.subjects, online: user.online, onsite: user.onsite, avatar: user.avatar,
+    directions: user.directions ?? [], universities: user.universities ?? [] };
   async function update(patch: Partial<LocalProfile>) {
     if (busy.current) return false;
     busy.current = true; setSaving(true); setStorageError(null);

@@ -1111,6 +1111,22 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .subject-choice.is-selected .subject-choice__check { background: var(--olimp-blue); border-color: var(--olimp-blue); color: var(--olimp-on-primary); }
 .subject-choice:has(input:focus-visible) { outline: 2px solid var(--olimp-focus-alt); outline-offset: -2px; }
 .subjects-dialog .button { flex-shrink: 0; }
+.subject-choice__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.subject-choice__text small { color: var(--olimp-dialog-hint); font-size: 10px; }
+.subject-choice.is-selected .subject-choice__text small { color: inherit; opacity: .75; }
+.subject-choice.is-disabled { cursor: not-allowed; opacity: .45; }
+/* Целевые вузы и направления: the subjects popup with a search field and a limit. */
+.goal-dialog .subjects-dialog__list { max-height: min(330px, 46dvh); }
+.goal-dialog__search { display: flex; align-items: center; gap: 8px; min-height: 40px; margin-bottom: 10px; padding: 0 10px; flex-shrink: 0; border: 1px solid var(--olimp-menu-search-border); border-radius: 11px; background: var(--olimp-menu-search-bg); color: var(--olimp-search-icon); }
+.goal-dialog__search:focus-within { border-color: var(--olimp-menu-search-focus-border); background: var(--olimp-menu-search-focus-bg); }
+.goal-dialog__search input { flex: 1; min-width: 0; padding: 10px 0; border: 0; outline: none; background: transparent; color: var(--olimp-input-text-alt); font: inherit; font-size: 12px; }
+.goal-dialog__search input::placeholder { color: var(--olimp-menu-search-placeholder); }
+.goal-dialog__search input::-webkit-search-cancel-button { display: none; }
+.goal-dialog__search button { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; color: var(--olimp-menu-clear-icon); }
+.goal-dialog__empty { margin-bottom: 18px; padding: 22px 8px; text-align: center; color: var(--olimp-menu-empty-text); font-size: 12px; }
+.goal-dialog__limit { margin: -8px 0 12px; color: var(--olimp-on-warning-soft); font-size: 11px; line-height: 1.5; }
+/* Direction names are long: chips wrap onto two lines instead of running past the card. */
+.chips-wrap--long .chip { max-width: 100%; white-space: normal; text-align: left; line-height: 1.35; }
 @media (min-width: 600px) { .page { padding-top: 32px; } }
 @media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
