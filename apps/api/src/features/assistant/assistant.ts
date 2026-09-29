@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { and, eq, inArray, or, gte, sql } from 'drizzle-orm';
 import { CatalogQuery, Format, OlympiadDetail, benefitLabel, type AssistantRequest, type AssistantResponse, type FaqEntry } from '../../../../../packages/contracts/src/index.js';
 import type { Database } from '../../db/client.js';
-import { olympiads, stages, subjects, universities as universityTable } from '../../db/schema.js';
+import { directions as directionTable, olympiads, stages, subjects, universities as universityTable } from '../../db/schema.js';
 import { catalog, catalogConditions, detail } from '../catalog.js';
 import { universityDetail } from '../reference.js';
 import { readPlan } from '../plan.js';
@@ -43,6 +43,8 @@ export type AssistantUserContext = {
   profile: { grade: number | null; subjects: { id: number; name: string }[]; online: boolean; onsite: boolean };
   /** Personal notes never leave the server: the model sees only titles and tracking state. */
   plan: { total: number; truncated: boolean; items: { id: number; title: string; tracking: boolean; status?: 'planned' | 'registered' | 'in_progress' | 'done' }[] };
+  /** The pupil's goal from the profile: target directions of study and universities. Absent or empty — no goal yet. */
+  goal?: { directions: { code: string; name: string }[]; universities: { slug: string; name: string }[] };
 };
 export type AssistantData = {
   userContext(): Promise<AssistantUserContext>;
@@ -64,6 +66,7 @@ const identity = `Ты Олимп, помощник мини-приложени�
 Школьники пишут сленгом: «матеша» — математика, «инфа» — информатика, «общага» — обществознание, «физра» — физкультура, «русич» — русский язык, «олимпы» — олимпиады, «всош» — ВсОШ, «ЗЭ/РЭ» — заключительный/региональный этап, «вышка» — НИУ ВШЭ, «бауманка» — МГТУ им. Баумана, «бвишка» — БВИ, «сотка» — 100 баллов. normalizedMessage — сообщение с уже раскрытым сленгом, glossary — расшифровки найденных слов. Понимай такие слова и не считай их посторонней темой.`;
 const lookupPrompt = `${identity}
 userContext — актуальный профиль и план текущего пользователя, прочитанные сервером. Для подбора по умолчанию используй класс, предметы и формат из профиля; явно указанные критерии разговора имеют приоритет. Не спрашивай повторно известные данные. Общая просьба «подбери мне» с заполненным профилем — search. Вопрос о сохранённых предпочтениях или классе — profile.
+userContext.goal — цель ученика: направления подготовки и вузы из профиля. «Под мою цель», «куда поступать» и «какие вузы» относятся к ней: вузы цели передай в universitySlugs, цель не переспрашивай.
 useProfilePreferences: true по умолчанию; false, если пользователь просит без учёта профиля, все предметы, любые классы или любые форматы. В таком случае передай в grade/subjectIds/format только явно заданные критерии. Поля фильтров описывают явные критерии разговора, недостающие сервер дополнит профилем для search и для deadlines без queries. Для plan можно выбрать olympiadIds из userContext.plan.items, например для конкретной сохранённой олимпиады. Не включай личный профиль в researchQuestion.
 Ты классифицируешь ПОСЛЕДНЕЕ сообщение с учётом контекста. Верни только JSON:
 {"intent":"search","queries":[],"subjectIds":[],"grade":null,"format":null,"olympiadIds":[],"universitySlugs":[],"researchQuestion":null,"clarification":null}.
@@ -76,7 +79,7 @@ universitySlugs: только slug из providedUniversities для вузов, 
 olympiadIds: только ID, уже упомянутые в истории карточек; для "первая" выбери первый ID последнего ответа. Для новых названий используй queries. Не используй старые IDs, если пользователь сменил критерии поиска.
 Уточнения "информатика", "9 класс", "а дистанционные?", "а по матеше?" относятся к поиску, даже если короткие. На приветствие выбери greeting. Общая просьба найти олимпиады без критериев в разговоре и профиле — clarify. Просьба добавить найденную олимпиаду — help с её ID; API умеет только читать, сохранение — кнопкой в карточке. Ничего кроме JSON.`;
 const answerPrompt = `${identity}
-userContext содержит актуальные предпочтения и личный план. Используй их при рекомендации и сравнении, отмечай уже сохранённые варианты. Явный запрос важнее предпочтений; appliedFilters показывает фактически применённые фильтры. При profile отвечай по userContext, не придумывай незаполненные поля. Не проси известные класс и предметы. tracking=false означает приостановленное отслеживание, а не удаление из плана. status — где ученик с этой олимпиадой: planned — планирует, registered — зарегистрирован, in_progress — участвует, done — завершил. Личных заметок пользователя у тебя нет: не выдумывай их. При plan.truncated=true показана только часть плана; общее количество — plan.total. Не считай уже сохранённую олимпиаду новой рекомендацией.
+userContext содержит актуальные предпочтения и личный план. Используй их при рекомендации и сравнении, отмечай уже сохранённые варианты. userContext.goal — цель ученика (направления и вузы): называй их, объясняя, чем вариант полезен для цели; если цель пуста, а просят подобрать под неё, предложи указать направления и вузы в профиле. Явный запрос важнее предпочтений; appliedFilters показывает фактически применённые фильтры. При profile отвечай по userContext, не придумывай незаполненные поля. Не проси известные класс и предметы. tracking=false означает приостановленное отслеживание, а не удаление из плана. status — где ученик с этой олимпиадой: planned — планирует, registered — зарегистрирован, in_progress — участвует, done — завершил. Личных заметок пользователя у тебя нет: не выдумывай их. При plan.truncated=true показана только часть плана; общее количество — plan.total. Не считай уже сохранённую олимпиаду новой рекомендацией.
 Отвечай по-русски, на ты, ЛАКОНИЧНО и только на заданный вопрос: обычно одно-два коротких предложения, до 250 символов. Для подбора выбери МАКСИМУМ ТРИ варианта. Подробнее (до 700 символов) — только если пользователь прямо просит подробно, сравнить или объяснить правило. Не добавляй то, о чём не спрашивали: советы, оговорки о данных и сезоне, пояснения о работе базы, напоминания сверяться с сайтами и правилами приёма, пересказ уже известного, вопросы и предложения в конце ответа. Не перечисляй то, чего нет в базе. Не перечисляй описания в тексте: они уже есть в карточках под ответом. В ответе о сроках укажи название олимпиады и конкретные даты/этапы, чтобы было понятно, к чему относится каждый срок. Не предлагай действия, которые не умеешь выполнять (например "хочешь, открою каталог"). Верни только JSON {"message":"текст","olympiadIds":[88],"needsWebSearch":false,"faqIndexes":[]}.
 Источники фактов — только evidence (карточки каталога), faq (проверенная база вопросов и ответов об олимпиадах и поступлении, у каждой записи есть источники и дата проверки) и universities (льготы вузов из базы: олимпиада, льгота, условие ЕГЭ, число карточек в каталоге). Не используй знания модели или утверждения истории как факты. Не придумывай преимущества, льготы, официальные сайты, уровень РСОШ, регионы, даты, баллы или условия. Не обещай гарантированное участие или зачисление.
 На общие вопросы (intent=question) отвечай по faq, пересказывая своими словами, и укажи в faqIndexes индексы использованных записей. Если в faq сказано, что правило — проект, отметь это двумя-тремя словами. Общие инструкции по приложению бери только из appFacts.
@@ -185,10 +188,13 @@ export async function answerAssistant(input: AssistantRequest, data: AssistantDa
   const preferences = lookup.useProfilePreferences && (lookup.intent === 'search' || (lookup.intent === 'deadlines' && !lookup.queries.length))
     ? userContext.profile : null;
   const grade = lookup.grade ?? preferences?.grade;
+  const goal = userContext.goal?.directions.length || userContext.goal?.universities.length ? userContext.goal : undefined;
   const preferredFormats = preferences && preferences.online !== preferences.onsite ? [preferences.online ? 'online' : 'onsite'] : undefined;
   const query = CatalogQuery.parse({ subjectIds: lookup.subjectIds.length ? lookup.subjectIds : preferences?.subjects.length ? preferences.subjects.map(subject => subject.id) : undefined,
     grades: grade ? [grade] : undefined, formats: lookup.format ? [lookup.format] : preferredFormats,
-    universities: lookup.intent === 'search' && lookup.universitySlugs.length ? lookup.universitySlugs : undefined, pageSize: 6 });
+    universities: lookup.intent === 'search' && lookup.universitySlugs.length ? lookup.universitySlugs : undefined, pageSize: 6,
+    // A selection with the profile goes by the goal first: the olympiads that help with the target directions and universities.
+    ...(preferences && lookup.intent === 'search' && goal ? { goalDirections: goal.directions.map(d => d.code), goalUniversities: goal.universities.map(u => u.slug), sort: 'goal' } : {}) });
   // Olympiad names in slang («ломоносовка», «вышка») become catalog names before the text search.
   const queries = lookup.queries.map(q => normalizeSlang(q).text.replace(/^олимпиада\s+/i, '').replace(/[«»]/g, ''));
   if (lookup.intent === 'plan') {
@@ -262,7 +268,15 @@ export function databaseAssistantData(db: Database, userId: string, today: strin
     userContext: async () => {
       const [profile, plan, names] = await Promise.all([readProfile(db, userId), readPlan(db, userId, today),
         db.select({ id: subjects.id, name: subjects.name }).from(subjects)]);
+      const codes = profile.directions ?? [], slugs = profile.universities ?? [];
+      const [goalDirections, goalUniversities] = await Promise.all([
+        codes.length ? db.select({ code: directionTable.code, name: directionTable.name }).from(directionTable)
+          .where(inArray(directionTable.code, codes)).orderBy(directionTable.code) : [],
+        slugs.length ? db.select({ slug: universityTable.slug, name: universityTable.name }).from(universityTable)
+          .where(inArray(universityTable.slug, slugs)).orderBy(universityTable.name) : [],
+      ]);
       return {
+        goal: { directions: goalDirections, universities: goalUniversities },
         profile: { grade: profile.grade, subjects: names.filter(subject => profile.subjects.includes(subject.id)), online: profile.online, onsite: profile.onsite },
         plan: { total: plan.total, truncated: plan.items.length > 100, items: plan.items.slice(0, 100).map(entry => ({
           id: entry.olympiad.id, title: entry.olympiad.title, tracking: entry.tracking, status: entry.status,

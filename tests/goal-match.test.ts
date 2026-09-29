@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildGoalMatch, joinNames, shortUniversityName, type BenefitFact, type DirectionFact } from '../apps/api/src/features/goal-match.js';
+import { buildGoalMatch, joinNames, levelWeight, shortUniversityName, type BenefitFact, type DirectionFact } from '../apps/api/src/features/goal-match.js';
 
 const benefit = (slug: string, name: string, kind: BenefitFact['kind'] = 'bvi', diploma: BenefitFact['diploma'] = 'any'): BenefitFact => ({ slug, name, city: 'Москва', kind, diploma });
 const direction = (code: string, name: string, viaRsosh: boolean, subjectRelevance: DirectionFact['subjectRelevance'], core: string[] = [], related: string[] = []): DirectionFact =>
@@ -24,7 +24,8 @@ test('four kinds of reasons, strongest first, each with a ready sentence', () =>
     ['core_subject', 'Информатика — профильный предмет для направления «Программная инженерия»'],
     ['related_subject', 'Близкий профиль для направления «Инфокоммуникационные технологии и системы связи» (информатика)'],
   ]);
-  assert.equal(match?.score, 6 * 2 + 4 + 3 + 1);
+  // 2 universities, RSOSH, core, related; +1 twice: «Информатика» is the main subject of both first directions.
+  assert.equal(match?.score, 6 * 2 + 4 + 4 + 1 + 1 + 1);
   assert.deepEqual(match?.reasons[0]?.universities?.map(u => u.slug), ['kazan-fu', 'hse']);
   assert.equal(match?.reasons[2]?.subject, 'Информатика');
 });
@@ -53,4 +54,27 @@ test('names read naturally in a sentence', () => {
   assert.equal(shortUniversityName('УрФУ им. Б.Н. Ельцина'), 'УрФУ');
   assert.equal(joinNames(['А', 'Б', 'В']), 'А, Б и В');
   assert.equal(joinNames(['А', 'Б', 'В', 'Г', 'Д']), 'А, Б, В и ещё 2');
+});
+
+test('the level adds to the score once: ВсОШ and I level above III, outside the list nothing', () => {
+  const score = (level: string | null) => buildGoalMatch({ inRsoshList: true, benefits: [], subjects: ['Физика'], level,
+    directions: [pi(false, 'related')] })?.score;
+  assert.deepEqual(['ВсОШ', 'I', 'II', 'III', null].map(score), [1 + 4, 1 + 3, 1 + 2, 1 + 1, 1]);
+  assert.equal(levelWeight('II–III'), 1);
+  assert.equal(levelWeight('unknown'), 0);
+});
+
+test('«Программная инженерия»: informatics of ВсОШ and I level go above robotics and III level of the RSOSH list', () => {
+  // The facts of the live catalog: robotics and «Шаг в будущее» are linked by the RSOSH list (a group of directions),
+  // informatics by the subject; mathematics and finance are core too, but not the main subject of the direction.
+  const cards = {
+    'ВсОШ по информатике': { level: 'ВсОШ', subjects: ['Информатика', 'Робототехника'], directions: [pi(false, 'core')] },
+    'Высшая проба по информатике': { level: 'I', subjects: ['Информатика'], directions: [pi(false, 'core')] },
+    'Физтех по математике': { level: 'I', subjects: ['Математика'], directions: [pi(false, 'core')] },
+    'Московская олимпиада по робототехнике': { level: 'II', subjects: ['Робототехника'], directions: [pi(true, null)] },
+    'Шаг в будущее по компьютерному моделированию': { level: 'III', subjects: ['Математика', 'Черчение'], directions: [pi(true, 'core')] },
+  };
+  const scores = Object.values(cards).map(card => buildGoalMatch({ inRsoshList: true, benefits: [], ...card })?.score ?? 0);
+  // Listed from the best: each card must score strictly more than the next one.
+  scores.slice(1).forEach((next, i) => assert.ok(scores[i]! > next, `${Object.keys(cards)[i]} (${scores[i]}) > ${Object.keys(cards)[i + 1]} (${next})`));
 });

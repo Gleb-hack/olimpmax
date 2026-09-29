@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import { benefitLabel, type Benefit as BenefitSchema, type OlympiadDetail, type Stage } from '@olimp/contracts';
+import { benefitLabel, type Benefit as BenefitSchema, type DirectionCoverage, type OlympiadDetail, type Stage } from '@olimp/contracts';
 import { formatDay } from '../../lib/format';
 
 type Detail = z.infer<typeof OlympiadDetail>;
@@ -59,7 +59,20 @@ export function stageSummary(stages: z.infer<typeof Stage>[]) {
 }
 
 type Benefit = z.infer<typeof BenefitSchema>;
-export type UniversityBenefits = { slug: string; name: string; city: string; initials: string; summary: string; organizer: boolean; lines: { title: string; requirement: string }[] };
+export type UniversityBenefits = { slug: string; name: string; city: string; initials: string; summary: string; organizer: boolean; lines: { title: string; requirement: string }[];
+  /** «Подходит к 13 из 28 направлений»: null when the server does not know; estimated — counted by the exams, not the rules. */
+  coverage: string | null; coverageEstimated: boolean };
+
+/**
+ * On how many of the university's directions the diploma helps. From the admission rules it is a fact;
+ * estimated by the exams of the programs it is said as an estimate.
+ */
+export function coverageText(coverage: z.infer<typeof DirectionCoverage> | null | undefined) {
+  if (!coverage || !coverage.total) return null;
+  const word = new Intl.PluralRules('ru').select(coverage.total) === 'one' ? 'направления' : 'направлений';
+  // «≈» marks the estimate by exams; the rules give an exact number.
+  return `Подходит к ${coverage.source === 'rules' ? '' : '≈'}${coverage.matched} из ${coverage.total} ${word}`;
+}
 
 const prefixes = new Set(['НИУ', 'НИЯУ', 'НИТУ', 'РТУ', 'ФГБОУ', 'им.', 'им']);
 /** «МФТИ» → «МФ», «НИУ ВШЭ» → «ВШ», «Финансовый университет» → «ФУ»: the avatar of a university card. */
@@ -95,7 +108,8 @@ export function universityBenefits(items: Benefit[], organizers: string[] = []):
   const groups = new Map<string, UniversityBenefits & { raw: Benefit[] }>();
   for (const item of items) {
     const group = groups.get(item.university.slug) ?? { slug: item.university.slug, name: item.university.name, city: item.university.city,
-      initials: universityInitials(item.university.name), summary: '', organizer: isOrganizer(item.university, organizers), lines: [], raw: [] };
+      initials: universityInitials(item.university.name), summary: '', organizer: isOrganizer(item.university, organizers), lines: [], raw: [],
+      coverage: coverageText(item.coverage), coverageEstimated: item.coverage?.source === 'exams' };
     group.raw.push(item);
     groups.set(item.university.slug, group);
   }

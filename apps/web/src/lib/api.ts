@@ -111,6 +111,13 @@ export const api = {
   async catalog(query: string, signal?: AbortSignal) { return c.CatalogResponse.parse(await request(`/olympiads?${query}`, { signal })); },
   async filters() { return c.FiltersResponse.parse(await request('/olympiads/filters')); },
   async detail(id: number, goal = '') { return c.OlympiadDetail.parse(await request(`/olympiads/${id}${goal ? `?${goal}` : ''}`)); },
+  /** Programs the olympiad helps to enter, narrowed to the goal (`universities`/`directions`; both given — their intersection). */
+  async olympiadPrograms(id: number, goal: { universities: string[]; directions: string[] }, signal?: AbortSignal) {
+    const query = new URLSearchParams();
+    if (goal.universities.length) query.set('universities', goal.universities.join(','));
+    if (goal.directions.length) query.set('directions', goal.directions.join(','));
+    return c.OlympiadProgramsResponse.parse(await request(`/olympiads/${id}/programs?${query}`, { signal }));
+  },
   async universities() { return c.UniversityListResponse.parse(await request('/universities')); },
   /** Universities with programs in one of these directions (the catalog's university search). */
   async universitiesFor(directions: string[], signal?: AbortSignal) {

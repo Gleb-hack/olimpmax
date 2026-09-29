@@ -32,7 +32,6 @@ export function PlanCalendar({ entries, onOpen }: { entries: PlanEntry[]; onOpen
   // The first event after the shown month, to jump to when this month has nothing left.
   const next = items.find(item => item.date >= today && item.date > dayKey(shown, 31));
   const go = (delta: number) => { setShown(month => shiftMonth(month, delta)); setSelected(null); };
-  const estimated = items.some(item => item.estimated);
 
   return <div className="plan-calendar">
     <div className="calendar-notice"><Icon name="bell" size={16} /><p>Здесь этапы олимпиад, которые ты отслеживаешь. Нажми на день, чтобы увидеть его события.</p></div>
@@ -66,7 +65,6 @@ export function PlanCalendar({ entries, onOpen }: { entries: PlanEntry[]; onOpen
       {list.items.length ? <ul>{list.items.map(item => <EventRow key={item.key} item={item} onOpen={() => onOpen(item.olympiadId)} />)}</ul>
         : <p className="calendar-events__empty">{selected ? 'В этот день нет этапов.' : items.length ? 'В этом месяце больше нет этапов.' : 'Пока нет дат этапов. Отслеживай олимпиады из каталога — их этапы появятся здесь.'}
           {!selected && next && <> <button type="button" className="text-button" onClick={() => { setShown(monthOf(next.date)); setSelected(next.date); }}>Ближайшее: {dayTitle(next.date)}</button></>}</p>}
-      {estimated && <p className="calendar-events__hint">Если в расписании не указан год, он рассчитан по учебному сезону. Точные даты сверяй на сайте организатора.</p>}
     </section>
   </div>;
 }
