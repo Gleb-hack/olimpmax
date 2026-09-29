@@ -64,3 +64,83 @@ export function eventRelevant(entry: Pick<PlanEntry, 'status' | 'stages'>, event
   if (entry.status === 'planned' || entry.status === undefined) return true;
   return entry.stages.find(stage => stage.id === event.stageId)?.kind !== 'registration';
 }
+
+/** One stage of «Расписание этапов» in the plan dialog: all dated moments of the stage joined into a period. */
+export type ScheduleStage = {
+  key: string; number: number; name: string; kind: 'registration' | 'competition' | 'other';
+  start: string; end: string; estimated: boolean;
+  /** `next` — the first stage that has not ended yet (it may already be running); only one stage is `next`. */
+  state: 'past' | 'next' | 'future';
+};
+
+/** Stages of the schedule the plan card shows, in date order, numbered from 1. Undated stages are left out. */
+export function planSchedule(entry: Pick<PlanEntry, 'calendarEvents'>, today: string): ScheduleStage[] {
+  const byStage = new Map<string, Omit<ScheduleStage, 'number' | 'state'>>();
+  for (const event of entry.calendarEvents ?? []) {
+    const stage = byStage.get(event.stageId);
+    if (stage) {
+      if (event.date < stage.start) stage.start = event.date;
+      if (event.date > stage.end) stage.end = event.date;
+      stage.estimated ||= event.estimated;
+      continue;
+    }
+    const name = event.name?.trim() || (event.stageKind === 'registration' ? 'Регистрация' : 'Этап');
+    byStage.set(event.stageId, { key: event.stageId, name, kind: event.stageKind, start: event.date, end: event.date, estimated: event.estimated });
+  }
+  const stages = [...byStage.values()].sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end));
+  const next = stages.findIndex(stage => stage.end >= today);
+  return stages.map((stage, index) => ({ ...stage, number: index + 1, state: next === -1 || index < next ? 'past' : index === next ? 'next' : 'future' }));
+}
+
+/**
+ * The part of a long schedule the dialog shows: the stage before the nearest one, the nearest one and the one after it;
+ * the rest collapse into «Ещё N этапов пройдено / впереди». Short schedules (up to three stages) are shown whole.
+ */
+export function scheduleWindow<T extends Pick<ScheduleStage, 'state'>>(stages: T[], expanded: { before: boolean; after: boolean } = { before: false, after: false }) {
+  if (stages.length <= 3) return { before: 0, items: stages, after: 0 };
+  const next = stages.findIndex(stage => stage.state !== 'past');
+  const anchor = next === -1 ? stages.length - 1 : next;
+  const from = Math.min(Math.max(anchor - 1, 0), stages.length - 3);
+  const start = expanded.before ? 0 : from;
+  const end = expanded.after ? stages.length : from + 3;
+  return { before: start, items: stages.slice(start, end), after: stages.length - end };
+}
+
+const stagesWord = (count: number) => { const plural = new Intl.PluralRules('ru').select(count); return plural === 'one' ? 'этап' : plural === 'few' ? 'этапа' : 'этапов'; };
+/** «Ещё 1 этап пройден», «Ещё 2 этапа пройдены», «Ещё 5 этапов пройдено»; «Ещё 2 этапа впереди». */
+export function hiddenStagesLabel(count: number, side: 'before' | 'after') {
+  if (side === 'after') return `Ещё ${count} ${stagesWord(count)} впереди`;
+  const plural = new Intl.PluralRules('ru').select(count);
+  return `Ещё ${count} ${stagesWord(count)} ${plural === 'one' ? 'пройден' : plural === 'few' ? 'пройдены' : 'пройдено'}`;
+}
+
+const longDay = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+/**
+ * What the schedule row says under the stage name and which day its date tile shows:
+ * «Дата прошла», «Ближайший · через 3 дня», «Идёт сейчас · до 12 мая» (the tile then shows the end), «15 февраля» or «2–10 июня».
+ */
+export function scheduleStageHint(stage: Pick<ScheduleStage, 'start' | 'end' | 'state' | 'estimated'>, today: string) {
+  if (stage.state === 'past') return { text: 'Дата прошла', day: stage.start };
+  if (stage.state === 'next') {
+    if (stage.start > today) return { text: `Ближайший · ${eventTiming(stage.start, today).relative}`, day: stage.start };
+    if (stage.end === today) return { text: 'Идёт сейчас · заканчивается сегодня', day: stage.end };
+    return { text: stage.start === stage.end ? 'Ближайший · сегодня' : `Идёт сейчас · до ${longDay(stage.end)}`, day: stage.start === stage.end ? stage.start : stage.end };
+  }
+  const [from, to] = [longDay(stage.start), longDay(stage.end)];
+  const sameMonth = stage.start.slice(0, 7) === stage.end.slice(0, 7);
+  const period = stage.start === stage.end ? from : sameMonth ? `${from.split(' ')[0]}–${to}` : `${from} – ${to}`;
+  return { text: stage.estimated ? `${period} · ориентировочно` : period, day: stage.start };
+}
+
+/**
+ * The stage a new result is most likely about: the latest stage that has already started, if it can still get a result;
+ * otherwise the first stage without one.
+ */
+export function defaultResultStage(options: string[], schedule: Pick<ScheduleStage, 'name' | 'start'>[], today: string) {
+  const started = schedule.filter(stage => stage.start <= today).map(stage => stage.name.toLocaleLowerCase('ru'));
+  for (const name of started.reverse()) {
+    const option = options.find(value => value.toLocaleLowerCase('ru') === name);
+    if (option) return option;
+  }
+  return options[0];
+}

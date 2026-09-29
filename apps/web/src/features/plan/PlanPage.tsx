@@ -1,87 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { Switch } from '@maxhub/max-ui';
-import { planStatusLabels, stageResultLabels } from '@olimp/contracts';
-import { Button, Dialog, EmptyState, Header, Loading, Notice, Icon } from '@olimp/ui';
-import { useEvents, usePlan, usePlanActions } from '../../lib/queries';
+import { Button, EmptyState, Header, Loading, Notice, Icon } from '@olimp/ui';
+import { useEvents, usePlan } from '../../lib/queries';
 import { PlanCard } from './PlanCard';
 import { PlanCalendar } from './PlanCalendar';
 import { CalendarExportDialog } from './CalendarExport';
 import { soonCount } from './calendar-model';
-import { eventRelevant, groupByStatus, resultStageOptions, statusSections, type PlanStatus } from './plan-card-format';
+import { eventRelevant, groupByStatus, statusSections } from './plan-card-format';
 import { moscowToday } from '../../lib/format';
-import type { PlanEntry } from '../../lib/api';
 import { BotPrompt } from './BotPrompt';
-
-type StageResult = keyof typeof stageResultLabels;
-type Result = { stage: string; result: StageResult };
-const resultOptions = Object.entries(stageResultLabels) as [StageResult, string][];
-const OTHER_STAGE = '__other';
-/** In the dialog the statuses go in the order the pupil passes them. */
-const dialogStatuses: PlanStatus[] = ['planned', 'registered', 'in_progress', 'done'];
-
-/** Results of the olympiad's stages: one row per stage, a new row from the schedule's stages or a stage typed by hand. */
-function StageResults({ entry, value, onChange }: { entry: PlanEntry; value: Result[]; onChange: (value: Result[]) => void }) {
-  const free = resultStageOptions(entry).filter(stage => !value.some(result => result.stage.toLocaleLowerCase('ru') === stage.toLocaleLowerCase('ru')));
-  const [stage, setStage] = useState(free[0] ?? OTHER_STAGE);
-  const [custom, setCustom] = useState('');
-  const [result, setResult] = useState<StageResult>('passed');
-  const name = (stage === OTHER_STAGE ? custom : stage).trim();
-  const duplicate = value.some(item => item.stage.toLocaleLowerCase('ru') === name.toLocaleLowerCase('ru'));
-  useEffect(() => { if (stage !== OTHER_STAGE && !free.includes(stage)) setStage(free[0] ?? OTHER_STAGE); }, [stage, free]);
-  function add() {
-    if (!name || duplicate || value.length >= 20) return;
-    onChange([...value, { stage: name.slice(0, 200), result }]);
-    setCustom('');
-  }
-  return <section className="stage-results" aria-labelledby="stage-results-title">
-    <h4 id="stage-results-title">Результаты этапов</h4>
-    {value.length > 0 && <ul className="stage-results__list">{value.map((item, index) => <li key={item.stage}>
-      <span className="stage-results__stage">{item.stage}</span>
-      <select aria-label={`Результат: ${item.stage}`} value={item.result} onChange={event => onChange(value.map((row, i) => i === index ? { ...row, result: event.target.value as StageResult } : row))}>
-        {resultOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-      </select>
-      <button type="button" className="icon-button" aria-label={`Удалить результат: ${item.stage}`} onClick={() => onChange(value.filter((_, i) => i !== index))}><Icon name="x" size={11} /></button>
-    </li>)}</ul>}
-    <div className="stage-results__add">
-      <select aria-label="Этап" value={stage} onChange={event => setStage(event.target.value)}>
-        {free.map(option => <option key={option} value={option}>{option}</option>)}
-        <option value={OTHER_STAGE}>Другой этап…</option>
-      </select>
-      {stage === OTHER_STAGE && <input aria-label="Название этапа" placeholder="Например, отборочный этап" maxLength={200} value={custom} onChange={event => setCustom(event.target.value)} />}
-      <select aria-label="Результат" value={result} onChange={event => setResult(event.target.value as StageResult)}>
-        {resultOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-      </select>
-      <Button size="small" variant="secondary" disabled={!name || duplicate || value.length >= 20} onClick={add}><Icon name="plus" size={13} />Добавить результат</Button>
-    </div>
-  </section>;
-}
-
-function EditPlanItem({ entry, onClose, backTo }: { entry: PlanEntry; onClose: () => void; backTo?: string }) {
-  const [note, setNote] = useState(entry.note || '');
-  const [tracking, setTracking] = useState(entry.tracking);
-  const [status, setStatus] = useState<PlanStatus>(entry.status);
-  const [results, setResults] = useState<Result[]>(entry.results);
-  const [removeConfirm, setRemoveConfirm] = useState(false);
-  const mutation = usePlanActions();
-  // A finished olympiad needs no reminders: switch tracking off right away, the user still sees it and can keep it on.
-  const chooseStatus = (value: PlanStatus) => { setStatus(value); if (value === 'done' && status !== 'done') setTracking(false); };
-  return <Dialog title="В моём плане" onClose={onClose}>
-    <h3 className="dialog-item-title">{entry.olympiad.title}</h3>
-    <div className="plan-status" role="radiogroup" aria-label="Статус">
-      {dialogStatuses.map(value =>
-        <button key={value} type="button" role="radio" aria-checked={status === value} className={`chip ${status === value ? 'chip--active' : ''}`} onClick={() => chooseStatus(value)}>{planStatusLabels[value]}</button>)}
-    </div>
-    <label className="switch-row"><span><strong>Отслеживать этапы</strong><small>Ближайшие события в плане и напоминания от бота</small></span><Switch checked={tracking} onChange={event => setTracking(event.target.checked)} aria-label="Отслеживать этапы" /></label>
-    <StageResults entry={entry} value={results} onChange={setResults} />
-    <label className="field"><span>Моя заметка</span><textarea value={note} onChange={event => setNote(event.target.value)} maxLength={2000} rows={4} placeholder="Например, подготовить документы" /><small>{note.length} / 2000</small></label>
-    {mutation.isError && <Notice tone="error">{mutation.error.message}</Notice>}
-    <Button className="full-width" disabled={mutation.isPending} onClick={() => mutation.mutate({ id: entry.olympiad.id, action: 'patch', patch: { tracking, note: note.trim() || null, status, results } }, { onSuccess: onClose })}>{mutation.isPending ? 'Сохраняем…' : 'Сохранить'}</Button>
-    <Link className="text-link centered" to={`/olympiads/${entry.olympiad.id}`}>Подробнее об олимпиаде</Link>
-    {backTo && <Link className="text-link centered" to={backTo}>Назад в каталог</Link>}
-    {removeConfirm ? <div className="remove-confirm"><p>Убрать олимпиаду, её заметку и результаты из плана?</p><div className="button-pair"><Button variant="secondary" onClick={() => setRemoveConfirm(false)}>Оставить</Button><Button variant="danger" disabled={mutation.isPending} onClick={() => mutation.mutate({ id: entry.olympiad.id, action: 'remove' }, { onSuccess: onClose })}>Убрать</Button></div></div> : <button className="danger-link centered" onClick={() => setRemoveConfirm(true)}><Icon name="trash" size={15} />Убрать из плана</button>}
-  </Dialog>;
-}
+import { EditPlanItem } from './EditPlanItem';
 
 export function PlanPage() {
   const [params, setParams] = useSearchParams();
