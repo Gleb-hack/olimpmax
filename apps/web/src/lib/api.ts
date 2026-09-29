@@ -107,7 +107,7 @@ export const api = {
   },
   async catalog(query: string, signal?: AbortSignal) { return c.CatalogResponse.parse(await request(`/olympiads?${query}`, { signal })); },
   async filters() { return c.FiltersResponse.parse(await request('/olympiads/filters')); },
-  async detail(id: number) { return c.OlympiadDetail.parse(await request(`/olympiads/${id}`)); },
+  async detail(id: number, goal = '') { return c.OlympiadDetail.parse(await request(`/olympiads/${id}${goal ? `?${goal}` : ''}`)); },
   async universities() { return c.UniversityListResponse.parse(await request('/universities')); },
   async directions() { return c.DirectionListResponse.parse(await request('/directions')); },
   async university(slug: string) { return c.UniversityResponse.parse(await request(`/universities/${encodeURIComponent(slug)}`)); },

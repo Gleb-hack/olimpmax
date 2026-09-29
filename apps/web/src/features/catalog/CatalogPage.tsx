@@ -8,6 +8,8 @@ import { useFilters, usePlan } from '../../lib/queries';
 import { formats } from '../../lib/format';
 import { OlympiadCard } from './OlympiadCard';
 import { CatalogPagination } from './CatalogPagination';
+import { useProfile } from '../../lib/profile';
+import { hasGoal, withGoal } from '../../lib/goal';
 
 // «Сначала подробные» is the default: dated stages, days to the next stage and university benefits come first.
 const sortOptions = [
@@ -15,6 +17,8 @@ const sortOptions = [
   { value: 'rating', label: 'По рейтингу источника', short: 'По рейтингу', description: 'Сначала с высоким рейтингом' },
   { value: 'name', label: 'По названию', short: 'По названию', description: 'От А до Я' },
 ];
+// Only with a goal in the profile: льготы целевых вузов, then the RSOSH list, then subjects of target directions.
+const goalSort = { value: 'goal', label: 'Под мою цель', short: 'Под мою цель', description: 'Льготы целевых вузов и подходящие направления' };
 
 export function CatalogPage() {
   const navigate = useNavigate();
@@ -24,7 +28,8 @@ export function CatalogPage() {
   const [sortOpen, setSortOpen] = useState(false);
   const filters = useFilters();
   const plan = usePlan();
-  const query = new URLSearchParams(params);
+  const { profile } = useProfile();
+  const query = withGoal(new URLSearchParams(params), profile);
   query.set('pageSize', '20');
   const catalog = useQuery({ queryKey: ['catalog', query.toString()], queryFn: ({ signal }) => api.catalog(query.toString(), signal) });
   const updateParam = (key: string, value: string) => {
@@ -39,6 +44,7 @@ export function CatalogPage() {
   const hasFilters = ['q', 'subjectIds', 'grades', 'formats', 'levels', 'universities'].some(key => params.has(key));
   const universityOptions = filters.data?.universities ?? [];
   const sort = params.get('sort') || 'complete';
+  const sorts = hasGoal(profile) ? [goalSort, ...sortOptions] : sortOptions;
   return <>
     <Header title="Каталог" action={<button className="icon-button icon-button--blue" aria-label="Поиск олимпиад" onClick={() => navigate('/search', { state: { backTo: `/catalog${params.size ? `?${params}` : ''}` } })}><Icon name="search" size={18} /></button>} />
     <div className="filter-grid">
@@ -50,12 +56,12 @@ export function CatalogPage() {
     </div>
     <button className="reset-filter full-width" onClick={reset}><Icon name="refresh" size={16} />Сбросить фильтры</button>
     {filters.isError && <Notice tone="warning">Список предметов не загрузился. <button className="text-button" onClick={() => filters.refetch()}>Повторить</button></Notice>}
-    <Button className="full-width sort-button" onClick={() => setSortOpen(true)}><Icon name="sort" size={15} />{sortOptions.find(option => option.value === sort && option.value !== 'complete')?.short ?? 'Сортировать'}</Button>
+    <Button className="full-width sort-button" onClick={() => setSortOpen(true)}><Icon name="sort" size={15} />{sorts.find(option => option.value === sort && option.value !== 'complete')?.short ?? 'Сортировать'}</Button>
     <div className="results-label" aria-live="polite"><span>{catalog.data ? `Найдено: ${catalog.data.total}` : 'Каталог олимпиад'}</span><span>{hasFilters ? 'По вашим фильтрам' : 'Все предметы'}</span></div>
     {catalog.isPending ? <Loading label="Загружаем олимпиады…" /> : catalog.isError ? <EmptyState title="Не удалось загрузить каталог" action={<Button onClick={() => catalog.refetch()}>Попробовать снова</Button>}>{catalog.error.message}</EmptyState> : !catalog.data.items.length ? <EmptyState icon="search" title="Ничего не нашлось" action={<Button variant="secondary" onClick={reset}>Сбросить фильтры</Button>}>Попробуйте другой запрос или выберите меньше фильтров.</EmptyState> : <>
       <div className="catalog-list">{catalog.data.items.map(item => <OlympiadCard key={item.id} item={item} saved={savedIds.has(item.id)} tracking={plan.data?.items.find(entry => entry.olympiad.id === item.id)?.tracking} backTo={`/catalog${params.size ? `?${params}` : ''}`} />)}</div>
       <CatalogPagination page={catalog.data.page} totalPages={Math.max(1, Math.ceil(catalog.data.total / catalog.data.pageSize))} onChange={page => { updateParam('page', String(page)); window.scrollTo(0, 0); }} />
     </>}
-    {sortOpen && <Dialog title="Сортировка" onClose={() => setSortOpen(false)}><div className="choice-list">{sortOptions.map(option => <label key={option.value} className="choice-row"><input type="radio" name="sort" value={option.value} checked={sort === option.value} onChange={() => { updateParam('sort', option.value === 'complete' ? '' : option.value); setSortOpen(false); }} /><span><strong>{option.label}</strong><small>{option.description}</small></span></label>)}</div></Dialog>}
+    {sortOpen && <Dialog title="Сортировка" onClose={() => setSortOpen(false)}><div className="choice-list">{sorts.map(option => <label key={option.value} className="choice-row"><input type="radio" name="sort" value={option.value} checked={sort === option.value} onChange={() => { updateParam('sort', option.value === 'complete' ? '' : option.value); setSortOpen(false); }} /><span><strong>{option.label}</strong><small>{option.description}</small></span></label>)}</div></Dialog>}
   </>;
 }

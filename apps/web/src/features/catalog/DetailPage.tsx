@@ -14,6 +14,9 @@ import { stageModeLabels } from '@olimp/contracts';
 import { hiddenReferenceNote, primaryStages, registrationLabel, scheduleGroups, stageSummary, universityBenefits, verifiedStageDates } from './detail-format';
 import { UniversityBenefits } from './UniversityBenefits';
 import { DetailRow } from './DetailRow';
+import { GoalReasonsSection } from './GoalReasons';
+import { useProfile } from '../../lib/profile';
+import { goalQuery } from '../../lib/goal';
 
 
 const contactIcons: Record<Contact['kind'], IconName> = { email: 'mail', phone: 'phone', social: 'external-link', site: 'globe', text: 'globe' };
@@ -33,7 +36,9 @@ export function DetailPage() {
   const returnTo = typeof state?.returnTo === 'string' && /^\/catalog(?:\?|$)/.test(state.returnTo) ? state.returnTo : '/catalog';
   const id = Number(useParams().id);
   const validId = Number.isInteger(id) && id > 0;
-  const detail = useQuery({ queryKey: ['olympiad', id], queryFn: () => api.detail(id), enabled: validId });
+  const { profile } = useProfile();
+  const goal = goalQuery(profile);
+  const detail = useQuery({ queryKey: ['olympiad', id, goal], queryFn: () => api.detail(id, goal), enabled: validId });
   const plan = usePlan();
   const action = usePlanActions();
   const saved = plan.data?.items.find(entry => entry.olympiad.id === id);
@@ -60,6 +65,7 @@ export function DetailPage() {
       : <Link to={backTo} state={{ backTo: returnTo }} className="icon-button back-button" aria-label={backTo.startsWith('/olimp') ? 'Назад к Олимпу' : backTo.startsWith('/search') ? 'Назад к поиску' : backTo.startsWith('/universities/') ? 'Назад к вузу' : 'Назад в каталог'}><Icon name="chevron-left" size={18} /></Link>}</div>
     {!validId ? <EmptyState title="Олимпиада не найдена" action={<Link className="button-link" to="/catalog">В каталог</Link>}>Проверьте ссылку или найдите олимпиаду в каталоге.</EmptyState> : detail.isPending ? <Loading /> : detail.isError ? <Notice tone="error">{detail.error.message}<Button variant="secondary" onClick={() => detail.refetch()}>Повторить</Button></Notice> : item && <>
       <header className="olympiad-detail__heading"><OlympiadStatus item={item} /><h1 ref={heading} tabIndex={-1}>{item.title}</h1><OlympiadMeta item={item} /><OlympiadTags item={item} /></header>
+      <GoalReasonsSection match={item.goalMatch} />
       <section className="olympiad-detail__about"><h2>Об олимпиаде</h2><p id="olympiad-description" className={!descriptionOpen && (item.description?.length ?? 0) > 280 ? 'is-collapsed' : ''}>{item.description || 'Подробное описание пока не добавлено. Узнать условия участия можно на странице олимпиады.'}</p>{(item.description?.length ?? 0) > 280 && <button className="text-button olympiad-detail__read-more" aria-expanded={descriptionOpen} aria-controls="olympiad-description" onClick={() => setDescriptionOpen(!descriptionOpen)}>{descriptionOpen ? 'Свернуть' : 'Читать полностью'}</button>}</section>
       <section className="olympiad-detail__details"><h2>Детали</h2><dl className="olympiad-detail-list">
         <DetailRow icon="list" label="Формат" value={formats[item.format]} />

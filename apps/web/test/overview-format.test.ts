@@ -49,3 +49,11 @@ test('recommendations use the profile like the assistant does and put new olympi
   assert.deepEqual(pickRecommendations(items, new Set([1])).map(item => item.id), [2, 4]);
   assert.deepEqual(pickRecommendations(items.slice(0, 2), new Set([1])).map(item => item.id), [2, 1]);
 });
+
+test('with a goal the selection is ordered by it and matching cards come first', () => {
+  assert.equal(recommendationQuery({ grade: 9, subjects: [], online: true, onsite: true, universities: ['hse', 'mipt'], directions: ['09.03.04'] }),
+    'grades=9&goalUniversities=hse%2Cmipt&goalDirections=09.03.04&sort=goal&pageSize=6');
+  const match = { score: 6, reasons: [{ kind: 'benefit' as const, text: 'БВИ в НИУ ВШЭ' }] };
+  const items = [1, 2, 3].map(id => ({ ...card, id, calendarState: 'unverified' as const, goalMatch: id === 1 ? null : match }));
+  assert.deepEqual(pickRecommendations(items, new Set([2])).map(item => item.id), [3, 2]);
+});

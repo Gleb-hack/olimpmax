@@ -6,6 +6,8 @@ import { api } from '../../lib/api';
 import { usePlan } from '../../lib/queries';
 import { localKeys, readSearchHistory } from '../../lib/local-data';
 import { OlympiadCard } from './OlympiadCard';
+import { useProfile } from '../../lib/profile';
+import { goalQuery, withGoal } from '../../lib/goal';
 
 const popular = [{ label: 'Информатика', query: 'Информатика' }, { label: 'Математика', query: 'Математика' }, { label: 'ВсОШ', query: 'Всероссийская олимпиада' }, { label: 'Физика', query: 'Физика' }];
 export function SearchPage() {
@@ -23,10 +25,12 @@ export function SearchPage() {
     const timer = setTimeout(() => setParams(input.trim() ? { q: input.trim() } : {}, { replace: true, state: location.state }), 350);
     return () => clearTimeout(timer);
   }, [input, urlQuery, setParams, location.state]);
+  const { profile } = useProfile();
+  const goal = goalQuery(profile);
   const results = useInfiniteQuery({
-    queryKey: ['search', urlQuery], enabled: !!urlQuery,
+    queryKey: ['search', urlQuery, goal], enabled: !!urlQuery,
     initialPageParam: 1,
-    queryFn: ({ pageParam, signal }) => api.catalog(new URLSearchParams({ q: urlQuery, page: String(pageParam), pageSize: '20' }).toString(), signal),
+    queryFn: ({ pageParam, signal }) => api.catalog(withGoal(new URLSearchParams({ q: urlQuery, page: String(pageParam), pageSize: '20' }), profile).toString(), signal),
     getNextPageParam: last => last.page * last.pageSize < last.total ? last.page + 1 : undefined,
   });
   useEffect(() => {

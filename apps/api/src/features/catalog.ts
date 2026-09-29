@@ -7,6 +7,7 @@ import { normalizeSearch } from '../import/csv.js';
 import { anchorDay, calendarSummary, moscowToday, scheduleEvents, upcomingStage } from './calendar.js';
 import { olympiadBenefits, seriesInfo } from './reference.js';
 import { olympiadDirectionList, strongMatch } from './directions.js';
+import { goalMatches, goalOf, hasGoal, type Goal } from './goal-match.js';
 
 type Olympiad = typeof olympiads.$inferSelect;
 type CardStage = z.infer<typeof Stage>;
@@ -164,37 +165,48 @@ export function completenessScores(db: Database, today = moscowToday()) {
 export async function catalog(db: Database, query: CatalogQuery, today = moscowToday(), options: { excludeNotHeld?: boolean; requireSchedule?: boolean } = {}) {
   const where = catalogConditions(db, query, options);
   const offset = (query.page - 1) * query.pageSize;
-  if (query.sort === 'complete') {
-    const [matches, scores] = await Promise.all([
+  const goal = goalOf(query);
+  const withGoal = hasGoal(goal);
+  // Cards carry `goalMatch` whenever the request has a goal; without one the field is left out.
+  const cards = async (rows: Olympiad[], matches?: Awaited<ReturnType<typeof goalMatches>>) => {
+    const items = (await enrich(db, rows, today)).map(r => r.card);
+    if (!withGoal) return items;
+    const found = matches ?? await goalMatches(db, goal, rows.map(row => row.id));
+    return items.map(card => ({ ...card, goalMatch: found.get(card.id) ?? null }));
+  };
+  if (query.sort === 'complete' || query.sort === 'goal') {
+    const [matches, scores, goalScores] = await Promise.all([
       db.select({ id: olympiads.id, rating: olympiads.rating }).from(olympiads).where(where),
       completenessScores(db, today),
+      query.sort === 'goal' ? goalMatches(db, goal) : Promise.resolve(undefined),
     ]);
-    const ordered = matches.sort((a, b) => (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0)
-      || (b.rating ?? -Infinity) - (a.rating ?? -Infinity) || a.id - b.id);
+    const ordered = matches.sort((a, b) => (goalScores ? (goalScores.get(b.id)?.score ?? 0) - (goalScores.get(a.id)?.score ?? 0) : 0)
+      || (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0) || (b.rating ?? -Infinity) - (a.rating ?? -Infinity) || a.id - b.id);
     const pageIds = ordered.slice(offset, offset + query.pageSize).map(match => match.id);
     const rows = pageIds.length ? await db.select().from(olympiads).where(inArray(olympiads.id, pageIds)) : [];
     const byId = new Map(rows.map(row => [row.id, row]));
     const pageRows = pageIds.flatMap(id => byId.get(id) ?? []);
-    return { items: (await enrich(db, pageRows, today)).map(r => r.card), total: ordered.length, page: query.page, pageSize: query.pageSize };
+    return { items: await cards(pageRows, goalScores), total: ordered.length, page: query.page, pageSize: query.pageSize };
   }
   const [rows, total] = await Promise.all([
     db.select().from(olympiads).where(where).orderBy(...(query.sort === 'name' ? [asc(olympiads.title), asc(olympiads.id)] : [sql`${olympiads.rating} desc nulls last`, asc(olympiads.id)]))
       .limit(query.pageSize).offset(offset),
     db.select({ value: count() }).from(olympiads).where(where),
   ]);
-  return { items: (await enrich(db, rows, today)).map(r => r.card), total: total[0]!.value, page: query.page, pageSize: query.pageSize };
+  return { items: await cards(rows), total: total[0]!.value, page: query.page, pageSize: query.pageSize };
 }
-export async function detail(db: Database, id: number, today = moscowToday()) {
+export async function detail(db: Database, id: number, today = moscowToday(), goal: Goal = {}) {
   const rows = await db.select().from(olympiads).where(eq(olympiads.id, id));
   const item = (await enrich(db, rows, today))[0];
   if (!item) return null;
   const { row, card, stages, link } = item;
-  const [[info, benefits], directionList] = await Promise.all([
+  const [[info, benefits], directionList, matches] = await Promise.all([
     link ? Promise.all([seriesInfo(db, link.seriesId), olympiadBenefits(db, link.seriesId, link.name, card.level ?? null, id)])
       : Promise.resolve([null, { applicable: false, note: null, items: [] }] satisfies [null, Awaited<ReturnType<typeof olympiadBenefits>>]),
     olympiadDirectionList(db, id),
+    hasGoal(goal) ? goalMatches(db, goal, [id]) : Promise.resolve(undefined),
   ]);
-  return { ...card, stages, organizers: row.organizers, contacts: row.contacts, documents: row.documents,
+  return { ...card, ...(matches ? { goalMatch: matches.get(id) ?? null } : {}), stages, organizers: row.organizers, contacts: row.contacts, documents: row.documents,
     featuresRaw: row.featuresRaw, calendarRaw: card.calendarRaw ?? null, scheduleUpdatedRaw: row.scheduleUpdatedRaw,
     rawSource: row.rawSource, importedAt: row.importedAt, catalogCalendarRaw: row.calendarRaw, seriesInfo: info, benefits, directions: directionList };
 }
