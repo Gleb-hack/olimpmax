@@ -4,7 +4,7 @@ import { eq, notInArray, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import {
   olympiads, olympiadSeries, seriesStages, seriesProfiles, olympiadSeriesLinks, universities, seriesBenefits, referenceSources, importRuns,
-  subjects, olympiadSubjects, directions, directionSubjects, universityPrograms, olympiadDirections,
+  subjects, olympiadSubjects, directions, directionSubjects, universityPrograms, olympiadDirections, directionBenefits,
 } from '../db/schema.js';
 import { matchDirections } from './directions.js';
 import { catalogLevel, resolveLevel, type ResolvedLevel, type RsoshMeta } from './levels.js';
@@ -49,6 +49,7 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
     // The first benefits file keeps the historical key «benefits»; later deliveries get «benefits-2», «benefits-3», …
     ...manifest.sources.benefits.map((source, index) => ({ key: index ? `benefits-${index + 1}` : 'benefits', ...source, status: null, url: null })),
     ...(manifest.sources.programs ? [{ key: 'programs', ...manifest.sources.programs }] : []),
+    ...(manifest.sources.directionBenefits ?? []).map((source, index) => ({ key: `direction-benefits-${index + 1}`, ...source, status: null, url: null })),
   ];
   await tx.insert(referenceSources).values(sources.map(source => ({ key: source.key, file: source.file, description: source.description ?? null,
     sha256: sha.get(source.file) ?? '', season: manifest.season, status: source.status, url: source.url, importedAt: now })));
@@ -127,6 +128,11 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
   const programRows = bundle.programs.map(({ university, direction, ...p }) => ({ ...p, universityId: universityId.get(university)!, directionId: directionId.get(direction)! }));
   for (let i = 0; i < programRows.length; i += 500) await tx.insert(universityPrograms).values(programRows.slice(i, i + 500));
 
+  await tx.delete(directionBenefits);
+  const directionBenefitRows = bundle.directionBenefits.map(({ university, series, direction, ...b }) =>
+    ({ ...b, universityId: universityId.get(university)!, seriesId: seriesId.get(series)!, directionId: directionId.get(direction)! }));
+  for (let i = 0; i < directionBenefitRows.length; i += 500) await tx.insert(directionBenefits).values(directionBenefitRows.slice(i, i + 500));
+
   const levels = await recomputeLevels(tx);
   const olympiadDirectionStats = await recomputeOlympiadDirections(tx);
   const issues = [...bundle.issues, ...checkAgainstCatalog(bundle, catalog)];
@@ -137,7 +143,7 @@ export async function applyReferenceTx(tx: Executor, bundle: ReferenceBundle) {
     scheduleQuality: count(bundle.series.filter(s => s.stages.length), s => s.scheduleQuality),
     seriesInRsoshList: bundle.series.filter(s => s.profiles.size).length, rsoshProfiles: profileRows.length,
     universities: bundle.universities.length, benefits: benefitRows.length,
-    directions: bundle.directions.length, programs: programRows.length, olympiadDirections: olympiadDirectionStats,
+    directions: bundle.directions.length, programs: programRows.length, directionBenefits: directionBenefitRows.length, olympiadDirections: olympiadDirectionStats,
     links: linkRows.length, linksSkipped: bundle.links.length - linkRows.length,
     // Only where it changes what the card shows: the series schedule would otherwise be primary.
     scheduleConflicts: linkRows.filter(l => l.scheduleConflict && bundle.series.find(s => seriesId.get(s.slug) === l.seriesId)?.scheduleQuality === 'ok').map(l => l.olympiadId),
@@ -181,16 +187,15 @@ export async function recomputeLevels(tx: Executor) {
  * Runs after every catalog or reference import: both change subjects, links or profiles.
  */
 export async function recomputeOlympiadDirections(tx: Executor) {
-  const [directionRows, directionSubjectRows, cards, cardSubjects, links, profiles, sources] = await Promise.all([
-    tx.select({ id: directions.id, code: directions.code, name: directions.name, ugsnName: directions.ugsnName }).from(directions),
-    tx.select({ directionId: directionSubjects.directionId, relevance: directionSubjects.relevance, name: subjects.name })
-      .from(directionSubjects).innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId)),
-    tx.select({ id: olympiads.id }).from(olympiads),
-    tx.select({ olympiadId: olympiadSubjects.olympiadId, name: subjects.name }).from(olympiadSubjects).innerJoin(subjects, eq(subjects.id, olympiadSubjects.subjectId)),
-    tx.select().from(olympiadSeriesLinks),
-    tx.select().from(seriesProfiles),
-    tx.select().from(referenceSources).where(eq(referenceSources.key, 'rsosh')),
-  ]);
+  // Sequential on purpose: a transaction is a single connection.
+  const directionRows = await tx.select({ id: directions.id, code: directions.code, name: directions.name, ugsnName: directions.ugsnName }).from(directions);
+  const directionSubjectRows = await tx.select({ directionId: directionSubjects.directionId, relevance: directionSubjects.relevance, name: subjects.name })
+    .from(directionSubjects).innerJoin(subjects, eq(subjects.id, directionSubjects.subjectId));
+  const cards = await tx.select({ id: olympiads.id }).from(olympiads);
+  const cardSubjects = await tx.select({ olympiadId: olympiadSubjects.olympiadId, name: subjects.name }).from(olympiadSubjects).innerJoin(subjects, eq(subjects.id, olympiadSubjects.subjectId));
+  const links = await tx.select().from(olympiadSeriesLinks);
+  const profiles = await tx.select().from(seriesProfiles);
+  const sources = await tx.select().from(referenceSources).where(eq(referenceSources.key, 'rsosh'));
   await tx.delete(olympiadDirections);
   if (!directionRows.length) return { rows: 0, viaRsosh: 0, core: 0, related: 0 };
   const season = sources[0]?.season;

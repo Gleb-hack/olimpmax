@@ -5,14 +5,14 @@ import type { z } from 'zod';
 import type { Database } from '../db/client.js';
 import {
   directions, directionSubjects, subjects, universityPrograms, universities, olympiadDirections, olympiads, olympiadSubjects,
-  olympiadSeriesLinks, seriesBenefits,
+  olympiadSeriesLinks, seriesBenefits, directionBenefits,
 } from '../db/schema.js';
 import type { DirectionListQuery as DirectionListQuerySchema, OlympiadProgramsQuery as OlympiadProgramsQuerySchema, OlympiadProgramsResponse,
   ProgramInfo } from '../../../../packages/contracts/src/index.js';
 
 type DirectionListQuery = z.infer<typeof DirectionListQuerySchema>;
 type OlympiadProgramsQuery = z.infer<typeof OlympiadProgramsQuerySchema>;
-import { programTakesSubjects } from '../reference/directions.js';
+import { directionCoverage, programTakesSubjects, type DirectionCoverage } from '../reference/directions.js';
 
 type Program = typeof universityPrograms.$inferSelect;
 const programInfo = (p: Program): z.infer<typeof ProgramInfo> => ({ id: p.id, name: p.name, faculty: p.faculty, examsRequired: p.examsRequired,
@@ -123,6 +123,29 @@ export async function universityProgramList(db: Database, universityId: number) 
 }
 
 /**
+ * «На N из M направлений» per university for an olympiad card: exact rows from admission rules where they exist,
+ * otherwise the estimate by the exams of the university's programs (see directionCoverage).
+ */
+export async function coverageByUniversity(db: Database, olympiadId: number, seriesId: number, universityIds: number[]) {
+  const result = new Map<number, DirectionCoverage | null>();
+  if (!universityIds.length) return result;
+  const [programRows, ruleRows, subjectRows] = await Promise.all([
+    db.select({ universityId: universityPrograms.universityId, directionCode: directions.code, examsRequired: universityPrograms.examsRequired, examsChoice: universityPrograms.examsChoice })
+      .from(universityPrograms).innerJoin(directions, eq(directions.id, universityPrograms.directionId)).where(inArray(universityPrograms.universityId, universityIds)),
+    db.selectDistinct({ universityId: directionBenefits.universityId, code: directions.code }).from(directionBenefits)
+      .innerJoin(directions, eq(directions.id, directionBenefits.directionId))
+      .where(and(eq(directionBenefits.seriesId, seriesId), inArray(directionBenefits.universityId, universityIds))),
+    db.select({ name: subjects.name }).from(olympiadSubjects).innerJoin(subjects, eq(subjects.id, olympiadSubjects.subjectId)).where(eq(olympiadSubjects.olympiadId, olympiadId)),
+  ]);
+  const cardSubjects = subjectRows.map(s => s.name);
+  for (const id of universityIds) {
+    const rules = ruleRows.filter(r => r.universityId === id).map(r => r.code);
+    result.set(id, directionCoverage(programRows.filter(p => p.universityId === id), cardSubjects, rules.length ? rules : null));
+  }
+  return result;
+}
+
+/**
  * Programs an olympiad helps to enter: a university gives a benefit for the olympiad's series, it has a program in a direction
  * the olympiad suits (RSOSH or a core subject), and examMatch tells whether the program has the exam the diploma counts for.
  */
@@ -149,6 +172,7 @@ export async function olympiadPrograms(db: Database, olympiadId: number, query: 
     .from(universityPrograms).innerJoin(directions, eq(directions.id, universityPrograms.directionId))
     .where(and(inArray(universityPrograms.universityId, universityIds), inArray(universityPrograms.directionId, [...reasons.keys()]))) : [];
   const cardSubjects = subjectRows.map(s => s.name);
+  const coverage = await coverageByUniversity(db, olympiadId, card.seriesId, universityIds);
   const items = universityIds.map(id => {
     const benefits = benefitRows.filter(b => b.universityId === id);
     const programs = programRows.filter(r => r.program.universityId === id).map(r => {
@@ -159,7 +183,8 @@ export async function olympiadPrograms(db: Database, olympiadId: number, query: 
       .map(({ score: _score, ...p }) => p);
     const u = benefits[0]!;
     return { university: { slug: u.slug, name: u.name, city: u.city },
-      benefits: benefits.map(b => ({ kind: b.kind, diploma: b.diploma, minScore: b.minScore, maxScore: b.maxScore, requirement: b.requirement })), programs };
+      benefits: benefits.map(b => ({ kind: b.kind, diploma: b.diploma, minScore: b.minScore, maxScore: b.maxScore, requirement: b.requirement })),
+      coverage: coverage.get(id) ?? null, programs };
   }).sort((a, b) => b.programs.length - a.programs.length || a.university.name.localeCompare(b.university.name, 'ru'));
   return { applicable: true,
     note: 'Льгота вуза указана для олимпиады в целом, а программы подобраны по профилю олимпиады и экзаменам. Точные направления и условия — в правилах приёма вуза.',

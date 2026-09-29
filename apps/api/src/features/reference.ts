@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { Database } from '../db/client.js';
 import { olympiads, olympiadSeries, olympiadSeriesLinks, seriesStages, seriesProfiles, seriesBenefits, universities, referenceSources, universityPrograms } from '../db/schema.js';
 import { universityProfiles } from '../reference/university-profiles.js';
-import { universityProgramList } from './directions.js';
+import { coverageByUniversity, universityProgramList } from './directions.js';
 
 async function currentSeason(db: Database) {
   const [row] = await db.select({ season: referenceSources.season }).from(referenceSources).where(eq(referenceSources.key, 'rsosh'));
@@ -24,12 +24,15 @@ export async function seriesInfo(db: Database, seriesId: number) {
 }
 
 /** Benefits are stored per series; they apply to a card only when the card itself has a level. */
-export async function olympiadBenefits(db: Database, seriesId: number, seriesName: string, level: string | null) {
-  const rows = await db.select({ ...benefitColumns, slug: universities.slug, name: universities.name, city: universities.city, fullName: universities.fullName })
+export async function olympiadBenefits(db: Database, seriesId: number, seriesName: string, level: string | null, olympiadId?: number) {
+  const rows = await db.select({ ...benefitColumns, universityId: universities.id, slug: universities.slug, name: universities.name, city: universities.city, fullName: universities.fullName })
     .from(seriesBenefits).innerJoin(universities, eq(universities.id, seriesBenefits.universityId))
     .where(eq(seriesBenefits.seriesId, seriesId)).orderBy(universities.name, seriesBenefits.kind, seriesBenefits.diploma);
-  const items = rows.map(({ slug, name, city, fullName, ...benefit }) => ({ university: { slug, name, city, fullName }, ...benefit }));
   const applicable = level !== null;
+  // «На N из M направлений» only on a card that can give a benefit.
+  const coverage = olympiadId !== undefined && applicable ? await coverageByUniversity(db, olympiadId, seriesId, [...new Set(rows.map(r => r.universityId))]) : null;
+  const items = rows.map(({ universityId, slug, name, city, fullName, ...benefit }) => ({ university: { slug, name, city, fullName }, ...benefit,
+    ...(coverage ? { coverage: coverage.get(universityId) ?? null } : {}) }));
   const season = items.length && !applicable ? await currentSeason(db) : null;
   const note = !items.length ? null : applicable
     ? 'Льгота зависит от профиля олимпиады и направления поступления — сверяйтесь с правилами приёма вуза.'

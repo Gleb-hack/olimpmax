@@ -74,6 +74,10 @@ catalog-links.csv     5285 → ranepa, профиль «история»;  5412 
 1. **По перечню РСОШ** (`via_rsosh`): у профиля в перечне есть список «соответствующих направлений подготовки» — смесь предметов, укрупнённых групп и отдельных направлений. Направление подходит, если в этом списке целиком стоит название его группы («информатика и вычислительная техника») или его собственное название. Учитываются только профили, которые покрывает карточка (`catalog-links.csv`).
 2. **По предметам** (`subject_relevance`): предмет карточки входит в `subjects_core` (`core`) или `subjects_related` (`related`) направления.
 
+**«На N из M направлений».** Для каждой пары «вуз × олимпиада» считается, на сколько направлений вуза помогает диплом. Точно — если есть строки из правил приёма (ниже); иначе оценка: сколько направлений вуза имеют программу с экзаменом, за который засчитывается диплом (`directionCoverage` в `apps/api/src/reference/directions.ts`).
+
+**Точные льготы по направлениям** (необязательно): файлы в `sources/`, перечисленные в `manifest.json` как `"directionBenefits": [{ "file": "sources/…csv", "description": "…" }]`. Формат: `university_slug;olympiad;direction_code;benefit;source_url;source_page`. `olympiad` — название серии или любой её псевдоним из `series.csv`, `benefit` — как в файлах льгот (`БВИ`, `100 баллов`, `БВИ / 100 баллов`, `БВИ победителям`), `source_url` — ссылка на правила приёма или приложение к ним (обязательна), `source_page` — страница PDF. Достаточно заполнить вузы, по которым есть документ: для остальных останется оценка.
+
 Программа подходит олимпиаде, если вуз даёт льготу по её серии, направление программы подходит олимпиаде по перечню или основному предмету, а при `examMatch` в экзаменах программы есть предмет диплома (правила — `apps/api/src/reference/directions.ts`).
 
 ## Как обновлять
@@ -134,7 +138,7 @@ pnpm db:import
 | Правила: направления, перечень РСОШ, экзамены программ | `apps/api/src/reference/directions.ts` |
 | Уровни | `apps/api/src/reference/levels.ts` |
 | Запись в PostgreSQL | `apps/api/src/reference/apply.ts` |
-| Таблицы | `apps/api/src/db/schema.ts`, миграции `apps/api/drizzle/0005_reference_layer.sql`, `0008_directions_programs.sql` |
+| Таблицы | `apps/api/src/db/schema.ts`, миграции `apps/api/drizzle/0005_reference_layer.sql`, `0008_directions_programs.sql`, `0009_direction_benefits.sql` |
 | API: `/series/:slug`, `/universities`, фильтры `universities`, `series` | `apps/api/src/features/reference.ts`, `features/catalog.ts` |
 | API: `/directions`, `/directions/:code`, `/olympiads/:id/programs`, фильтр `directions` | `apps/api/src/features/directions.ts` |
 | Тесты | `tests/reference.test.ts`, `tests/reference.integration.ts`, `tests/directions.test.ts`, `tests/directions.integration.ts` |

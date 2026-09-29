@@ -118,3 +118,38 @@ test('broken directions and programs are reported with the file and line', () =>
   assert.deepEqual(bundle.programs[0]?.examsChoice, [['Информатика', 'Физика']]);
   assert.ok(bundle.issues.some(i => i.code === 'university_without_programs'));
 });
+
+test('«на N из M направлений»: exact rules win, otherwise the estimate by exams', async () => {
+  const { directionCoverage } = await import('../apps/api/src/reference/directions.js');
+  const programs = [
+    { directionCode: '09.03.04', examsRequired: ['Русский язык', 'Математика', 'Информатика'], examsChoice: [] },
+    { directionCode: '09.03.04', examsRequired: ['Русский язык', 'Математика'], examsChoice: [['Информатика', 'Физика']] },
+    { directionCode: '12.03.03', examsRequired: ['Русский язык', 'Математика'], examsChoice: [['Информатика', 'Физика']] },
+    { directionCode: '38.03.01', examsRequired: ['Русский язык', 'Математика', 'Обществознание'], examsChoice: [] },
+  ];
+  assert.deepEqual(directionCoverage(programs, ['Информатика'], null), { matched: 2, total: 3, source: 'exams' });
+  assert.deepEqual(directionCoverage(programs, ['Физика'], null), { matched: 2, total: 3, source: 'exams' });
+  assert.equal(directionCoverage(programs, ['Искусство'], null), null); // no exam mapping — say nothing rather than «0 из 3»
+  // Rules name a direction without a program in the file: it still counts in M.
+  assert.deepEqual(directionCoverage(programs, ['Информатика'], ['09.03.04', '01.03.02']), { matched: 2, total: 4, source: 'rules' });
+  assert.deepEqual(directionCoverage([], ['Информатика'], null), null);
+});
+
+test('exact benefits by direction are an optional, validated source', () => {
+  const base = readReferenceDir();
+  const manifest = structuredClone(base.manifest) as { sources: Record<string, unknown> };
+  manifest.sources.directionBenefits = [{ file: 'sources/direction_benefits_test.csv' }];
+  const input = (rows: string): ReferenceInput => ({ manifest, files: { ...base.files,
+    'sources/direction_benefits_test.csv': Buffer.from('university_slug;olympiad;direction_code;benefit;source_url;source_page\n' + rows) } });
+  const ok = 'itmo;Высшая проба;09.03.04;БВИ / 100 баллов;https://abit.itmo.ru/rules.pdf;12\n';
+  const bundle = buildReference(input(ok), { today });
+  assert.deepEqual(bundle.issues.filter(i => i.severity === 'error'), []);
+  assert.deepEqual(bundle.directionBenefits.map(b => [b.university, b.series, b.direction, b.kind, b.sourcePage]),
+    [['itmo', 'hse-vysshaya-proba', '09.03.04', 'bvi', '12'], ['itmo', 'hse-vysshaya-proba', '09.03.04', 'score_100', '12']]);
+  const codes = (rows: string) => buildReference(input(rows), { today }).issues.filter(i => i.severity === 'error').map(i => i.code);
+  assert.ok(codes(ok.replace('09.03.04', '09.03.99')).includes('unknown_direction'));
+  assert.ok(codes(ok.replace('itmo;', 'nowhere;')).includes('unknown_university'));
+  assert.ok(codes(ok.replace('Высшая проба', 'Неизвестная олимпиада')).includes('unknown_olympiad'));
+  assert.ok(codes(ok.replace('https://abit.itmo.ru/rules.pdf', 'правила')).includes('bad_url'));
+  assert.equal(buildReference(base, { today }).directionBenefits.length, 0);
+});

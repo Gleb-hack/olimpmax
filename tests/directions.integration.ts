@@ -158,3 +158,35 @@ test('the goal in the profile: directions and universities survive a re-import a
   assert.equal(await count(`select count(*) from user_directions where user_id = '${a.user.id}'`), 0);
   assert.equal(await count(`select count(*) from user_universities where user_id = '${a.user.id}'`), 0);
 });
+
+test('«на N из M направлений»: estimate by exams on every card, exact rules replace it for their university', async () => {
+  const [{ id }] = (await connection.pool.query(`select o.id from olympiads o join olympiad_series_links l on l.olympiad_id = o.id
+    join olympiad_series s on s.id = l.series_id where s.slug = 'vuz-academic-informatics' and o.in_catalog and o.level is not null limit 1`)).rows;
+  const card = await get(c.OlympiadDetail, `/olympiads/${id}`);
+  const itmo = card.benefits!.items.find(b => b.university.slug === 'itmo')!;
+  assert.equal(itmo.coverage?.source, 'exams');
+  assert.ok(itmo.coverage!.matched > 0 && itmo.coverage!.matched <= itmo.coverage!.total);
+  const itmoDirections = await count(`select count(distinct direction_id) from university_programs p join universities u on u.id = p.university_id where u.slug = 'itmo'`);
+  assert.equal(itmo.coverage!.total, itmoDirections);
+  const programs = await get(c.OlympiadProgramsResponse, `/olympiads/${id}/programs?universities=itmo`);
+  assert.deepEqual(programs.items[0]!.coverage, itmo.coverage);
+  // A card outside the RSOSH list gives no benefit: no coverage either.
+  assert.equal((await get(c.OlympiadDetail, '/olympiads/6962')).benefits!.items.length, 0);
+
+  // Exact rows from admission rules for ITMO only.
+  const input = readReferenceDir();
+  const manifest = structuredClone(input.manifest) as { sources: Record<string, unknown> };
+  manifest.sources.directionBenefits = [{ file: 'sources/direction_benefits_test.csv' }];
+  const rows = ['09.03.04', '09.03.02', '01.03.02'].map(code => `itmo;Вузовско-академическая олимпиада по информатике;${code};БВИ;https://abit.itmo.ru/rules.pdf;7`).join('\n');
+  const exact = buildReference({ manifest, files: { ...input.files, 'sources/direction_benefits_test.csv':
+    Buffer.from('university_slug;olympiad;direction_code;benefit;source_url;source_page\n' + rows + '\n') } }, { today });
+  const report = await applyReference(connection.db, exact);
+  assert.equal(report.directionBenefits, 3);
+  const after = await get(c.OlympiadDetail, `/olympiads/${id}`);
+  const itmoExact = after.benefits!.items.find(b => b.university.slug === 'itmo')!;
+  assert.equal(itmoExact.coverage?.source, 'rules'); assert.equal(itmoExact.coverage?.matched, 3);
+  assert.ok(itmoExact.coverage!.total >= itmoDirections);
+  assert.equal(after.benefits!.items.find(b => b.university.slug === 'hse')?.coverage?.source, 'exams');
+  await applyReference(connection.db, reference);
+  assert.equal(await count('select count(*) from direction_benefits'), 0);
+});

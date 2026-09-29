@@ -38,9 +38,12 @@ export type ProgramEntry = {
   internalExam: boolean; passingScore: number | null; passingScoreForm: string | null; passingYear: number | null;
   funding: ProgramFunding; sourceUrl: string; sourceId: string | null;
 };
+export type DirectionBenefitEntry = {
+  university: string; series: string; direction: string; kind: BenefitKind; diploma: BenefitDiploma; sourceUrl: string; sourcePage: string | null;
+};
 export type ReferenceBundle = {
   manifest: Manifest; series: SeriesEntry[]; universities: UniversityEntry[]; benefits: BenefitEntry[]; links: LinkEntry[];
-  directions: DirectionEntry[]; programs: ProgramEntry[];
+  directions: DirectionEntry[]; programs: ProgramEntry[]; directionBenefits: DirectionBenefitEntry[];
   issues: ReferenceIssue[]; files: { path: string; sha256: string }[]; sha256: string;
 };
 
@@ -58,6 +61,8 @@ export const Manifest = z.object({
     benefits: z.union([BenefitSource, z.array(BenefitSource).min(1)]).transform(v => Array.isArray(v) ? v : [v]),
     /** University programs with exams and passing scores (a third-party aggregator; the source is shown to users). */
     programs: Source.extend({ status: z.string().min(1), url: z.url().nullable() }).optional(),
+    /** Exact benefits by direction from admission rules; each row has its own source link. */
+    directionBenefits: z.array(Source).optional(),
   }),
 });
 export type Manifest = z.infer<typeof Manifest>;
@@ -88,7 +93,7 @@ export function readReferenceDir(dir: string | URL = defaultReferenceDir): Refer
   const files: Record<string, Buffer> = {};
   for (const path of [referenceFiles.series, referenceFiles.universities, referenceFiles.links, referenceFiles.directions,
     parsed.sources.schedule.file, parsed.sources.rsosh.file, ...parsed.sources.benefits.map(b => b.file),
-    ...(parsed.sources.programs ? [parsed.sources.programs.file] : [])]) {
+    ...(parsed.sources.programs ? [parsed.sources.programs.file] : []), ...(parsed.sources.directionBenefits ?? []).map(s => s.file)]) {
     const full = join(base, path);
     if (!existsSync(full)) throw new Error(`Нет файла справочника: ${path}`);
     files[path] = readFileSync(full);
@@ -330,6 +335,28 @@ export function buildReference(input: ReferenceInput, options: { today: string }
     for (const u of universities.values()) if (!programs.some(p => p.university === u.slug)) warn('university_without_programs', `${u.slug}: нет ни одной программы в ${path}`);
   }
 
+  // --- benefits by direction from admission rules (optional) ---
+  const directionBenefitRows = new Map<string, DirectionBenefitEntry>();
+  for (const source of manifest.sources.directionBenefits ?? []) {
+    const path = source.file;
+    for (const [i, row] of readCsv(file(path), path, ['university_slug', 'olympiad', 'direction_code', 'benefit', 'source_url', 'source_page']).entries()) {
+      const where = `${path}:${i + 2}`;
+      const university = row.university_slug!.trim(), code = row.direction_code!.trim();
+      if (!universities.has(university)) { error('unknown_university', `${where}: вуза «${university}» нет в universities.csv`); continue; }
+      if (!directions.has(code)) { error('unknown_direction', `${where}: направления ${code} нет в directions.csv`); continue; }
+      const slug = resolve(row.olympiad!, where);
+      if (!slug) continue;
+      const parsed = parseBenefits(row.benefit!);
+      if (!parsed) { error('unknown_benefit', `${where}: неизвестная льгота «${row.benefit}»`); continue; }
+      const sourceUrl = row.source_url!.trim();
+      if (!z.url().safeParse(sourceUrl).success) { error('bad_url', `${where}: source_url «${sourceUrl}» — нужна ссылка на правила приёма`); continue; }
+      if (![...benefits.values()].some(b => b.university === university && b.series === slug))
+        warn('benefit_not_in_list', `${where}: в файлах льгот нет льготы ${university} по «${row.olympiad}» — строка всё равно учтена`);
+      for (const b of parsed) directionBenefitRows.set([university, slug, code, b.kind, b.diploma].join(':'),
+        { university, series: slug, direction: code, ...b, sourceUrl, sourcePage: text(row.source_page) });
+    }
+  }
+
   for (const entry of series.values()) {
     if (!entry.stages.length && !entry.profiles.size && ![...benefits.values()].some(b => b.series === entry.slug) && !entry.generalLevel)
       warn('unused_series', `${entry.slug}: серия не встречается ни в одном источнике`);
@@ -337,7 +364,7 @@ export function buildReference(input: ReferenceInput, options: { today: string }
   const files = Object.entries(input.files).sort(([a], [b]) => a.localeCompare(b)).map(([path, buffer]) => ({ path, sha256: hash(buffer) }));
   return {
     manifest, series: [...series.values()], universities: [...universities.values()], benefits: [...benefits.values()], links: [...links.values()],
-    directions: [...directions.values()], programs, issues, files, sha256: hash(files.map(f => `${f.path}:${f.sha256}`).join('\n') + JSON.stringify(input.manifest)),
+    directions: [...directions.values()], programs, directionBenefits: [...directionBenefitRows.values()], issues, files, sha256: hash(files.map(f => `${f.path}:${f.sha256}`).join('\n') + JSON.stringify(input.manifest)),
   };
 }
 

@@ -92,9 +92,15 @@ export const DirectionRef = z.object({ code: DirectionCode, name: z.string(), ed
 /** Why an olympiad suits a direction: the RSOSH list names it (viaRsosh) and/or by subjects (a recommendation). */
 export const DirectionMatchReason = z.object({ viaRsosh: z.boolean(), subjectRelevance: SubjectRelevance.nullable() });
 export const OlympiadDirection = DirectionRef.extend(DirectionMatchReason.shape);
+/**
+ * «На N из M направлений» of a university: rules — from its admission rules (a fact), exams — estimated by the exams of its programs.
+ */
+export const DirectionCoverage = z.object({ matched: z.number().int(), total: z.number().int(), source: z.enum(['rules', 'exams']) });
 export const Benefit = z.object({
   university: UniversityRef.extend({ fullName: z.string().nullable().optional() }), kind: BenefitKind, diploma: BenefitDiploma,
   minScore: z.number().int().nullable(), maxScore: z.number().int().nullable(), requirement: z.string().nullable(),
+  /** Olympiad card only: on how many of the university's directions the diploma helps; null — unknown. */
+  coverage: DirectionCoverage.nullable().optional(),
 });
 export const OlympiadBenefits = z.object({
   /** false: the series has benefits, but this card's profile is outside the RSOSH list, so they do not apply to it. */
@@ -216,7 +222,7 @@ export const OlympiadProgramsQuery = z.object({ universities: list(Slug), direct
 export const OlympiadProgramsResponse = z.object({
   applicable: z.boolean(), note: z.string().nullable(),
   items: z.array(z.object({
-    university: UniversityRef, benefits: z.array(Benefit.omit({ university: true })),
+    university: UniversityRef, benefits: z.array(Benefit.omit({ university: true, coverage: true })), coverage: DirectionCoverage.nullable(),
     programs: z.array(UniversityProgram.extend(DirectionMatchReason.shape).extend({ examMatch: z.boolean() })),
   })),
 });
