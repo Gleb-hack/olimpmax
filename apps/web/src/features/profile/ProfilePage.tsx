@@ -25,10 +25,12 @@ export function ProfilePage() {
     : !selected.length ? empty
     : <div className="chips-wrap">{selected.map(subject => <Chip key={subject.id} selected>{subject.name}</Chip>)}</div>;
   const goal = useGoal(profile);
-  const goalChips = (keys: string[], names: string[], state: { isPending: boolean; isError: boolean }, what: string) => !keys.length ? empty
+  // Up to `limit` names and «+N»: up to 25 directions would push the rest of the profile off the screen. The full list is in «Редактировать профиль».
+  const goalChips = (keys: string[], names: string[], state: { isPending: boolean; isError: boolean }, what: string, limit = Infinity) => !keys.length ? empty
     : state.isPending ? <p className="panel-section__empty">Загружаем…</p>
     : state.isError ? <p className="panel-section__empty">Не удалось загрузить названия {what}.</p>
-    : <div className="chips-wrap chips-wrap--long">{names.map(name => <Chip key={name} selected>{name}</Chip>)}</div>;
+    : <div className="chips-wrap chips-wrap--long">{names.slice(0, limit).map(name => <Chip key={name} selected>{name}</Chip>)}
+      {names.length > limit && <button type="button" className="chip chip--more" aria-label={`Ещё ${names.length - limit}: изменить в профиле`} onClick={() => navigate('/profile/edit')}>+{names.length - limit}</button>}</div>;
   const format = (label: string, enabled: boolean) => <div className="switch-row"><span>{label}</span><small className={enabled ? 'text-green' : 'muted'}>{enabled ? 'Включено' : 'Выключено'}</small></div>;
   return <><Header title="Профиль" />
     <section className="profile-card panel"><ProfileAvatar image={profile.avatar} /><div><h2>{profile.name || max.displayName}</h2><p>{[grade ?? 'Класс не указан', profile.region].filter(Boolean).join(' · ')}</p></div></section>
@@ -37,11 +39,11 @@ export function ProfilePage() {
       <section className="panel-section"><h2 className="section-caption">Класс обучения</h2>{grade ? <div className="chips-wrap"><Chip selected>{grade}</Chip></div> : empty}</section>
       <section className="panel-section"><h2 className="section-caption">Интересующие предметы</h2>{subjects}</section>
       <section className="panel-section"><h2 className="section-caption">Целевые вузы</h2>{goalChips(profile.universities, goal.universities.map(item => item.name), goal.universitiesState, 'вузов')}</section>
-      <section className="panel-section"><h2 className="section-caption">Направления</h2>{goalChips(profile.directions, goal.directions.map(item => item.name), goal.directionsState, 'направлений')}</section>
+      <section className="panel-section"><h2 className="section-caption">Направления</h2>{goalChips(profile.directions, goal.directions.map(item => item.name), goal.directionsState, 'направлений', 2)}</section>
       <section className="panel-section"><h2 className="section-caption">Желаемый формат</h2>{format('Онлайн-этапы', profile.online)}{format('Очные финалы', profile.onsite)}</section>
     </div>
     <Button className="full-width profile-edit-button" onClick={() => navigate('/profile/edit')}><Icon name="edit" size={15} />Редактировать профиль</Button>
-    <div className="settings-list profile-links"><SettingsRow icon="shield" tone="green" title="Данные и конфиденциальность" subtitle="Управление данными" onClick={() => navigate('/profile/privacy')} /><SettingsRow icon="help-circle" title="Помощь и FAQ" subtitle="Ответы на частые вопросы" onClick={() => navigate('/profile/help')} /><SettingsRow icon="graduation-cap" tone="amber" title="Вопросы по олимпиадам" subtitle="Участие, БВИ, льготы и дипломы" onClick={() => navigate('/profile/olympiad-faq')} /></div>
+    <div className="settings-list profile-links"><SettingsRow icon="shield" tone="green" title="Данные и конфиденциальность" subtitle="Управление данными" onClick={() => navigate('/profile/privacy')} /><SettingsRow icon="help-circle" title="Помощь и FAQ" subtitle="Как пользоваться приложением и ботом" onClick={() => navigate('/profile/help')} /><SettingsRow icon="graduation-cap" tone="amber" title="Вопросы по олимпиадам" subtitle="Участие, БВИ, льготы и дипломы" onClick={() => navigate('/profile/olympiad-faq')} /></div>
     <section className="panel theme-picker"><h2 id="theme-picker-title">Тема оформления</h2><div className="segmented segmented--fill" role="radiogroup" aria-labelledby="theme-picker-title">{themeOptions.map(option =>
       <button key={option.value} type="button" role="radio" aria-checked={preference === option.value} className={preference === option.value ? 'is-active' : ''} onClick={() => setPreference(option.value)}>{option.label}</button>)}
     </div></section>

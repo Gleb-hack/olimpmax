@@ -8,8 +8,9 @@ export const themeStorageKey = 'olimp.theme.v1';
 // Screen background of each theme: the color of the system status bar.
 export const themeColors: Record<Theme, string> = { light: '#f8f9fb', dark: '#0b0f14' };
 
+/** A saved choice, or the light theme when nothing (or something unknown) is saved: the app opens light by default. */
 export function parseThemePreference(value: unknown): ThemePreference {
-  return value === 'light' || value === 'dark' ? value : 'system';
+  return value === 'light' || value === 'dark' || value === 'system' ? value : 'light';
 }
 
 // "System" follows the theme MAX reports, if it reports one, and the device setting otherwise.
@@ -22,7 +23,7 @@ export function resolveTheme(preference: ThemePreference, maxScheme: unknown, sy
 const darkQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
 function readPreference(): ThemePreference {
-  try { return parseThemePreference(localStorage.getItem(themeStorageKey)); } catch { return 'system'; }
+  try { return parseThemePreference(localStorage.getItem(themeStorageKey)); } catch { return 'light'; }
 }
 
 function currentTheme(preference: ThemePreference): Theme {

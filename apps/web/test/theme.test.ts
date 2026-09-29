@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseThemePreference, resolveTheme } from '../src/lib/theme.ts';
 
-test('an unknown or missing saved choice falls back to the system theme', () => {
+test('an unknown or missing saved choice falls back to the light theme', () => {
   assert.equal(parseThemePreference('dark'), 'dark');
   assert.equal(parseThemePreference('light'), 'light');
-  assert.equal(parseThemePreference(null), 'system');
-  assert.equal(parseThemePreference('sepia'), 'system');
+  assert.equal(parseThemePreference('system'), 'system');
+  assert.equal(parseThemePreference(null), 'light');
+  assert.equal(parseThemePreference('sepia'), 'light');
 });
 
 test('an explicit choice wins over MAX and the device', () => {

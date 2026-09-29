@@ -18,7 +18,7 @@ export function GoalReasons({ match, limit = 2 }: { match: Match | null | undefi
   const shown = match.reasons.slice(0, limit);
   const rest = match.reasons.length - shown.length;
   return <div className="goal-reasons">
-    <span className="goal-reasons__title"><Icon name="target" size={13} />Подходит под твою цель</span>
+    <span className="goal-reasons__title"><Icon name="badge-check" size={14} />Подходит под твою цель</span>
     <ul>{shown.map(reason => <li key={reason.kind + reason.text} className={`goal-reason goal-reason--${goalReasonMeta[reason.kind].tone}`}>
       <Icon name={goalReasonMeta[reason.kind].icon} size={13} /><span>{reason.text}</span></li>)}</ul>
     {rest > 0 && <small className="goal-reasons__more">и ещё {rest} {rest === 1 ? 'причина' : rest < 5 ? 'причины' : 'причин'}</small>}
@@ -34,6 +34,5 @@ export function GoalReasonsSection({ match }: { match: Match | null | undefined 
       : <ul>{match.reasons.map(reason => <li key={reason.kind + reason.text} className={`goal-reason goal-reason--${goalReasonMeta[reason.kind].tone}`}>
         <span className="goal-reason__icon"><Icon name={goalReasonMeta[reason.kind].icon} size={15} /></span>
         <span className="goal-reason__copy"><span>{reason.text}</span><small>{goalReasonMeta[reason.kind].label}</small></span></li>)}</ul>}
-    <p className="olympiad-schedule__hint">Льгота вуза — из справочника льгот. Перечень РСОШ связывает профиль олимпиады с направлениями. Совпадение предметов — только рекомендация: условия приёма сверяйте с правилами вуза.</p>
   </section>;
 }

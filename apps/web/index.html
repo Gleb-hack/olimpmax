@@ -9,7 +9,8 @@
       (function () {
         var preference = null;
         try { preference = localStorage.getItem('olimp.theme.v1'); } catch (error) {}
-        var dark = preference === 'dark' || (preference !== 'light' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        // Light unless the user chose dark, or chose «Системная» on a dark device.
+        var dark = preference === 'dark' || (preference === 'system' && !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
         document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#0b0f14' : '#f8f9fb');
       })();

@@ -95,6 +95,17 @@ test('deadline requests pass existing source schedules to the model instead of r
   assert.equal(calls, 2); assert.equal(result.olympiads[0]!.id, item.id);
   assert.match(result.message, /1–19 сен/); assert.equal(result.research, undefined);
 });
+test('general deadlines use the profile subjects and grade, deadlines of a named olympiad do not', async () => {
+  const profiled: AssistantData = { ...data, userContext: async () => ({ profile: { grade: 10, subjects: [{ id: 8, name: 'Информатика' }], online: true, onsite: true },
+    plan: { total: 0, truncated: false, items: [] } }) };
+  const seen: { subjectIds?: number[]; grades?: number[] }[] = [];
+  const reader: AssistantData = { ...profiled, deadlineIds: async query => { seen.push({ subjectIds: query.subjectIds, grades: query.grades }); return [item.id]; } };
+  await answerAssistant(request('Какие регистрации по моим предметам скоро закроются?'), reader,
+    completeWith({ intent: 'deadlines' }, { message: 'Ближайшая регистрация.', olympiadIds: [item.id] }), '2026-09-23', signal);
+  await answerAssistant(request('Когда дедлайн у Высшей пробы?'), reader,
+    completeWith({ intent: 'deadlines', queries: ['Высшая проба'] }, { message: 'Срок.', olympiadIds: [item.id] }), '2026-09-23', signal);
+  assert.deepEqual(seen, [{ subjectIds: [8], grades: [10] }, { subjectIds: undefined, grades: undefined }]);
+});
 test('verified upcoming events take precedence and truly empty schedules do not claim registration is closed', async () => {
   let calls = 0;
   await answerAssistant(request('Ближайшие даты'), { ...data, deadlineIds: async () => [item.id],
