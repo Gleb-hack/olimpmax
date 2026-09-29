@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, type SetURLSearchParams } from 'react-router-dom';
 import { olympiadLevelOptions } from '@olimp/contracts';
 import { Button, Dialog, EmptyState, Header, Loading, Notice, Select, Icon } from '@olimp/ui';
 import { api } from '../../lib/api';
@@ -10,6 +10,7 @@ import { OlympiadCard } from './OlympiadCard';
 import { CatalogPagination } from './CatalogPagination';
 import { useProfile } from '../../lib/profile';
 import { hasGoal, withGoal } from '../../lib/goal';
+import { UniversityCatalog } from './UniversityCatalog';
 
 // «Сначала подробные» is the default: dated stages, days to the next stage and university benefits come first.
 const sortOptions = [
@@ -20,9 +21,28 @@ const sortOptions = [
 // Only with a goal in the profile: льготы целевых вузов, then the RSOSH list, then subjects of target directions.
 const goalSort = { value: 'goal', label: 'Под мою цель', short: 'Под мою цель', description: 'Льготы целевых вузов и подходящие направления' };
 
+/** «Олимпиады | Вузы» above the catalog; each mode keeps its own filters in the URL, switching starts from a clean list. */
+function CatalogModeSwitch({ universities, onChange }: { universities: boolean; onChange: (universities: boolean) => void }) {
+  return <div className="segmented catalog-mode-switch" role="tablist" aria-label="Что искать">
+    <button type="button" role="tab" aria-selected={!universities} className={!universities ? 'is-active' : ''} onClick={() => onChange(false)}>Олимпиады</button>
+    <button type="button" role="tab" aria-selected={universities} className={universities ? 'is-active' : ''} onClick={() => onChange(true)}>Вузы</button>
+  </div>;
+}
+
 export function CatalogPage() {
-  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const universities = params.get('mode') === 'universities';
+  const switchMode = (next: boolean) => { if (next !== universities) setParams(next ? { mode: 'universities' } : {}); };
+  if (universities) return <>
+    <Header title="Каталог" />
+    <CatalogModeSwitch universities onChange={switchMode} />
+    <UniversityCatalog params={params} setParams={setParams} />
+  </>;
+  return <OlympiadCatalog params={params} setParams={setParams} modeSwitch={<CatalogModeSwitch universities={false} onChange={switchMode} />} />;
+}
+
+function OlympiadCatalog({ params, setParams, modeSwitch }: { params: URLSearchParams; setParams: SetURLSearchParams; modeSwitch: ReactNode }) {
+  const navigate = useNavigate();
   const paramsRef = useRef(params);
   useEffect(() => { paramsRef.current = params; }, [params]);
   const [sortOpen, setSortOpen] = useState(false);
@@ -47,6 +67,7 @@ export function CatalogPage() {
   const sorts = hasGoal(profile) ? [goalSort, ...sortOptions] : sortOptions;
   return <>
     <Header title="Каталог" action={<button className="icon-button icon-button--blue" aria-label="Поиск олимпиад" onClick={() => navigate('/search', { state: { backTo: `/catalog${params.size ? `?${params}` : ''}` } })}><Icon name="search" size={18} /></button>} />
+    {modeSwitch}
     <div className="filter-grid">
       <Select label="Предмет" placeholder="Предмет" icon="book" searchable searchPlaceholder="Найти предмет" value={params.get('subjectIds') || ''} onChange={value => updateParam('subjectIds', value)} options={[{ value: '', label: 'Все предметы' }, ...(filters.data?.subjects.map(subject => ({ value: String(subject.id), label: subject.name })) ?? [])]} />
       <Select label="Класс" placeholder="Класс" icon="graduation-cap" align="right" value={params.get('grades') || ''} onChange={value => updateParam('grades', value)} options={[{ value: '', label: 'Все классы' }, ...Array.from({ length: 11 }, (_, index) => ({ value: String(index + 1), label: `${index + 1} класс` }))]} />

@@ -13,7 +13,8 @@ import { goalOf } from './features/goal-match.js';
 import { catalog, detail, filters } from './features/catalog.js';
 import { seriesDetail, universityDetail, universityList } from './features/reference.js';
 import { directionDetail, directionList, olympiadPrograms } from './features/directions.js';
-import { readPlan, planEvents, planKey } from './features/plan.js';
+import { readPlan, planEvents, planKey, patchPlanItem } from './features/plan.js';
+import { calendarFeed, calendarFeedLink } from './features/calendar-feed.js';
 import { validateMaxInitData } from './features/auth.js';
 import { readProfile, saveProfile, deleteAccount, ProfileError } from './features/profile.js';
 import { moscowToday } from './features/calendar.js';
@@ -106,11 +107,18 @@ export async function buildApp(options: AppOptions) {
     if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Направление не найдено' });
     return result;
   });
-  api.get('/universities', { schema: { response: { 200: c.UniversityListResponse } } }, () => universityList(db));
+  api.get('/universities', { schema: { querystring: c.UniversityListQuery, response: { 200: c.UniversityListResponse } } }, request => universityList(db, request.query));
   api.get('/universities/:slug', { schema: { params: c.SlugParams, response: { 200: c.UniversityResponse, 404: c.ErrorResponse } } }, async (request, reply) => {
     const result = await universityDetail(db, request.params.slug);
     if (!result) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Вуз не найден' });
     return result;
+  });
+  // Read by calendar apps without a sign-in: the random token in the link is the only key. Unknown or reset links get 404.
+  api.get('/calendar/:file', { schema: { params: c.CalendarFeedParams } }, async (request, reply) => {
+    const body = await calendarFeed(db, request.params.file.slice(0, -'.ics'.length), today(), now());
+    if (body === null) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Календарь не найден: ссылка устарела или была сброшена' });
+    return reply.header('Content-Type', 'text/calendar; charset=utf-8').header('Content-Disposition', 'attachment; filename="olimp-plan.ics"')
+      .header('Cache-Control', 'private, max-age=900').send(body);
   });
   api.get('/series/:slug', { schema: { params: c.SlugParams, response: { 200: c.SeriesResponse, 404: c.ErrorResponse } } }, async (request, reply) => {
     const result = await seriesDetail(db, request.params.slug);
@@ -201,6 +209,8 @@ export async function buildApp(options: AppOptions) {
       return sendTestReminder(db, messenger, request.user.sub, { includeEstimated: remindEstimated, now: now() });
     });
     routes.get('/me/plan', { schema: { response: { 200: c.PlanResponse } } }, request => readPlan(db, request.user.sub, today()));
+    routes.post('/me/calendar-feed', { schema: { body: c.CalendarFeedRequest.nullish(), response: { 200: c.CalendarFeedResponse } } }, request =>
+      calendarFeedLink(db, request.user.sub, request.body?.reset === true));
     routes.get('/me/plan/events', { schema: { querystring: c.PlanEventsQuery, response: { 200: c.PlanEventsResponse } } }, request => planEvents(db, request.user.sub, request.query.days, today()));
     routes.put('/me/plan/:id', { schema: { params: c.OlympiadParams, body: z.object({}).strict().nullish() } }, async (request, reply) => {
       const id = request.params.id;
@@ -210,8 +220,7 @@ export async function buildApp(options: AppOptions) {
       return reply.code(204).send();
     });
     routes.patch('/me/plan/:id', { schema: { params: c.OlympiadParams, body: c.PlanPatch } }, async (request, reply) => {
-      const changed = await db.update(planItems).set(request.body).where(planKey(request.user.sub, request.params.id)).returning({ id: planItems.olympiadId });
-      if (!changed.length) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не добавлена в план' });
+      if (!await patchPlanItem(db, request.user.sub, request.params.id, request.body)) return reply.code(404).send({ error: 'NOT_FOUND', message: 'Олимпиада не добавлена в план' });
       return reply.code(204).send();
     });
     routes.delete('/me/plan/:id', { schema: { params: c.OlympiadParams } }, async (request, reply) => {

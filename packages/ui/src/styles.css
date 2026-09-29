@@ -1346,3 +1346,50 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 .combobox__option mark { background: none; color: var(--olimp-blue-text); font-weight: 650; }
 .field > label { font-size: 12px; font-weight: 550; }
 .field__error { color: var(--olimp-field-error-text); font-size: 11px; }
+
+/* Catalog: «Олимпиады | Вузы» and the university list. */
+.catalog-mode-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 4px 0 14px; }
+.catalog-mode-switch button { padding-inline: 8px; }
+.university-search { flex: none; margin-bottom: 12px; }
+.university-chips { margin-bottom: 12px; }
+.university-card__head { display: flex; align-items: center; gap: 12px; }
+.university-hero__avatar.university-card__logo { width: 48px; height: 48px; border-radius: 14px; font-size: 16px; }
+.university-card__title { flex: 1; min-width: 0; }
+.olympiad-card.university-card h2 { margin-bottom: 3px; }
+.university-card__city { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--olimp-meta-text); }
+.university-card__full { margin-top: 10px; font-size: 12px; line-height: 1.45; color: var(--olimp-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.university-card__facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.university-card__facts .chip { min-height: 28px; padding: 4px 10px; font-size: 11px; }
+.card-actions > .university-card__more { display: inline-flex; align-items: center; gap: 2px; font-size: 11px; color: var(--olimp-blue-text); pointer-events: none; }
+
+/* Plan: status of an olympiad, stage results and «Зарегистрировался». */
+.plan-status-section .section-caption { margin-bottom: 10px; }
+.plan-card__footer { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.plan-card__registered { font-size: 12px; }
+.plan-card__status { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; font-size: 11px; font-weight: 550; color: var(--olimp-blue-text); }
+.plan-card__status--done { color: var(--olimp-on-green-soft); }
+.plan-card__result { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; font-weight: 550; color: var(--olimp-blue-text); }
+.plan-card__result span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-card__result--prize, .plan-card__result--winner { color: var(--olimp-warning); }
+.plan-card__result--failed { color: var(--olimp-muted); }
+.plan-status { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.plan-status .chip { min-height: 32px; padding: 5px 12px; }
+.stage-results { margin-bottom: 18px; }
+.stage-results h4 { margin-bottom: 8px; font-size: 12px; font-weight: 550; }
+.stage-results__list { display: flex; flex-direction: column; margin-bottom: 8px; }
+.stage-results__list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--olimp-border); }
+.stage-results__stage { font-size: 12px; overflow-wrap: anywhere; }
+.stage-results select, .stage-results input { min-width: 0; border: 1px solid var(--olimp-border-strong); border-radius: 10px; background: var(--olimp-field-bg); color: var(--olimp-field-text); font-size: 12px; padding: 8px 10px; }
+.stage-results__add { display: grid; gap: 8px; }
+
+/* Plan calendar export. */
+.calendar-export-button { margin-top: 16px; }
+.calendar-export__lead { margin-bottom: 14px; font-size: 12px; line-height: 1.5; color: var(--olimp-muted); }
+.calendar-export__option { padding: 14px 0; border-top: 1px solid var(--olimp-border); }
+.calendar-export__option h3 { font-size: 13px; font-weight: 600; }
+.calendar-export__option > p { margin: 4px 0 10px; font-size: 12px; line-height: 1.45; color: var(--olimp-muted); }
+.calendar-export__help { margin-top: 10px; font-size: 11px; line-height: 1.5; }
+.calendar-export__help summary { cursor: pointer; color: var(--olimp-blue-text); font-size: 12px; }
+.calendar-export__help p { margin-top: 6px; color: var(--olimp-muted); }
+.calendar-export__url, .calendar-export__hint { margin-top: 8px; font-size: 11px; color: var(--olimp-muted); }
+.calendar-export__url span { word-break: break-all; user-select: all; color: var(--olimp-text); }

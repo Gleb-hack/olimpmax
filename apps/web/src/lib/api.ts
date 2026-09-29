@@ -84,6 +84,9 @@ async function request(path: string, options: RequestInit = {}, authenticated = 
   }
 }
 
+/** An absolute link to an API path, e.g. the calendar feed a phone calendar subscribes to. */
+export const apiUrl = (path: string) => new URL(`${baseUrl}${path}`, window.location.origin).href;
+
 export type Olympiad = z.infer<typeof c.OlympiadCard>;
 export type PlanEntry = z.infer<typeof c.PlanItem>;
 export type PlanPatch = z.infer<typeof c.PlanPatch>;
@@ -109,6 +112,10 @@ export const api = {
   async filters() { return c.FiltersResponse.parse(await request('/olympiads/filters')); },
   async detail(id: number, goal = '') { return c.OlympiadDetail.parse(await request(`/olympiads/${id}${goal ? `?${goal}` : ''}`)); },
   async universities() { return c.UniversityListResponse.parse(await request('/universities')); },
+  /** Universities with programs in one of these directions (the catalog's university search). */
+  async universitiesFor(directions: string[], signal?: AbortSignal) {
+    return c.UniversityListResponse.parse(await request(`/universities?${new URLSearchParams({ directions: directions.join(',') })}`, { signal }));
+  },
   async directions() { return c.DirectionListResponse.parse(await request('/directions')); },
   async university(slug: string) { return c.UniversityResponse.parse(await request(`/universities/${encodeURIComponent(slug)}`)); },
   async plan() { return c.PlanResponse.parse(await request('/me/plan', {}, true)); },
@@ -117,6 +124,9 @@ export const api = {
     return c.NotificationSettings.parse(await request('/me/notifications', { method: 'PATCH', body: JSON.stringify(c.NotificationSettingsPatch.parse({ enabled })) }, true));
   },
   async testNotification() { return c.NotificationTestResponse.parse(await request('/me/notifications/test', { method: 'POST' }, true)); },
+  async calendarFeed(reset = false) {
+    return c.CalendarFeedResponse.parse(await request('/me/calendar-feed', { method: 'POST', body: JSON.stringify(c.CalendarFeedRequest.parse(reset ? { reset } : {})) }, true));
+  },
   async events() { return c.PlanEventsResponse.parse(await request('/me/plan/events?days=90', {}, true)); },
   async save(id: number) { await request(`/me/plan/${id}`, { method: 'PUT' }, true); },
   async remove(id: number) { await request(`/me/plan/${id}`, { method: 'DELETE' }, true); },

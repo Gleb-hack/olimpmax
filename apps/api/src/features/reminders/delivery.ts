@@ -19,7 +19,7 @@ export class NotificationError extends Error {
 
 export async function reminderItems(db: Database, userId: string, today: string): Promise<ReminderItem[]> {
   const plan = await readPlan(db, userId, today);
-  return plan.items.map(item => ({ olympiadId: item.olympiad.id, title: item.olympiad.title, tracking: item.tracking, events: item.calendarEvents ?? [] }));
+  return plan.items.map(item => ({ olympiadId: item.olympiad.id, title: item.olympiad.title, tracking: item.tracking, status: item.status, events: item.calendarEvents ?? [] }));
 }
 
 /** Users with reminders on, a real MAX id, no refusal from MAX since their last bot start and at least one tracked olympiad. */

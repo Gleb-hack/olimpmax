@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, pgEnum, integer, serial, smallint, text, timestamp, jsonb, doublePrecision, date, uuid, boolean, primaryKey, uniqueIndex, index, check } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, integer, serial, smallint, text, timestamp, jsonb, doublePrecision, date, uuid, boolean, primaryKey, uniqueIndex, index, check, foreignKey } from 'drizzle-orm/pg-core';
 
 export const formatEnum = pgEnum('olympiad_format', ['onsite', 'online', 'hybrid', 'unknown']);
 export const participationEnum = pgEnum('participation_type', ['individual', 'team', 'mixed', 'unknown']);
@@ -80,6 +80,8 @@ export const users = pgTable('user_profiles', {
   notificationsEnabled: boolean('notifications_enabled').notNull().default(true),
   botStartedAt: timestamp('bot_started_at', { withTimezone: true, mode: 'string' }),
   botBlockedAt: timestamp('bot_blocked_at', { withTimezone: true, mode: 'string' }),
+  // Secret of the plan calendar feed (/calendar/<token>.ics) a phone calendar subscribes to; null — no feed.
+  calendarToken: text('calendar_token').unique(),
 }, t => [
   check('profile_avatar_length', sql`${t.avatar} is null or length(${t.avatar}) <= 1400000`),
   check('profile_name_length', sql`${t.profileName} is null or length(trim(${t.profileName})) between 1 and 80`),
@@ -90,11 +92,29 @@ export const userSubjects = pgTable('user_subjects', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   subjectId: integer('subject_id').notNull().references(() => subjects.id),
 }, t => [primaryKey({ columns: [t.userId, t.subjectId] })]);
+// Where the pupil is with a plan olympiad: planned → registered → in_progress (takes part) → done. Set by the user.
+export const planStatusEnum = pgEnum('plan_status', ['planned', 'registered', 'in_progress', 'done']);
 export const planItems = pgTable('plan_items', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   olympiadId: integer('olympiad_id').notNull().references(() => olympiads.id, { onDelete: 'cascade' }),
   tracking: boolean('tracking').notNull().default(true), note: text('note'), savedAt: timestampNow('saved_at'),
+  status: planStatusEnum('status').notNull().default('planned'),
 }, t => [primaryKey({ columns: [t.userId, t.olympiadId] }), check('plan_note_length', sql`${t.note} is null or length(${t.note}) <= 2000`)]);
+export const stageResultEnum = pgEnum('stage_result', ['passed', 'failed', 'prize', 'winner']);
+/**
+ * The pupil's result of a stage of a plan olympiad: passed / failed, prize-winner or winner.
+ * The stage is kept by its name, not by a stage id: reference stages get new ids on every `db:reference`.
+ * Removed together with the plan item (and so with the account).
+ */
+export const planStageResults = pgTable('plan_stage_results', {
+  userId: uuid('user_id').notNull(), olympiadId: integer('olympiad_id').notNull(),
+  stage: text('stage').notNull(), result: stageResultEnum('result').notNull(),
+  updatedAt: timestampNow('updated_at'),
+}, t => [
+  primaryKey({ columns: [t.userId, t.olympiadId, t.stage] }),
+  foreignKey({ name: 'plan_stage_results_plan_item_fk', columns: [t.userId, t.olympiadId], foreignColumns: [planItems.userId, planItems.olympiadId] }).onDelete('cascade'),
+  check('plan_stage_results_stage_length', sql`length(trim(${t.stage})) between 1 and 200`),
+]);
 export const reminderStatusEnum = pgEnum('reminder_status', ['pending', 'sent', 'failed']);
 /**
  * One row per reminder the bot decided to send: the unique key makes the daily run idempotent

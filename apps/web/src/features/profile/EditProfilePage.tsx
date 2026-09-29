@@ -9,6 +9,7 @@ import { SubjectsDialog } from './SubjectsDialog';
 import { DirectionsDialog, UniversitiesDialog, goalLabel, useGoal } from './GoalDialogs';
 import { ProfileAvatar } from './ProfileAvatar';
 import { canonicalRegion, regionGroups, searchRegions } from '../../lib/regions';
+import { goalLimits } from './goal-format';
 
 export function EditProfilePage() {
   const { profile, update, storageError, saving, legacyAvatar } = useProfile();
@@ -25,6 +26,8 @@ export function EditProfilePage() {
   const regionOptions = (canonicalRegion(draft.region) === draft.region ? regionGroups : searchRegions(draft.region))
     .map(group => ({ label: group.district, options: group.regions.map(region => region.name) }));
   const goal = useGoal(draft);
+  // A profile saved under the old limit (20 universities) has to drop the extra ones before it can be saved.
+  const overLimit = draft.universities.length > goalLimits.universities || draft.directions.length > goalLimits.directions;
   const subjects = filters.data?.subjects.filter(subject => draft.subjects.includes(subject.id)).map(subject => subject.name).join(', ');
   function selectPhoto(file?: File) {
     if (!file) return;
@@ -40,6 +43,7 @@ export function EditProfilePage() {
       // A region comes from the list; a city saved before the list existed may stay as it is.
       const region = draft.region.trim() === '' ? '' : canonicalRegion(draft.region) ?? (draft.region.trim() === profile.region ? profile.region : null);
       if (region === null) { setRegionError(true); document.getElementById('profile-region')?.focus(); return; }
+      if (overLimit) return;
       const { avatar, ...preferences } = draft;
       if (await update({ ...preferences, ...(photoChanged || (profile.avatar === null && legacyAvatar !== null) ? { avatar } : {}), name: draft.name.trim(), region })) navigate('/profile');
     }}>
@@ -52,10 +56,11 @@ export function EditProfilePage() {
         {regionError && <small id="profile-region-error" className="field__error" role="alert">Выберите регион из списка</small>}</div>
       <div className="field edit-profile__section"><span>Класс обучения</span><Select label="Класс обучения" placeholder="Не указан" value={draft.grade === null ? '' : String(draft.grade)} onChange={value => setDraft({ ...draft, grade: value ? Number(value) : null })} options={[{ value: '', label: 'Не указан' }, ...Array.from({ length: 11 }, (_, index) => ({ value: String(index + 1), label: `${index + 1} класс` }))]} /></div>
       <div className="field edit-profile__section"><span>Интересующие предметы</span><button type="button" className="subjects-trigger" aria-label="Изменить интересующие предметы" aria-haspopup="dialog" onClick={() => setSubjectsOpen(true)}><span>{subjects || (draft.subjects.length ? `Выбрано: ${draft.subjects.length}` : 'Выберите предметы')}</span><Icon name="chevron-down" size={16} /></button></div>
-      <div className="field edit-profile__section"><span>Целевые вузы</span><button type="button" className="subjects-trigger" aria-label="Изменить целевые вузы" aria-haspopup="dialog" onClick={() => setGoalOpen('universities')}><span>{goalLabel(goal.universities.map(item => item.name), draft.universities.length, 'Выберите вузы')}</span><Icon name="chevron-down" size={16} /></button></div>
+      <div className="field edit-profile__section"><span>Целевые вузы</span><button type="button" className="subjects-trigger" aria-label="Изменить целевые вузы" aria-haspopup="dialog" onClick={() => setGoalOpen('universities')}><span>{goalLabel(goal.universities.map(item => item.name), draft.universities.length, 'Выберите вузы')}</span><Icon name="chevron-down" size={16} /></button>
+        {draft.universities.length > goalLimits.universities && <small className="field__error" role="alert">Можно выбрать не больше {goalLimits.universities} вузов — уберите лишние</small>}</div>
       <div className="field edit-profile__section"><span>Направления</span><button type="button" className="subjects-trigger" aria-label="Изменить направления" aria-haspopup="dialog" onClick={() => setGoalOpen('directions')}><span>{goalLabel(goal.directions.map(item => item.name), draft.directions.length, 'Выберите направления')}</span><Icon name="chevron-down" size={16} /></button></div>
       <section className="section"><h2>Желаемый формат</h2><div className="settings-list"><label className="switch-row"><span>Онлайн-этапы</span><Switch aria-label="Онлайн-этапы" checked={draft.online} onChange={event => setDraft({ ...draft, online: event.target.checked })} /></label><label className="switch-row"><span>Очные финалы</span><Switch aria-label="Очные финалы" checked={draft.onsite} onChange={event => setDraft({ ...draft, onsite: event.target.checked })} /></label></div></section>
-      {storageError && <Notice tone="error">{storageError}</Notice>}<Button type="submit" className="full-width edit-profile__save" disabled={saving}>{saving ? 'Сохраняем…' : 'Сохранить изменения'}</Button></fieldset>
+      {storageError && <Notice tone="error">{storageError}</Notice>}<Button type="submit" className="full-width edit-profile__save" disabled={saving || overLimit}>{saving ? 'Сохраняем…' : 'Сохранить изменения'}</Button></fieldset>
     </form>{subjectsOpen && <SubjectsDialog value={draft.subjects} onApply={subjects => setDraft({ ...draft, subjects })} onClose={() => setSubjectsOpen(false)} />}
     {goalOpen === 'universities' && <UniversitiesDialog value={draft.universities} onApply={universities => setDraft(current => ({ ...current, universities }))} onClose={() => setGoalOpen(null)} />}
     {goalOpen === 'directions' && <DirectionsDialog value={draft.directions} onApply={directions => setDraft(current => ({ ...current, directions }))} onClose={() => setGoalOpen(null)} />}

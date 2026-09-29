@@ -66,6 +66,18 @@ test('demo plan preserves notes on repeat save, supports pause and idempotent re
   assert.equal(c.PlanResponse.parse(await mockRequest('/me/plan')).total, 0);
 });
 
+test('demo plan keeps the status and stage results; a new olympiad starts as planned', async () => {
+  storage.clear();
+  const id = c.CatalogResponse.parse(await mockRequest('/olympiads')).items[0]!.id;
+  await mockRequest(`/me/plan/${id}`, { method: 'PUT' });
+  assert.equal(c.PlanResponse.parse(await mockRequest('/me/plan')).items[0]!.status, 'planned');
+  await mockRequest(`/me/plan/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'in_progress', results: [{ stage: 'Отборочный этап', result: 'passed' }] }) });
+  const item = c.PlanResponse.parse(await mockRequest('/me/plan')).items[0]!;
+  assert.equal(item.status, 'in_progress');
+  assert.deepEqual(item.results, [{ stage: 'Отборочный этап', result: 'passed' }]);
+  await assert.rejects(() => mockRequest(`/me/plan/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'won' }) }));
+});
+
 test('corrupt demo storage can recover and unknown records fail explicitly', async () => {
   storage.set('olimp.demo.plan.v1', '{invalid');
   assert.equal(c.PlanResponse.parse(await mockRequest('/me/plan')).total, 0);

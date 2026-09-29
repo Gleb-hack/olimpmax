@@ -5,6 +5,8 @@ type MaxWebApp = {
   colorScheme?: string;
   ready?: () => void;
   openLink?: (url: string) => void;
+  // Mobile clients only: saves a file from an https link under the given name.
+  downloadFile?: (url: string, fileName: string) => unknown;
   BackButton?: { show: () => void; hide: () => void; onClick: (callback: () => void) => void; offClick: (callback: () => void) => void };
 };
 declare global { interface Window { WebApp?: MaxWebApp } }
@@ -35,6 +37,16 @@ export const max = {
     if (this.isEmbedded && window.WebApp?.openLink) window.WebApp.openLink(parsed.href);
     else if (parsed.protocol.startsWith('http')) window.open(parsed.href, '_blank', 'noopener,noreferrer');
     else window.location.href = parsed.href;
+  },
+  /** Saves a file from an https link through MAX (mobile clients); false when MAX cannot do it here. */
+  downloadFile(url: string, fileName: string) {
+    const app = window.WebApp;
+    if (!this.isEmbedded || !app?.downloadFile || new URL(url).protocol !== 'https:') return false;
+    try {
+      // The bridge may answer with a promise; its errors (desktop client, timeout) must not surface as unhandled.
+      Promise.resolve(app.downloadFile(url, fileName)).catch(() => {});
+      return true;
+    } catch { return false; }
   },
   backButton(callback: (() => void) | null) {
     if (!this.isEmbedded) return () => {};

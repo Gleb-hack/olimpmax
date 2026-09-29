@@ -109,3 +109,13 @@ test('sending hours are Moscow hours', () => {
   assert.equal(moscowHour(new Date('2026-10-01T07:00:00Z')), 10);
   assert.equal(moscowHour(new Date('2026-10-01T21:30:00Z')), 0);
 });
+
+test('plan status: a registered pupil gets no registration reminders, a finished olympiad none at all', () => {
+  const events = [event('registration', 'ends', '2026-10-03'), event('competition', 'starts', '2026-10-02', { name: 'отборочный этап' })];
+  const kinds = (status?: ReminderItem['status']) => dueReminders([item(events, { status })], TODAY, { includeEstimated: true }).map(due => due.stageKind);
+  assert.deepEqual(kinds(), ['competition', 'registration']);
+  assert.deepEqual(kinds('planned'), ['competition', 'registration']);
+  assert.deepEqual(kinds('registered'), ['competition']);
+  assert.deepEqual(kinds('in_progress'), ['competition']);
+  assert.deepEqual(kinds('done'), []);
+});
