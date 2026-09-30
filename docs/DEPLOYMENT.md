@@ -2,7 +2,7 @@
 
 Код находится в ветке [main](https://github.com/Gleb-hack/olimpmax/tree/main). Для работы пользователей нужен постоянно включённый сервер с PostgreSQL и HTTPS. GitHub хранит исходники; загрузка ветки сама по себе приложение не публикует.
 
-В этой инструкции один VPS обслуживает интерфейс, API и базу. Docker Compose запускает PostgreSQL, применяет миграции, запускает API и Caddy. Caddy выдаёт HTTPS-сертификат и направляет `/api/*` в API. Данные и сертификаты сохраняются в отдельных Docker volumes.
+В этой инструкции один VPS обслуживает интерфейс, API, бота и базу. Docker Compose запускает PostgreSQL, сервис `setup` (миграции, импорт каталога и справочников, проверенные даты), API, бота и Caddy. Caddy выдаёт HTTPS-сертификат и направляет `/api/*` в API. Данные и сертификаты сохраняются в отдельных Docker volumes.
 
 ## 1. Сервер и домен
 
@@ -37,6 +37,7 @@ nano .env.production
 | `POSTGRES_PASSWORD` | Первый сгенерированный набор из 64 шестнадцатеричных символов |
 | `JWT_SECRET` | Второй, отдельный набор |
 | `MAX_BOT_TOKEN` | Токен того бота MAX, через который пользователь открывает приложение |
+| `TEST_ACCOUNTS` | Тестовые учётные записи для проверки вне MAX: `логин:пароль` через запятую, пароль от 8 символов. Пусто — вход по паролю выключен |
 | `DEEPSEEK_API_KEY` | Ключ DeepSeek, если нужен чат «Олимп» |
 | `DEEPSEEK_MODEL` | По умолчанию `deepseek-flash` |
 
@@ -48,12 +49,10 @@ nano .env.production
 
 ```bash
 docker compose --env-file .env.production -f compose.production.yaml up -d --build
-docker compose --env-file .env.production -f compose.production.yaml run --rm --no-deps api pnpm db:import
-docker compose --env-file .env.production -f compose.production.yaml run --rm --no-deps api pnpm db:verified
 docker compose --env-file .env.production -f compose.production.yaml ps -a
 ```
 
-Первый запуск скачивает образы и собирает приложение. Сервис `migrate` должен закончиться с кодом 0; `postgres` и `api` — перейти в healthy, `web` — работать. Импорт загружает 640 олимпиад из нового CSV и 58 карточек из `data/reference/catalog-additions.csv`, а затем справочник уровней, этапов и льгот (`data/reference`). При обновлении старой базы отсутствующие 131 запись скрываются из каталога; личные планы и заметки сохраняются. SQL-дамп с локального компьютера не требуется.
+Первый запуск скачивает образы и собирает приложение. Сервис `setup` должен закончиться с кодом 0; `postgres` и `api` — перейти в healthy, `web` и `bot` — работать. При каждом запуске `setup` выполняет `pnpm db:setup`: миграции, импорт и проверенные даты. Импорт загружает 640 олимпиад из нового CSV и 58 карточек из `data/reference/catalog-additions.csv`, а затем справочник уровней, этапов и льгот (`data/reference`). При обновлении старой базы отсутствующие 131 запись скрываются из каталога; личные планы и заметки сохраняются. SQL-дамп с локального компьютера не требуется.
 
 Проверьте со своего компьютера, заменив домен:
 
@@ -71,7 +70,7 @@ curl --fail https://olimp.example.ru/api/health
 
 Открывайте приложение кнопкой в этом боте либо ссылкой `https://max.ru/<botName>?startapp`, где `<botName>` — реальный username бота.
 
-**Вход рассчитан на открытие внутри MAX.** Простое открытие домена в обычном браузере покажет интерфейс, но не предоставит подтверждённую личность MAX. В production демонстрационный вход выключен.
+**Вход рассчитан на открытие внутри MAX.** В обычном браузере вход возможен только тестовыми учётными записями из `TEST_ACCOUNTS` (для проверяющих); если переменная пуста, браузер покажет интерфейс без входа. Локальный демонстрационный вход (`ALLOW_DEV_AUTH`) в production запрещён.
 
 ## 5. Как работают регистрация и вход
 
@@ -93,7 +92,7 @@ curl --fail https://olimp.example.ru/api/health
 - Перезапустите контейнеры и убедитесь, что данные сохранились.
 - Если подключён DeepSeek, проверьте чат и поиск в интернете (например, «Какой минимальный балл ЕГЭ для подтверждения олимпиады в МФТИ?»). Контейнеру API нужен исходящий HTTPS к сайтам из `data/assistant/university_links_descriptions.csv`.
 
-Локальные проверки и тесты не заменяют этот запуск в настоящем MAX. Напоминания отправляет сервис `bot`: нажмите «Начать» в боте, добавьте олимпиаду в план, проверьте `pnpm bot:remind --dry-run` и отправьте сегодняшние напоминания командой `pnpm bot:remind` с `DATABASE_URL` и `MAX_BOT_TOKEN` сервера (с работающим сервисом `bot` она не конфликтует: одно напоминание не уходит дважды). Что ещё проверить на живом боте — [BOT.md](BOT.md). Профиль, фотография и план хранятся на сервере. Перед запуском версии с синхронизацией фото примените миграции (`pnpm db:migrate`); в Docker это выполняет сервис `migrate`. Обновите и API, и веб-клиент.
+Локальные проверки и тесты не заменяют этот запуск в настоящем MAX. Напоминания отправляет сервис `bot`: нажмите «Начать» в боте, добавьте олимпиаду в план, проверьте `pnpm bot:remind --dry-run` и отправьте сегодняшние напоминания командой `pnpm bot:remind` с `DATABASE_URL` и `MAX_BOT_TOKEN` сервера (с работающим сервисом `bot` она не конфликтует: одно напоминание не уходит дважды). Что ещё проверить на живом боте — [BOT.md](BOT.md). Профиль, фотография и план хранятся на сервере. Миграции в Docker применяет сервис `setup`. Обновите и API, и веб-клиент.
 
 ## 7. Обновления и резервные копии
 
@@ -113,17 +112,17 @@ docker compose --env-file .env.production -f compose.production.yaml exec -T pos
 ```bash
 git pull --ff-only origin main
 docker compose --env-file .env.production -f compose.production.yaml build
-docker compose --env-file .env.production -f compose.production.yaml stop api web
-docker compose --env-file .env.production -f compose.production.yaml run --rm migrate
+docker compose --env-file .env.production -f compose.production.yaml stop api bot web
+docker compose --env-file .env.production -f compose.production.yaml run --rm setup
 docker compose --env-file .env.production -f compose.production.yaml up -d
 ```
 
-Продолжайте запуск только после успешной миграции. На время обновления приложение недоступно. Если изменился CSV, повторите команду импорта из шага 3: она сохраняет существующие личные планы. Не используйте `down -v` для обновлений — этот флаг удаляет постоянные volumes, включая базу.
+Продолжайте запуск только после успешного `setup`. На время обновления приложение недоступно. Импорт обновляет каталог и сохраняет существующие личные планы. Не используйте `down -v` для обновлений — этот флаг удаляет постоянные volumes, включая базу.
 
 ## 8. Если что-то не работает
 
 ```bash
-docker compose --env-file .env.production -f compose.production.yaml logs --tail=100 api migrate web
+docker compose --env-file .env.production -f compose.production.yaml logs --tail=100 api setup bot web
 ```
 
 | Симптом | Что проверить |
