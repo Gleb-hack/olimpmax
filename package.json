@@ -31,8 +31,10 @@
     "db:setup": "pnpm db:migrate && pnpm db:import && pnpm db:verified",
     "db:reference": "node --import tsx --env-file-if-exists=.env apps/api/src/scripts/reference.ts",
     "data:check": "node --import tsx apps/api/src/scripts/check-reference.ts",
+    "openapi": "node --import tsx apps/api/src/scripts/openapi.ts",
+    "data-api:check": "node scripts/check-data-api.mjs",
     "db:local": "node --env-file-if-exists=.env scripts/local-db.mjs",
-    "check": "pnpm typecheck && pnpm test && pnpm data:check && pnpm build"
+    "check": "pnpm typecheck && pnpm test && pnpm data:check && pnpm openapi --check && pnpm build"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
@@ -40,6 +42,7 @@
     "drizzle-kit": "0.31.11",
     "esbuild": "0.28.2",
     "tsx": "^4.20.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "yaml": "2.9.1"
   }
 }

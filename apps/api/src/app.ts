@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
-import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from 'fastify-type-provider-zod';
+import { jsonSchemaTransform, serializerCompiler, validatorCompiler, type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import ipaddr from 'ipaddr.js';
 import { eq, sql } from 'drizzle-orm';
@@ -36,6 +36,8 @@ type AppOptions = {
   deepseekApiKey?: string; deepseekModel?: string; assistantCompletion?: CompleteJson;
   /** Reviewer accounts (login → password) for signing in outside MAX; empty or absent switches POST /auth/test off. */
   testAccounts?: Map<string, string>;
+  /** Collect route schemas for the OpenAPI description (pnpm openapi); the running API does not need it. */
+  openapi?: boolean;
   /** Test seams: page reader and the list of links Olimp may open (default: data/assistant/*.csv). */
   readPublicPage?: ReadPublicPage; researchLinks?: LinkEntry[];
   /** MAX bot client (bot name and link for the notification settings); default: built from botToken. Tests pass a fake. */
@@ -52,6 +54,10 @@ export async function buildApp(options: AppOptions) {
   const app = Fastify({ trustProxy, logger: options.logger ? { redact: ['req.headers.authorization', 'req.body.initData'] } : false, bodyLimit: 32768 });
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+  if (options.openapi) {
+    const { default: swagger } = await import('@fastify/swagger');
+    await app.register(swagger, { openapi: { openapi: '3.1.0', info: { title: 'Olimp API', version: '1.0.0' } }, transform: jsonSchemaTransform });
+  }
   await app.register(cors, { origin: options.corsOrigin ?? 'http://localhost:5173', methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] });
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   await app.register(jwt, { secret: options.jwtSecret, sign: { expiresIn: '1h', iss: 'olimp-api', aud: 'olimp-mini-app' },
