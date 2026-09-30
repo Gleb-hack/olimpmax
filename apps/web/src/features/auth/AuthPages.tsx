@@ -8,6 +8,8 @@ import { useSession } from '../../lib/session';
 import { useFilters } from '../../lib/queries';
 import { SubjectsDialog } from '../profile/SubjectsDialog';
 import { DirectionsDialog, UniversitiesDialog, goalLabel, useGoal } from '../profile/GoalDialogs';
+import { Wordmark } from './Wordmark';
+import mascot from '../../assets/olimp/tour/book.webp';
 
 function useAuthNavigation(title: string, back: string | null) {
   const navigate = useNavigate();
@@ -27,12 +29,16 @@ export function WelcomePage() {
   if (user) return <Navigate to="/olimp" replace />;
   return <main className="app-shell welcome-page">
     <h1 className="sr-only">Добро пожаловать в Олимп</h1>
-    <div className="welcome-art"><img src="/main_logo_photo.jpg" width={1354} height={1798} alt="Олимп — твой проводник в мир олимпиад" /></div>
+    <div className="welcome-hero" aria-hidden="true">
+      <Wordmark className="welcome-wordmark" />
+      <p className="welcome-tagline">твой проводник в мир олимпиад</p>
+    </div>
+    <div className="welcome-mascot" aria-hidden="true"><span className="welcome-mascot__glow" /><img src={mascot} width={480} height={463} alt="" /></div>
     <div className="welcome-actions">
       {error && <Notice tone="error">{error}</Notice>}
-      <Link className="auth-button" to="/login" state={state}>Войти</Link>
-      <Link className="auth-button auth-button--outline" to="/register" state={state}>Зарегистрироваться</Link>
-      <button className="welcome-note" onClick={() => setInfo(true)}>Ваш профиль и план связаны<br />с аккаунтом MAX</button>
+      <Link className="auth-button welcome-button" to="/login" state={state}>Войти</Link>
+      <Link className="auth-button auth-button--outline welcome-button" to="/register" state={state}>Зарегистрироваться</Link>
+      <button className="welcome-note" onClick={() => setInfo(true)}>Продолжая, вы принимаете условия<br />обработки данных профиля</button>
     </div>
     {info && <Dialog title="Вход через MAX" onClose={() => setInfo(false)}><DataNote /><Button className="full-width" onClick={() => setInfo(false)}>Понятно</Button></Dialog>}
   </main>;

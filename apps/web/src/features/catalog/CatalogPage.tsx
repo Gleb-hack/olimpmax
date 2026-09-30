@@ -14,10 +14,11 @@ import {
   catalogFilterKeys, catalogRequest, chipLabel, formatChoices, levelChoices, listParam, olympiadSorts, presetApplied, presetAvailable,
   presetParams, presetResultText, presetSummary, sortChoice,
 } from './catalog-filters';
+import { useOnboarding } from '../onboarding/onboarding-store';
 
 /** «Олимпиады | Вузы» (Figma «Разделы каталога»); each mode keeps its own filters in the URL, switching starts from a clean list. */
 export function CatalogModeSwitch({ universities, onChange }: { universities: boolean; onChange: (universities: boolean) => void }) {
-  return <div className="segmented catalog-mode-switch" role="tablist" aria-label="Разделы каталога">
+  return <div className="segmented catalog-mode-switch" role="tablist" aria-label="Разделы каталога" data-tour="catalog-mode">
     <button type="button" role="tab" aria-selected={!universities} className={!universities ? 'is-active' : ''} onClick={() => onChange(false)}>Олимпиады</button>
     <button type="button" role="tab" aria-selected={universities} className={universities ? 'is-active' : ''} onClick={() => onChange(true)}>Вузы</button>
   </div>;
@@ -66,7 +67,9 @@ function OlympiadCatalog({ params, setParams, header, modeSwitch }: { params: UR
     if (sort) next.set('sort', sort);
     commit(next);
   };
-  const available = presetAvailable(profile);
+  // The tour shows how the selection works even before the profile is filled in; the page under it cannot be tapped.
+  const touring = useOnboarding(tour => tour.active);
+  const available = presetAvailable(profile) || touring;
   const applied = presetApplied(params, profile);
   const applyPreset = () => {
     const next = presetParams(profile);
@@ -92,7 +95,7 @@ function OlympiadCatalog({ params, setParams, header, modeSwitch }: { params: UR
     {header}
     <div className="catalog-controls">
       {modeSwitch}
-      <PersonalBanner available={available} applied={applied} summary={presetSummary(profile, subjects)} onApply={applyPreset} onUndo={reset} />
+      <PersonalBanner available={available} applied={applied} summary={presetSummary(profile, subjects) || (touring ? 'Класс, предметы и цели из твоего профиля' : '')} onApply={applyPreset} onUndo={reset} />
       <div className="filter-chips" role="group" aria-label="Фильтры">
         <FilterChip icon="book" label={chipLabel('Предмет', chosenSubjects.map(id => subjects.find(subject => String(subject.id) === id)?.name ?? 'Предмет'))}
           active={chosenSubjects.length > 0} onClick={() => setPopup('subjects')} />
