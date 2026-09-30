@@ -570,7 +570,7 @@
   --olimp-combobox-clear-icon: var(--olimp-icon);
   --olimp-field-error-text: var(--olimp-danger);
 }
-/* The welcome artwork is a light picture, so this screen keeps its light colors in the dark theme. */
+/* The mascot is dark navy on a light backdrop, so the welcome screen keeps its light colors in the dark theme. */
 :root[data-theme='dark'] .welcome-page { color-scheme: light; --olimp-surface: #fff; --olimp-blue: #315bff; --olimp-blue-text: #315bff; --olimp-muted: #7b8190; }
 
 * { box-sizing: border-box; scrollbar-width: none; }
@@ -1161,17 +1161,33 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 @media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
-/* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { width: 100%; max-width: var(--app-width); min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: var(--olimp-welcome-bg); }
-.welcome-art { position: absolute; inset: 0; overflow: hidden; }
-/* Anchor the artwork above the actions so the mascot feet retain clearance on short screens. */
-.welcome-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center calc(100% - 48px); }
-.welcome-actions { position: relative; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 28px max(20px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--olimp-welcome-fade) 45%, var(--olimp-welcome-bg)); }
-.welcome-actions > * { width: 100%; max-width: 420px; }
-@media (max-height: 640px) { .welcome-art img { object-position: center calc(100% - 32px); } .welcome-actions { padding-bottom: max(12px, env(safe-area-inset-bottom)); } }
+/* Figma «Загрузка» (1439:18896): wordmark, the mascot with a book and the two entry buttons. Login and registration
+   (71:99, 78:131) confirm identity through MAX instead of password fields. */
+.welcome-page { position: relative; width: 100%; max-width: var(--app-width); min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+  background: radial-gradient(90% 55% at 42% 58%, #fff 0%, #f6f7fe 48%, transparent 80%), linear-gradient(180deg, #f9faff 0%, var(--olimp-welcome-bg) 100%); }
+.welcome-hero { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 9px; padding: max(15svh, calc(env(safe-area-inset-top) + 56px)) 24px 0; color: #1d2146; animation: welcome-drop .7s cubic-bezier(.2, .8, .2, 1) both; }
+.welcome-wordmark { display: block; width: min(290px, 78vw); height: auto; }
+.welcome-tagline { margin: 0; font-size: 12.5px; font-weight: 500; letter-spacing: .1px; }
+.welcome-mascot { position: relative; flex: 1 1 auto; min-height: 200px; }
+.welcome-mascot img { position: absolute; left: -11%; bottom: -34px; width: min(107%, 560px); height: auto; transform-origin: 40% 100%; animation: welcome-rise .9s .15s cubic-bezier(.2, .9, .25, 1.15) both, welcome-sway 5s 1.2s ease-in-out infinite; }
+.welcome-mascot__glow { position: absolute; left: 12%; right: 8%; top: 10%; bottom: 0; border-radius: 50%; background: radial-gradient(closest-side, #fff 0%, #ffffff00 100%); opacity: .9; }
+.welcome-actions { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 0 28px max(18px, env(safe-area-inset-bottom)); }
+.welcome-actions::before { content: ''; position: absolute; inset: -56px 0 0; z-index: -1; background: linear-gradient(#ffffff00, var(--olimp-welcome-fade) 42%, var(--olimp-welcome-bg)); pointer-events: none; }
+.welcome-actions > * { width: 100%; max-width: 420px; animation: welcome-up .55s cubic-bezier(.2, .8, .2, 1) both; }
+.welcome-actions > :nth-child(2) { animation-delay: .35s; }
+.welcome-actions > :nth-child(3) { animation-delay: .45s; }
+.welcome-actions > :nth-child(4) { animation-delay: .55s; }
+.welcome-button { border-radius: 12px; }
+.welcome-button.auth-button--outline { background: #fff; }
+.welcome-note { margin-top: 2px; min-height: 30px; padding: 0; color: var(--olimp-muted); font-size: 10.5px; line-height: 1.35; }
+@keyframes welcome-drop { from { opacity: 0; transform: translateY(-14px); } }
+@keyframes welcome-up { from { opacity: 0; transform: translateY(14px); } }
+@keyframes welcome-rise { from { opacity: 0; transform: translateY(40px) scale(.94); } }
+@keyframes welcome-sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-1.6deg) translateY(-3px); } }
+@media (max-height: 640px) { .welcome-hero { padding-top: max(7svh, calc(env(safe-area-inset-top) + 24px)); } .welcome-mascot img { bottom: -20px; width: min(88%, 460px); left: -4%; } .welcome-actions { gap: 9px; padding-bottom: max(12px, env(safe-area-inset-bottom)); } }
+@media (min-width: 600px) { .welcome-mascot img { left: 50%; width: 520px; margin-left: -300px; } }
 .auth-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 16px; background: var(--olimp-blue); color: var(--olimp-on-primary); font-size: 15px; font-weight: 600; text-align: center; }
 .auth-button--outline { background: var(--olimp-surface); color: var(--olimp-blue-text); border: 1.5px solid var(--olimp-blue-text); }
-.welcome-note { margin-top: 1px; min-height: 38px; padding: 1px 0; color: var(--olimp-muted); font-size: 11px; line-height: 1.4; }
 .auth-page { padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom)); }
 .auth-back { margin-bottom: 21px; }
 .auth-heading { margin-bottom: 22px; }
@@ -1571,3 +1587,72 @@ button.overview-outline-button { width: 100%; gap: 6px; cursor: pointer; }
 .sort-row:has(input:focus-visible) { outline: 2px solid var(--olimp-focus-alt); outline-offset: 1px; }
 @media (max-width: 359px) { .filter-chips { margin-inline: -12px; padding-inline: 12px; } .filter-chips--fill { margin-inline: 0; padding-inline: 0; } .personal-banner__action { padding-inline: 10px; } }
 .university-search:not(:focus-within) { border-color: var(--olimp-border-strong); }
+
+/* Onboarding tour (Figma «Старт», «2» … «11»): a spotlight over the real screen and a card with the mascot. */
+.tour { position: fixed; inset: 0; z-index: 60; pointer-events: none; --tour-scrim: #0b1230b8; }
+.tour__blocker { position: absolute; inset: 0; pointer-events: auto; }
+.tour__scrim { position: absolute; inset: 0; background: var(--tour-scrim); animation: tour-fade .3s ease both; }
+.tour__spot { position: absolute; border-radius: 18px; box-shadow: 0 0 0 9999px var(--tour-scrim); outline: 2px solid #7e9bff; outline-offset: 0;
+  transition: top .38s cubic-bezier(.3, .8, .25, 1), left .38s cubic-bezier(.3, .8, .25, 1), width .38s cubic-bezier(.3, .8, .25, 1), height .38s cubic-bezier(.3, .8, .25, 1); animation: tour-fade .3s ease both; }
+.tour__spot::after { content: ''; position: absolute; inset: -2px; border-radius: inherit; box-shadow: 0 0 0 0 #7e9bff99; animation: tour-pulse 2s .4s ease-out infinite; }
+.tour__line { position: absolute; width: 0; border-left: 2px dashed #b9c8ff; transform: translateX(-1px); transform-origin: top; animation: tour-line .35s .2s ease-out both; }
+.tour__dock { position: absolute; left: 50%; transform: translateX(-50%); width: min(calc(100% - 24px), calc(var(--app-width) - 24px)); pointer-events: auto; }
+.tour__card { position: relative; padding: 16px 16px 14px 110px; min-height: 150px; border-radius: 22px; background: var(--olimp-surface); color: var(--olimp-text); box-shadow: 0 18px 48px #05091f4d; }
+.tour__card--from-below { animation: tour-in-up .4s cubic-bezier(.2, .9, .25, 1.1) both; }
+.tour__card--from-above { animation: tour-in-down .4s cubic-bezier(.2, .9, .25, 1.1) both; }
+.tour__card h2 { margin: 8px 0 5px; font-size: 17px; line-height: 1.2; font-weight: 700; }
+.tour__card p { margin: 0; color: var(--olimp-muted); font-size: 12.5px; line-height: 1.42; }
+.tour__mascot { position: absolute; left: 6px; bottom: 14px; width: 104px; pointer-events: none; }
+.tour__mascot img { display: block; width: 100%; height: auto; transform-origin: 50% 100%; animation: tour-pop .5s .1s cubic-bezier(.2, 1.2, .3, 1) both, tour-float 3.6s .8s ease-in-out infinite; }
+.tour__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 22px; }
+.tour__chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--olimp-blue-soft); color: var(--olimp-blue-text); font-size: 10.5px; font-weight: 600; }
+.tour__skip { padding: 4px 2px; border: 0; background: none; color: var(--olimp-muted); font: inherit; font-size: 11.5px; cursor: pointer; }
+.tour__dots { display: flex; gap: 4px; margin: 12px 0 0; padding: 0; list-style: none; }
+.tour__dots li { flex: 1; height: 4px; border-radius: 2px; background: var(--olimp-border); transition: background .3s; }
+.tour__dots li.is-done { background: #9db1ff; }
+.tour__dots li.is-current { background: var(--olimp-blue); }
+.tour__dots.is-complete li { background: var(--olimp-blue); animation: tour-dot .4s calc(var(--n, 0) * 40ms) both; }
+.tour__actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.tour__actions--pair .tour__button { flex: 1; }
+.tour__button { min-height: 40px; padding: 9px 18px; border: 1.5px solid var(--olimp-blue); border-radius: 12px; background: var(--olimp-blue); color: var(--olimp-on-primary); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform .15s; }
+.tour__button:active, .tour__back:active { transform: scale(.97); }
+.tour__button--outline { background: transparent; color: var(--olimp-blue-text); border-color: var(--olimp-blue-text); }
+.tour__back { display: grid; place-items: center; width: 40px; height: 40px; margin-right: auto; border: 1px solid var(--olimp-border); border-radius: 12px; background: var(--olimp-surface); color: var(--olimp-text); cursor: pointer; }
+.tour__button:focus-visible, .tour__back:focus-visible, .tour__skip:focus-visible { outline: 2px solid var(--olimp-blue); outline-offset: 2px; }
+
+/* The first and the last step: the mascot stands above the card in the middle of the screen. */
+.tour__dock--hero .tour__card { padding: 18px 18px 16px; text-align: center; min-height: 0; }
+.tour__dock--hero .tour__top { justify-content: center; }
+.tour__dock--hero .tour__card h2 { font-size: 21px; margin-top: 10px; }
+.tour__dock--hero .tour__card p { font-size: 13px; }
+.tour__mascot--hero { left: 50%; bottom: calc(100% - 18px); width: min(230px, 58vw); transform: translateX(-50%); }
+.tour__glow { position: absolute; inset: 8% -12% 0; border-radius: 50%; background: radial-gradient(closest-side, #8ea6ff80, #8ea6ff00); animation: tour-glow 3s ease-in-out infinite; }
+.tour__mascot--hero img { position: relative; }
+.tour--final .tour__mascot img { animation: tour-pop .5s .1s cubic-bezier(.2, 1.2, .3, 1) both, tour-jump 1.6s .7s ease-in-out infinite; }
+.tour__confetti { position: absolute; left: 50%; top: 45%; width: 0; height: 0; }
+.tour__confetti i { --a: calc(var(--i) * 22.5deg); position: absolute; width: 7px; height: 11px; border-radius: 2px; background: hsl(calc(var(--i) * 47 + 210) 90% 62%); opacity: 0; animation: tour-confetti 1.3s calc(.25s + var(--i) * 18ms) cubic-bezier(.15, .7, .3, 1) both; }
+@media (max-height: 620px) { .tour__mascot--hero { width: min(170px, 44vw); } }
+
+@keyframes tour-fade { from { opacity: 0; } }
+@keyframes tour-pulse { 0% { box-shadow: 0 0 0 0 #7e9bff99; } 70%, 100% { box-shadow: 0 0 0 12px #7e9bff00; } }
+@keyframes tour-line { from { transform: translateX(-1px) scaleY(0); } }
+@keyframes tour-in-up { from { opacity: 0; transform: translateY(24px) scale(.97); } }
+@keyframes tour-in-down { from { opacity: 0; transform: translateY(-24px) scale(.97); } }
+@keyframes tour-pop { from { opacity: 0; transform: scale(.6) translateY(16px); } }
+@keyframes tour-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes tour-jump { 0%, 60%, 100% { transform: translateY(0) scale(1); } 20% { transform: translateY(0) scale(1.04, .95); } 38% { transform: translateY(-14px) scale(.98, 1.03); } }
+@keyframes tour-glow { 0%, 100% { opacity: .75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes tour-dot { 50% { transform: scaleY(1.8); } }
+@keyframes tour-confetti { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0) rotate(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-150px) rotate(320deg); } }
+
+:root[data-theme='dark'] .tour { --tour-scrim: #02040bcc; }
+:root[data-theme='dark'] .tour__card { box-shadow: 0 18px 48px #000a, inset 0 0 0 1px var(--olimp-border); }
+:root[data-theme='dark'] .tour__mascot img { filter: drop-shadow(0 0 12px #8ea6ff59); }
+
+.tour-restart { margin: 4px 0 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-mascot img, .tour__mascot img, .tour--final .tour__mascot img, .tour__glow, .tour__spot::after { animation: none; }
+  .tour__spot { transition: none; }
+  .tour__confetti { display: none; }
+}

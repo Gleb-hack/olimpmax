@@ -25,6 +25,8 @@ import { ProfileProvider } from './lib/profile';
 import { AuthPage, WelcomePage } from './features/auth/AuthPages';
 import { useCatalogNavigation } from './lib/catalog-navigation';
 import { startRoute } from './lib/start-param';
+import { OnboardingTour, tourBack } from './features/onboarding/OnboardingTour';
+import { useOnboarding } from './features/onboarding/onboarding-store';
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -54,16 +56,18 @@ function Layout() {
   const backTo = typeof state?.backTo === 'string' && /^\/(?:catalog|search|olimp|universities\/[a-z0-9-]+)(?:\?|$)/.test(state.backTo) ? state.backTo : '/catalog';
   const subpage = pathname.startsWith('/profile/');
   const returnTo = typeof state?.returnTo === 'string' && /^\/catalog(?:\?|$)/.test(state.returnTo) ? state.returnTo : '/catalog';
+  const touring = useOnboarding(tour => tour.active);
   useEffect(() => {
     const heading = document.querySelector('h1');
     document.title = `${heading?.textContent || 'Olimp'} · Olimp`;
     heading?.focus({ preventScroll: true });
   }, [pathname]);
-  useEffect(() => max.backButton(chatOpen ? closeChat : picksOpen ? closePicks : subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : historyBack ? () => navigate(-1) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null),
+  // During the tour MAX «back» goes to the previous step instead of leaving the screen under it.
+  useEffect(() => max.backButton(touring ? () => tourBack.current?.() : chatOpen ? closeChat : picksOpen ? closePicks : subpage ? () => navigate('/profile') : planItem ? () => navigate(state?.backTo ? backTo : '/plan', { state: { backTo: returnTo } }) : historyBack ? () => navigate(-1) : detail || search ? () => navigate(backTo, { state: { backTo: returnTo } }) : null),
     // closeChat/closePicks are rebuilt on every render; chatOpen, picksOpen and state?.chatOpened are what change their behavior.
-    [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo, historyBack, chatOpen, picksOpen, state?.chatOpened]);
-  return <div className={`app-shell ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${overview ? 'page--overview' : subpage || detail || search ? 'page--detail' : ''}`}><Outlet /></main><CompareButton visible={comparing} />
-    {!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}</div>;
+    [pathname, navigate, subpage, detail, search, planItem, backTo, returnTo, state?.backTo, historyBack, chatOpen, picksOpen, state?.chatOpened, touring]);
+  return <div className={`app-shell ${comparing ? 'app-shell--compare' : ''}`}>{isMock && <div className="demo-banner">Демо · данные и план только в этом браузере</div>}<a href="#main" className="skip-link">К содержимому</a><main id="main" className={`page ${overview ? 'page--overview' : subpage || detail || search ? 'page--detail' : ''}`} inert={touring}><Outlet /></main><CompareButton visible={comparing} />
+    {!subpage && !detail && !search && <BottomNav catalogTo={catalogTo} />}<OnboardingTour /></div>;
 }
 // A bot button («Открыть карточку») launches the app with start_param; follow it once per launch, after sign-in.
 let startParamHandled = false;

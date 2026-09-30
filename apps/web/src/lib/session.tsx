@@ -5,6 +5,7 @@ import { api, canUseLocalAuth, clearSession, isMock, ApiError } from './api';
 import { max } from './max';
 import { useUI } from './ui-store';
 import { clearLocalData } from './local-data';
+import { markOnboardingPending, useOnboarding } from '../features/onboarding/onboarding-store';
 
 const resumeKey = 'olimp.session.resume.v1';
 const readResume = () => { try { return sessionStorage.getItem(resumeKey); } catch { return null; } };
@@ -33,7 +34,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
   function logout() {
     version.current++; clearSession(); remember('signed-out'); setUser(null);
-    void client.cancelQueries(); client.clear(); useUI.getState().clearComparison();
+    void client.cancelQueries(); client.clear(); useUI.getState().clearComparison(); useOnboarding.getState().finish(null);
   }
   useEffect(() => {
     const expired = () => { logout(); setError('Сессия завершилась. Откройте мини-приложение в MAX заново.'); };
@@ -52,7 +53,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const current = await api.startSession();
     if (current.registeredAt) throw new ApiError('Профиль уже существует. Перейдите на вкладку «Вход».', 409);
     const profile = await api.register(preferences);
-    if (attempt === version.current) enter(profile);
+    if (attempt === version.current) { markOnboardingPending(profile); enter(profile); }
   }
   async function deleteAccount() {
     if (!user) return;

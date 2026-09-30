@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Dialog, Header, Notice, Icon } from '@olimp/ui';
+import { Button, Dialog, Header, Notice, Icon, SettingsRow } from '@olimp/ui';
+import { useOnboarding } from '../onboarding/onboarding-store';
+import { tourSteps } from '../onboarding/tour-steps';
 import { mailtoUrl } from '../../lib/contacts';
 import { max } from '../../lib/max';
 import { copyText } from '../../lib/clipboard';
@@ -38,12 +40,14 @@ export function HelpPage() {
   const [support, setSupport] = useState(false);
   const [copied, setCopied] = useState<boolean | null>(null);
   const [mailError, setMailError] = useState(false);
+  const startTour = useOnboarding(state => state.start);
   function openMail() {
     setMailError(false);
     try { max.openExternal(mailtoUrl(supportEmail, 'Olimp: вопрос в поддержку')); } catch { setMailError(true); }
   }
   function close() { setSupport(false); setCopied(null); setMailError(false); }
   return <><Header title="Помощь и FAQ" back="/profile" /><p className="page-intro faq-intro">Как пользоваться приложением и ботом Olimp. Вопросы об участии, льготах и дипломах — в разделе <Link className="text-link" to="/profile/olympiad-faq">«Вопросы по олимпиадам»</Link>.</p>
+    <div className="settings-list tour-restart"><SettingsRow icon="sparkle" title="Пройти обучение заново" subtitle={`Короткий тур по главным экранам · ${tourSteps.length} шагов`} onClick={startTour} /></div>
     {sections.map(section => <section key={section.title} aria-label={section.title}><h2 className="section-caption faq-caption">{section.title}</h2><div className="faq-list">{section.questions.map(question => {
       const id = `${section.title}-${question.title}`;
       const index = faqIds.indexOf(id);

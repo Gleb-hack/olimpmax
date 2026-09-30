@@ -12,6 +12,8 @@ export const localKeys = {
   comparison: () => `olimp.comparison.v1.${isMock ? 'mock' : max.preferenceScope}`,
   /** «Не сейчас» on the offer to connect the reminder bot in the plan. */
   botPromptDismissed: () => `olimp.bot-prompt.dismissed.v1.${isMock ? 'mock' : max.preferenceScope}`,
+  /** The first-visit tour: «pending» right after registration, «done» once it is finished or skipped. */
+  onboarding: (user: Owner) => `olimp.onboarding.v1.${isMock ? 'mock' : user.id}`,
 };
 
 export function readSearchHistory(): string[] {
@@ -22,7 +24,7 @@ export function readSearchHistory(): string[] {
 }
 
 export function clearLocalData(user: Owner) {
-  for (const key of [localKeys.avatar(user), localKeys.preferencesImported(user), localKeys.legacyPreferences(user), localKeys.searchHistory(), localKeys.comparison(), localKeys.botPromptDismissed()]) {
+  for (const key of [localKeys.avatar(user), localKeys.preferencesImported(user), localKeys.legacyPreferences(user), localKeys.searchHistory(), localKeys.comparison(), localKeys.botPromptDismissed(), localKeys.onboarding(user)]) {
     try { localStorage.removeItem(key); } catch { /* Storage is unavailable, so nothing was kept there. */ }
   }
 }
