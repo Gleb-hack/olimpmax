@@ -3,9 +3,8 @@ import { and, eq, exists, inArray, isNull, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client.js';
 import { olympiads, planItems, reminders, users } from '../../db/schema.js';
 import { readPlan, planKey } from '../plan.js';
-import { moscowToday } from '../calendar.js';
-import { dueReminders, eventsSnapshot, scheduleChange, upcomingEvents, type DueReminder, type ReminderItem, type ScheduleChange } from './schedule.js';
-import { keyboard, openAppButton, reminderKeyboard, reminderText, startParam } from './format.js';
+import { dueReminders, eventsSnapshot, scheduleChange, type DueReminder, type ReminderItem, type ScheduleChange } from './schedule.js';
+import { reminderKeyboard, reminderText } from './format.js';
 import { toDeliveryError, type DeliveryError, type Messenger } from './max.js';
 import { localDay, regionTimezone, withinHours, type SendingHours } from './timezones.js';
 
@@ -14,7 +13,6 @@ export type ReminderOptions = { includeEstimated: boolean };
 export type RunOptions = ReminderOptions & { hours?: SendingHours };
 /** A failed message is retried by later runs of the same day, at most this many attempts in total. */
 export const MAX_ATTEMPTS = 3;
-const MAX_USER_ID = /^[1-9][0-9]{0,15}$/;
 
 export class NotificationError extends Error {
   constructor(public code: string, message: string, public statusCode: number) { super(message); }
@@ -179,34 +177,6 @@ export async function readNotificationSettings(db: Database, userId: string, mes
 }
 export async function setNotificationsEnabled(db: Database, userId: string, enabled: boolean, now = new Date()) {
   await db.update(users).set({ notificationsEnabled: enabled, updatedAt: now.toISOString() }).where(eq(users.id, userId));
-}
-
-/** «Прислать тестовое напоминание» in the profile: the nearest real deadline of the plan, or a plain check message. */
-export async function sendTestReminder(db: Database, messenger: Messenger, userId: string, options: ReminderOptions & { now?: Date }) {
-  const now = options.now ?? new Date();
-  const user = await userRow(db, userId);
-  if (!MAX_USER_ID.test(user.maxUserId)) throw new NotificationError('BOT_UNAVAILABLE', 'Тестовое напоминание приходит в MAX: откройте Olimp внутри мессенджера.', 409);
-  const today = moscowToday(now);
-  const upcoming = upcomingEvents(await reminderItems(db, userId, today), today, 180, options);
-  const nearest = upcoming[0];
-  const list = nearest ? upcoming.filter(d => d.olympiadId === nearest.olympiadId).slice(0, 3) : [];
-  const identity = await messenger.identity();
-  const text = list.length ? reminderText(list, { test: true })
-    : '🔔 <b>Тестовое сообщение Olimp</b>\n\nБот подключён: напоминания о сроках будут приходить в этот чат.\n\n'
-      + 'Сейчас в плане нет отслеживаемых олимпиад с известными датами. Добавьте олимпиаду в план и оставьте отслеживание включённым.';
-  try {
-    await messenger.sendToUser(Number(user.maxUserId), text,
-      list.length ? reminderKeyboard(list, identity) : identity ? keyboard([[openAppButton('Открыть Olimp', identity, startParam.plan)]]) : undefined);
-  } catch (error) {
-    const failure = toDeliveryError(error);
-    if (failure.unreachable) {
-      await db.update(users).set({ botBlockedAt: now.toISOString() }).where(eq(users.id, userId));
-      throw new NotificationError('BOT_NOT_CONNECTED', 'Бот пока не может вам написать. Откройте чат с ботом Olimp, нажмите «Начать» и повторите.', 409);
-    }
-    throw new NotificationError('BOT_DELIVERY_FAILED', 'MAX не принял сообщение. Попробуйте ещё раз через минуту.', 502);
-  }
-  await db.update(users).set({ botBlockedAt: null }).where(eq(users.id, userId));
-  return { sent: true as const, message: list.length ? 'Отправили напоминание о ближайшем сроке из плана. Проверьте чат с ботом Olimp.' : 'Отправили проверочное сообщение. Проверьте чат с ботом Olimp.' };
 }
 
 // ---- Called by the bot on updates from MAX ----

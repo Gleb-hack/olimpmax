@@ -28,8 +28,7 @@ export async function mockRequest(path: string, options: RequestInit = {}): Prom
     return undefined;
   }
   if (url.pathname === '/me') return readProfile();
-  // The demo has no MAX bot: settings are shown read-only and the test message is unavailable.
-  if (url.pathname === '/me/notifications/test') throw new Error('Тестовое напоминание приходит из бота MAX: в деморежиме бот не подключён.');
+  // The demo has no MAX bot: settings are shown read-only.
   if (url.pathname === '/me/notifications') {
     if (options.method === 'PATCH') throw new Error('Настройки напоминаний сохраняются на сервере: в деморежиме они недоступны.');
     return c.NotificationSettings.parse({ enabled: true, botConnected: false, botUrl: null });

@@ -13,9 +13,7 @@ export const useNotifications = () => useQuery({ queryKey: ['notifications'], qu
 export function useNotificationActions() {
   const client = useQueryClient();
   const toggle = useMutation({ mutationFn: api.setNotifications, onSuccess: data => client.setQueryData(['notifications'], data) });
-  // A delivery result can change «bot connected» (MAX refused → not connected; delivered → connected).
-  const test = useMutation({ mutationFn: api.testNotification, onSettled: () => client.invalidateQueries({ queryKey: ['notifications'] }) });
-  return { toggle, test };
+  return { toggle };
 }
 export const useEvents = () => useQuery({ queryKey: ['plan-events'], queryFn: api.events, retry: false });
 export function usePlanActions() {

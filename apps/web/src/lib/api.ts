@@ -130,7 +130,6 @@ export const api = {
   async setNotifications(enabled: boolean) {
     return c.NotificationSettings.parse(await request('/me/notifications', { method: 'PATCH', body: JSON.stringify(c.NotificationSettingsPatch.parse({ enabled })) }, true));
   },
-  async testNotification() { return c.NotificationTestResponse.parse(await request('/me/notifications/test', { method: 'POST' }, true)); },
   async calendarFeed(reset = false) {
     return c.CalendarFeedResponse.parse(await request('/me/calendar-feed', { method: 'POST', body: JSON.stringify(c.CalendarFeedRequest.parse(reset ? { reset } : {})) }, true));
   },
