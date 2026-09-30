@@ -13,7 +13,7 @@ const themeOptions: { value: ThemePreference; label: string }[] = [{ value: 'lig
 
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { profile, storageError, saving, legacy, importLegacy } = useProfile();
+  const { profile, storageError, saving } = useProfile();
   const { logout } = useSession();
   const { preference, setPreference } = useTheme();
   const filters = useFilters();
@@ -34,7 +34,6 @@ export function ProfilePage() {
   const format = (label: string, enabled: boolean) => <div className="switch-row"><span>{label}</span><small className={enabled ? 'text-green' : 'muted'}>{enabled ? 'Включено' : 'Выключено'}</small></div>;
   return <><Header title="Профиль" />
     <section className="profile-card panel"><ProfileAvatar image={profile.avatar} /><div><h2>{profile.name || max.displayName}</h2><p>{[grade ?? 'Класс не указан', profile.region].filter(Boolean).join(' · ')}</p></div></section>
-    {legacy && <Notice tone="info">На этом устройстве остались настройки из предыдущей версии. <button className="text-button" disabled={saving} onClick={importLegacy}>Перенести их в аккаунт</button></Notice>}
     <div className="panel profile-details">
       <section className="panel-section"><h2 className="section-caption">Класс обучения</h2>{grade ? <div className="chips-wrap"><Chip selected>{grade}</Chip></div> : empty}</section>
       <section className="panel-section"><h2 className="section-caption">Интересующие предметы</h2>{subjects}</section>

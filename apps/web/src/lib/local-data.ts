@@ -5,9 +5,6 @@ import { max } from './max';
 // Every piece of personal data the app keeps in this browser, so account deletion stays complete.
 type Owner = Pick<UserProfile, 'id' | 'maxUserId'>;
 export const localKeys = {
-  avatar: (user: Owner) => `olimp.avatar.v1.${isMock ? 'mock' : user.id}`,
-  preferencesImported: (user: Owner) => `olimp.preferences.imported.v1.${isMock ? 'mock' : user.id}`,
-  legacyPreferences: (user: Owner) => `olimp.preferences.v1.${isMock ? 'mock' : user.maxUserId === 'local-demo' ? 'browser' : user.maxUserId}`,
   searchHistory: () => `olimp.search-history.v1.${isMock ? 'mock' : max.preferenceScope}`,
   comparison: () => `olimp.comparison.v1.${isMock ? 'mock' : max.preferenceScope}`,
   /** «Не сейчас» on the offer to connect the reminder bot in the plan. */
@@ -24,7 +21,7 @@ export function readSearchHistory(): string[] {
 }
 
 export function clearLocalData(user: Owner) {
-  for (const key of [localKeys.avatar(user), localKeys.preferencesImported(user), localKeys.legacyPreferences(user), localKeys.searchHistory(), localKeys.comparison(), localKeys.botPromptDismissed(), localKeys.onboarding(user)]) {
+  for (const key of [localKeys.searchHistory(), localKeys.comparison(), localKeys.botPromptDismissed(), localKeys.onboarding(user)]) {
     try { localStorage.removeItem(key); } catch { /* Storage is unavailable, so nothing was kept there. */ }
   }
 }

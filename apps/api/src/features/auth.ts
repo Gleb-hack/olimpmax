@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 const MaxUser = z.object({
   id: z.union([z.number().int().positive().max(Number.MAX_SAFE_INTEGER), z.string().regex(/^[1-9]\d{0,19}$/)]),
@@ -23,4 +23,13 @@ export function validateMaxInitData(initData: string, botToken: string, now = Da
   const user = MaxUser.parse(JSON.parse(params.get('user') ?? 'null'));
   if (user.is_bot) throw new Error('Bot users cannot sign in');
   return { maxUserId: String(user.id), displayName: [user.first_name, user.last_name].filter(Boolean).join(' ') };
+}
+
+/** Returns the login of the matching test account or null. Hashing first keeps the comparison constant-time for any length. */
+export function checkTestAccount(accounts: Map<string, string>, login: string, password: string) {
+  const key = login.trim().toLowerCase();
+  const expected = accounts.get(key);
+  const digest = (value: string) => createHash('sha256').update(value).digest();
+  const matches = timingSafeEqual(digest(expected ?? '\u0000'), digest(password));
+  return expected !== undefined && matches ? key : null;
 }

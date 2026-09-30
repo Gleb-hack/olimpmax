@@ -313,6 +313,9 @@ export const PlanEventsResponse = z.object({
 export const NotificationSettings = z.object({ enabled: z.boolean(), botConnected: z.boolean(), botUrl: z.string().url().nullable() });
 export const NotificationSettingsPatch = z.object({ enabled: z.boolean() }).strict();
 export const AuthBody = z.object({ initData: z.string().min(1).max(16384) }).strict();
+/** Test accounts for reviewers outside MAX: logins and passwords come from the server's TEST_ACCOUNTS. */
+export const TestAuthBody = z.object({ login: z.string().trim().min(1).max(64), password: z.string().min(1).max(200) }).strict();
+export const AuthOptions = z.object({ max: z.boolean(), test: z.boolean() });
 export const ErrorResponse = z.object({ error: z.string(), message: z.string() });
 /** How many target directions and universities a profile may keep (the pickers in the profile show the same numbers). */
 export const GOAL_LIMITS = { directions: 25, universities: 10 } as const;
@@ -347,6 +350,7 @@ export const UserProfile = ProfilePreferences.extend({
   id: z.uuid(), maxUserId: z.string(), registeredAt: z.string().nullable(), createdAt: z.string(),
 });
 export type UserProfile = z.infer<typeof UserProfile>;
+export type TestAuthBody = z.infer<typeof TestAuthBody>;
 export type ProfilePreferences = z.infer<typeof ProfilePreferences>;
 export type ProfilePatch = z.infer<typeof ProfilePatch>;
 export const AuthResponse = z.object({ accessToken: z.string(), expiresIn: z.literal(3600), user: UserProfile });

@@ -13,9 +13,12 @@ let authPromise: Promise<string> | null = null;
 let authGeneration = 0;
 let sessionAllowed = false;
 export const canUseLocalAuth = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH !== 'false' && !max.isEmbedded;
+// Test account outside MAX: kept only in the memory of this page, so a reload asks for the password again.
+let testCredentials: c.TestAuthBody | null = null;
 export function clearSession() {
-  authGeneration++; sessionAllowed = false; accessToken = null; expiresAt = 0; authPromise = null;
+  authGeneration++; sessionAllowed = false; accessToken = null; expiresAt = 0; authPromise = null; testCredentials = null;
 }
+export function setTestAccount(credentials: c.TestAuthBody) { clearSession(); testCredentials = c.TestAuthBody.parse(credentials); }
 
 async function send(path: string, options: RequestInit = {}) {
   let response: Response;
@@ -37,17 +40,22 @@ async function authenticate() {
   const generation = authGeneration;
   const pending = (async () => {
     const initData = max.initData;
-    if (!initData && !(import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH !== 'false')) {
+    const credentials = initData ? null : testCredentials;
+    if (!initData && !credentials && !(import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH !== 'false')) {
       throw new ApiError('Откройте Olimp в MAX, чтобы пользоваться чатом и личным планом.', 401);
     }
     try {
-      const data = c.AuthResponse.parse(await send(initData ? '/auth/max' : '/auth/dev', {
-        method: 'POST', ...(initData ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ initData }) } : {}),
+      const body = initData ? { initData } : credentials;
+      const data = c.AuthResponse.parse(await send(initData ? '/auth/max' : credentials ? '/auth/test' : '/auth/dev', {
+        method: 'POST', ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
       }));
       if (generation !== authGeneration) throw new ApiError('Вход отменён.', 401);
       accessToken = data.accessToken; expiresAt = Date.now() + (data.expiresIn - 30) * 1000;
       return data.accessToken;
     } catch (error) {
+      if (credentials && error instanceof ApiError && (error.status === 401 || error.status === 404)) {
+        throw new ApiError(error.status === 404 ? 'Тестовый вход на этом сервере выключен.' : error.message, 401);
+      }
       if (error instanceof ApiError && error.status === 401) throw new ApiError('Сессия завершилась. Закройте и снова откройте мини-приложение в MAX.', 401);
       if (!initData && error instanceof ApiError && error.status === 404) throw new ApiError('Вход для разработки выключен. Откройте приложение в MAX или включите ALLOW_DEV_AUTH на локальном сервере.', 401);
       throw error;
@@ -91,6 +99,7 @@ export type Olympiad = z.infer<typeof c.OlympiadCard>;
 export type PlanEntry = z.infer<typeof c.PlanItem>;
 export type PlanPatch = z.infer<typeof c.PlanPatch>;
 export const api = {
+  async authOptions() { return c.AuthOptions.parse(await request('/auth/options')); },
   async startSession() { sessionAllowed = true; return c.UserProfile.parse(await request('/me', {}, true)); },
   async currentProfile(signal?: AbortSignal) { return c.UserProfile.parse(await request('/me', { signal }, true)); },
   async register(profile: c.ProfilePreferences) { return c.UserProfile.parse(await request('/me/registration', { method: 'POST', body: JSON.stringify(c.ProfilePreferences.parse(profile)) }, true)); },
