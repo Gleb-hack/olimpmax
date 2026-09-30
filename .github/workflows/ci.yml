@@ -47,4 +47,42 @@ jobs:
       - run: pnpm db:migrate
       - run: pnpm db:import
       - run: pnpm test:integration
-      - run: docker build --target web --tag olimp-web:ci .
+
+  # The hackathon requirement: the whole solution starts with one command and builds in under 5 minutes.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      STUDENT_LOGIN: student
+      STUDENT_PASSWORD: ci-check-password
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare .env
+        run: |
+          cp .env.example .env
+          sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$(openssl rand -hex 32)|; s|^TEST_ACCOUNTS=.*|TEST_ACCOUNTS=$STUDENT_LOGIN:$STUDENT_PASSWORD|" .env
+      - name: Pull base images (not counted in the build time)
+        run: docker pull node:22-bookworm-slim && docker pull caddy:2-alpine && docker compose pull postgres
+      - name: Build without cache in under 5 minutes
+        run: |
+          start=$(date +%s)
+          docker compose build --no-cache
+          took=$(( $(date +%s) - start ))
+          echo "Сборка: ${took} с" | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$took" -lt 300
+      - name: Start with one command
+        run: |
+          docker compose up -d
+          for i in $(seq 1 60); do curl -fsS http://localhost:8080/api/health && exit 0; sleep 3; done
+          docker compose ps -a; docker compose logs --tail=80; exit 1
+      - name: DATA-API checks
+        run: docker compose run --rm --no-deps -e STUDENT_LOGIN -e STUDENT_PASSWORD api node scripts/check-data-api.mjs http://web/api
+      - name: Stop and start again, data is kept
+        run: |
+          docker compose down
+          docker compose up -d
+          for i in $(seq 1 60); do curl -fsS http://localhost:8080/api/health && break; sleep 3; done
+          docker compose run --rm --no-deps -e STUDENT_LOGIN -e STUDENT_PASSWORD api node scripts/check-data-api.mjs http://web/api
+      - name: Logs
+        if: failure()
+        run: docker compose ps -a && docker compose logs --tail=200

@@ -1,3 +1,4 @@
+# Only what the image build needs: sources, lock file, data and deploy/.
 .git
 .github
 **/node_modules
@@ -6,11 +7,21 @@
 .env.*
 .local
 .pnpm-store
-.codex
-.agents
-data/*.sql
 backups
+data/*.sql
+data/*-report.json
 **/*.dump
 **/*.log
 **/.DS_Store
-legacy
+coverage
+# Not used by the build: tests, documentation, compose files and the OpenAPI file.
+tests
+apps/web/test
+docs
+*.md
+!data/**/*.md
+compose*.yaml
+Dockerfile
+.dockerignore
+openapi.yaml
+scripts/university-logos.py

@@ -147,7 +147,6 @@ type CatalogFacts = { scores: Map<number, number>; deadlines: Map<number, string
 // for ten minutes (and never across a day change: the countdown depends on today). Registration deadlines come with them.
 const SCORE_TTL = 10 * 60_000;
 let scoreCache: { today: string; at: number; value: Promise<CatalogFacts> } | null = null;
-export function resetCompletenessCache() { scoreCache = null; }
 async function computeScores(db: Database, today: string) {
   const [rows, benefitSeries] = await Promise.all([
     db.select().from(olympiads).where(eq(olympiads.inCatalog, true)),

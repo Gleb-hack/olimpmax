@@ -1,4 +1,5 @@
-{$APP_DOMAIN} {
+# SITE_ADDRESS: ":80" for a local run over HTTP, the domain in production (Caddy obtains the certificate).
+{$SITE_ADDRESS} {
 	header {
 		X-Content-Type-Options nosniff
 		Referrer-Policy no-referrer

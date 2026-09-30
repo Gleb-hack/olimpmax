@@ -1,0 +1,292 @@
+# DATA-API.yaml — описание проверки API решения «Олимп» для платформы оценки.
+# Полное описание методов и форматов — openapi.yaml (OpenAPI 3.1, генерируется из схем API: pnpm openapi).
+# Автоматический прогон этих проверок: pnpm data-api:check [базовый адрес] (логин и пароль — переменные STUDENT_LOGIN и STUDENT_PASSWORD).
+
+# 1. Версия конфигурации: версия схемы этого файла.
+version: "1.0"
+
+# 2. Наименование решения и идентификатор команды.
+solution:
+  name: Олимп — олимпиады и личный план в MAX
+  team: "<ЗАПОЛНИТЬ: идентификатор команды>"
+  repository: https://github.com/Gleb-hack/olimpmax
+  openapi: openapi.yaml
+
+# 3. Базовый адрес API: все пути ниже указаны относительно него.
+# Для локального запуска (docker compose up): http://localhost:8080/api
+baseUrl: "https://<ЗАПОЛНИТЬ: домен приложения>/api"
+
+# Роли и способ получения токена.
+# Пароли не хранятся в репозитории: логин и пароль тестовой учётной записи переданы в заявке
+# (на сервере они заданы переменной TEST_ACCOUNTS). Административный доступ для проверки не нужен.
+auth:
+  type: bearer
+  header: Authorization
+  format: "Bearer {token}"
+  tokenLifetimeSeconds: 3600
+  login:
+    method: POST
+    path: /auth/test
+    headers:
+      Content-Type: application/json
+    body:
+      login: "{STUDENT_LOGIN}"
+      password: "{STUDENT_PASSWORD}"
+    tokenField: accessToken
+
+roles:
+  guest:
+    description: Без входа — публичный каталог, вузы, направления.
+  student:
+    description: Ученик — тестовая учётная запись; профиль, личный план, напоминания.
+    credentials: "Логин и пароль из заявки: STUDENT_LOGIN, STUDENT_PASSWORD"
+
+# 4–9. Обязательные проверки основной функциональности, выполняются по порядку.
+# request: path/query/headers/body; expect: статусы, тип содержимого, структура JSON и обязательные поля.
+# Путь вида items[].id означает поле id у каждого элемента массива items.
+checks:
+  - id: health
+    title: API и база данных доступны
+    method: GET
+    path: /health
+    role: guest
+    expect:
+      status: [200]
+      contentType: application/json
+      body: { status: ok }
+      requiredFields: [status]
+
+  - id: auth-options
+    title: Сервер сообщает доступные способы входа
+    method: GET
+    path: /auth/options
+    role: guest
+    expect:
+      status: [200]
+      contentType: application/json
+      body: { test: true }
+      requiredFields: [max, test]
+
+  - id: catalog-filters
+    title: Фильтры каталога — предметы, классы, форматы, уровни
+    method: GET
+    path: /olympiads/filters
+    role: guest
+    expect:
+      status: [200]
+      contentType: application/json
+      requiredFields: [subjects, "subjects[].id", "subjects[].name", "subjects[].count", grades, formats, participation, scheduleStatuses]
+
+  - id: catalog-search
+    title: Поиск олимпиад по предмету и классу с пагинацией
+    method: GET
+    path: /olympiads
+    role: guest
+    request:
+      query: { subjectIds: "7", grades: "10", sort: deadline, page: "1", pageSize: "5" }
+    expect:
+      status: [200]
+      contentType: application/json
+      minItems: { items: 1 }
+      requiredFields: [items, total, page, pageSize, "items[].id", "items[].title", "items[].subjects", "items[].format", "items[].scheduleStatus", "items[].sourceUrl"]
+
+  - id: olympiad-detail
+    title: Карточка олимпиады — этапы, уровень, источник
+    method: GET
+    path: /olympiads/{id}
+    role: guest
+    request:
+      path: { id: 88 }
+    expect:
+      status: [200]
+      contentType: application/json
+      body: { id: 88 }
+      requiredFields: [id, title, subjects, stages, organizers, documents, sourceUrl, scheduleStatus, importedAt]
+
+  - id: olympiad-not-found
+    title: Несуществующая олимпиада — 404 с понятной ошибкой
+    method: GET
+    path: /olympiads/{id}
+    role: guest
+    request:
+      path: { id: 999999999 }
+    expect:
+      status: [404]
+      contentType: application/json
+      body: { error: NOT_FOUND }
+      requiredFields: [error, message]
+
+  - id: universities
+    title: Вузы с льготами для олимпиадников
+    method: GET
+    path: /universities
+    role: guest
+    expect:
+      status: [200]
+      contentType: application/json
+      minItems: { items: 1 }
+      requiredFields: [items, "items[].slug", "items[].name", "items[].seriesCount", "items[].olympiadCount"]
+
+  - id: university-detail
+    title: Карточка вуза — льготы и программы
+    method: GET
+    path: /universities/{slug}
+    role: guest
+    request:
+      path: { slug: mipt }
+    expect:
+      status: [200]
+      contentType: application/json
+      body: { slug: mipt }
+      requiredFields: [slug, name, benefits, programs]
+
+  - id: directions
+    title: Направления подготовки
+    method: GET
+    path: /directions
+    role: guest
+    expect:
+      status: [200]
+      contentType: application/json
+      minItems: { items: 1 }
+      requiredFields: [items, "items[].code", "items[].name", "items[].egeSubjects"]
+
+  - id: plan-requires-auth
+    title: Личный план недоступен без входа
+    method: GET
+    path: /me/plan
+    role: guest
+    expect:
+      status: [401]
+      contentType: application/json
+      body: { error: UNAUTHORIZED }
+      requiredFields: [error, message]
+
+  - id: login
+    title: Вход тестовой учётной записью ученика
+    method: POST
+    path: /auth/test
+    role: student
+    request:
+      headers: { Content-Type: application/json }
+      body: { login: "{STUDENT_LOGIN}", password: "{STUDENT_PASSWORD}" }
+    expect:
+      status: [200]
+      contentType: application/json
+      body: { expiresIn: 3600 }
+      requiredFields: [accessToken, expiresIn, user, user.id, user.registeredAt]
+
+  - id: profile
+    title: Профиль текущего пользователя
+    method: GET
+    path: /me
+    role: student
+    expect:
+      status: [200]
+      contentType: application/json
+      requiredFields: [id, name, grade, subjects, directions, universities, registeredAt]
+
+  - id: registration
+    title: Регистрация профиля (при повторном прогоне — 409, профиль уже создан)
+    method: POST
+    path: /me/registration
+    role: student
+    request:
+      headers: { Content-Type: application/json }
+      body: { name: Проверяющий, grade: 10, region: Москва, subjects: [7], online: true, onsite: true, directions: ["01.03.02"], universities: [mipt] }
+    expect:
+      status: [200, 409]
+      contentType: application/json
+      requiredFields: []
+
+  - id: profile-update
+    title: Изменение класса, предметов и цели
+    method: PATCH
+    path: /me/profile
+    role: student
+    request:
+      headers: { Content-Type: application/json }
+      body: { grade: 10, subjects: [7], universities: [mipt], directions: ["01.03.02"] }
+    expect:
+      status: [200]
+      contentType: application/json
+      body: { grade: 10 }
+      requiredFields: [id, grade, subjects, universities, directions, registeredAt]
+
+  - id: plan-add
+    title: Добавить олимпиаду в личный план (идемпотентно)
+    method: PUT
+    path: /me/plan/{id}
+    role: student
+    request:
+      path: { id: 88 }
+    expect:
+      status: [204]
+
+  - id: plan-note
+    title: Заметка, статус и отслеживание сроков
+    method: PATCH
+    path: /me/plan/{id}
+    role: student
+    request:
+      path: { id: 88 }
+      headers: { Content-Type: application/json }
+      body: { note: Подготовиться к школьному этапу, status: in_progress, tracking: true }
+    expect:
+      status: [204]
+
+  - id: plan-read
+    title: Личный план с этапами и датами
+    method: GET
+    path: /me/plan
+    role: student
+    expect:
+      status: [200]
+      contentType: application/json
+      minItems: { items: 1 }
+      requiredFields: [items, total, "items[].olympiad.id", "items[].olympiad.title", "items[].tracking", "items[].note", "items[].status", "items[].stages", "items[].savedAt"]
+
+  - id: plan-events
+    title: Ближайшие сроки из плана
+    method: GET
+    path: /me/plan/events
+    role: student
+    request:
+      query: { days: "180" }
+    expect:
+      status: [200]
+      contentType: application/json
+      requiredFields: [from, through, items]
+
+  - id: calendar-feed
+    title: Ссылка на календарь плана (iCalendar)
+    method: POST
+    path: /me/calendar-feed
+    role: student
+    request:
+      headers: { Content-Type: application/json }
+      body: {}
+    expect:
+      status: [200]
+      contentType: application/json
+      requiredFields: [path]
+
+  - id: notifications
+    title: Настройки напоминаний бота MAX
+    method: GET
+    path: /me/notifications
+    role: student
+    expect:
+      status: [200]
+      contentType: application/json
+      requiredFields: [enabled, botConnected, botUrl]
+
+  - id: plan-remove
+    title: Убрать олимпиаду из плана
+    method: DELETE
+    path: /me/plan/{id}
+    role: student
+    request:
+      path: { id: 88 }
+    expect:
+      status: [204]

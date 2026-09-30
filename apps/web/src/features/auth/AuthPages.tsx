@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Dialog, Notice, Select, Icon } from '@olimp/ui';
 import { ProfilePreferences } from '@olimp/contracts';
-import { canUseLocalAuth, isMock } from '../../lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { api, canUseLocalAuth, isMock } from '../../lib/api';
 import { max } from '../../lib/max';
 import { useSession } from '../../lib/session';
 import { useFilters } from '../../lib/queries';
@@ -19,7 +20,7 @@ function useAuthNavigation(title: string, back: string | null) {
   }, [title, back, navigate]);
 }
 function DataNote() {
-  return <div className="prose"><p>Olimp получает идентификатор и имя вашего аккаунта MAX. Сервер проверяет подлинность этих данных.</p><p>В базе Olimp сохраняются имя профиля, класс, город, предметы, целевые вузы и направления, форматы участия, выбранные олимпиады и заметки. После входа через тот же аккаунт MAX они доступны на другом устройстве.</p><p>Пароль от MAX вводить не нужно. Загруженное фото профиля остаётся на текущем устройстве.</p><p className="hint">Политика обработки персональных данных пока не опубликована.</p></div>;
+  return <div className="prose"><p>Olimp получает идентификатор и имя вашего аккаунта MAX. Сервер проверяет подлинность этих данных.</p><p>В базе Olimp сохраняются имя профиля, класс, город, предметы, целевые вузы и направления, форматы участия, выбранные олимпиады и заметки. После входа через тот же аккаунт MAX они доступны на другом устройстве.</p><p>Пароль от MAX вводить не нужно. Фото профиля, если вы его загрузите, хранится вместе с профилем.</p><p className="hint">Политика обработки персональных данных пока не опубликована.</p></div>;
 }
 export function WelcomePage() {
   const { user, error } = useSession();
@@ -60,8 +61,14 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState(false);
+  const [login, setLogin] = useState('');
+  const [password, setPassword] = useState('');
   useAuthNavigation(registering ? 'Регистрация' : 'Вход', '/welcome');
-  const available = max.isEmbedded || canUseLocalAuth || isMock;
+  // Outside MAX the server may offer test accounts for reviewers (TEST_ACCOUNTS).
+  const outside = !max.isEmbedded && !canUseLocalAuth && !isMock;
+  const options = useQuery({ queryKey: ['auth-options'], queryFn: () => api.authOptions(), enabled: outside, staleTime: Infinity, retry: false });
+  const testLogin = outside && options.data?.test === true;
+  const available = max.isEmbedded || canUseLocalAuth || isMock || testLogin;
   const selected = filters.data?.subjects.filter(s => subjects.includes(s.id)).map(s => s.name).join(', ');
   if (session.user) return <Navigate to={typeof location.state?.from === 'string' && /^\/(catalog|plan|profile|search|olympiads|olimp)(\/|\?|$)/.test(location.state.from) ? location.state.from : '/olimp'} replace />;
   async function submit(event: React.FormEvent) {
@@ -71,7 +78,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     if (registering && !parsed.success) { setError('Укажите имя длиной от 1 до 80 символов.'); return; }
     setPending(true);
     try {
-      if (registering && parsed.success) await session.register(parsed.data); else await session.login();
+      const test = testLogin ? { login, password } : undefined;
+      if (registering && parsed.success) await session.register(parsed.data, test); else await session.login(test);
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Не удалось войти. Попробуйте ещё раз.'); }
     finally { setPending(false); }
   }
@@ -83,9 +91,15 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     <form className="auth-form" onSubmit={submit}>
       <fieldset disabled={pending}>
         {registering && <label className="auth-field"><span>Имя</span><div className="auth-input"><Icon name="user" size={16} /><input autoComplete="given-name" required maxLength={80} value={name} placeholder="Как вас зовут?" onChange={event => setName(event.target.value)} /></div></label>}
-        <label className="auth-field"><span>Аккаунт MAX</span><div className="auth-input"><Icon name="user" size={16} /><input readOnly value={max.isEmbedded ? max.displayName : isMock || canUseLocalAuth ? 'Тестовый аккаунт' : 'Откройте приложение в MAX'} /></div></label>
-        {!registering && <label className="auth-field"><span>Способ входа</span><div className="auth-input auth-input--secure"><Icon name="shield" size={16} /><input readOnly value="Без пароля · через MAX" /></div></label>}
-        <p className="auth-security"><Icon name="shield" size={16} /><span>{registering ? 'Профиль будет привязан к вашему аккаунту MAX. Придумывать пароль не нужно.' : 'MAX подтверждает вашу личность. Ваш план и настройки появятся после входа.'}</span></p>
+        {testLogin ? <>
+          <label className="auth-field"><span>Логин тестового аккаунта</span><div className="auth-input"><Icon name="user" size={16} /><input autoComplete="username" autoCapitalize="none" required maxLength={64} value={login} placeholder="Логин" onChange={event => setLogin(event.target.value)} /></div></label>
+          <label className="auth-field"><span>Пароль</span><div className="auth-input auth-input--secure"><Icon name="shield" size={16} /><input type="password" autoComplete="current-password" required maxLength={200} value={password} placeholder="Пароль" onChange={event => setPassword(event.target.value)} /></div></label>
+          <p className="auth-security"><Icon name="shield" size={16} /><span>Вход для проверки вне MAX. В мини-приложении пароль не нужен: личность подтверждает MAX.</span></p>
+        </> : <>
+          <label className="auth-field"><span>Аккаунт MAX</span><div className="auth-input"><Icon name="user" size={16} /><input readOnly value={max.isEmbedded ? max.displayName : isMock || canUseLocalAuth ? 'Тестовый аккаунт' : 'Откройте приложение в MAX'} /></div></label>
+          {!registering && <label className="auth-field"><span>Способ входа</span><div className="auth-input auth-input--secure"><Icon name="shield" size={16} /><input readOnly value="Без пароля · через MAX" /></div></label>}
+          <p className="auth-security"><Icon name="shield" size={16} /><span>{registering ? 'Профиль будет привязан к вашему аккаунту MAX. Придумывать пароль не нужно.' : 'MAX подтверждает вашу личность. Ваш план и настройки появятся после входа.'}</span></p>
+        </>}
         {registering && <>
           <div className="auth-field auth-field--section"><span>Класс обучения</span><Select label="Класс обучения" placeholder="Выберите класс" value={grade === null ? '' : String(grade)} onChange={value => setGrade(value ? Number(value) : null)} options={[{ value: '', label: 'Укажу позже' }, ...Array.from({ length: 11 }, (_, i) => ({ value: String(i + 1), label: `${i + 1} класс` }))]} /></div>
           <div className="auth-field auth-field--section"><span>Интересующие предметы</span><button type="button" className={`subjects-trigger ${subjects.length ? 'has-value' : ''}`} aria-haspopup="dialog" aria-label="Выбрать интересующие предметы" onClick={() => setSubjectsOpen(true)}><span>{selected || 'Выберите предметы'}</span><Icon name="chevron-down" size={16} /></button></div>
@@ -95,7 +109,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
         </>}
         {!available && <Notice tone="info">Откройте это мини-приложение из бота в MAX, чтобы {registering ? 'создать профиль' : 'войти в аккаунт'}.</Notice>}
         {error && <Notice tone="error">{error}</Notice>}
-        <Button type="submit" className="full-width auth-submit" disabled={!available || pending}>{pending ? 'Подождите…' : registering ? 'Зарегистрироваться' : 'Войти через MAX'}</Button>
+        <Button type="submit" className="full-width auth-submit" disabled={!available || pending}>{pending ? 'Подождите…' : registering ? 'Зарегистрироваться' : testLogin ? 'Войти' : 'Войти через MAX'}</Button>
       </fieldset>
     </form>
     <p className="auth-footer">{registering ? 'Уже есть аккаунт?' : 'Нет аккаунта?'} <Link to={registering ? '/login' : '/register'} state={location.state}>{registering ? 'Войти' : 'Зарегистрироваться'}</Link></p>

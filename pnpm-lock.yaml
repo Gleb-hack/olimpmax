@@ -26,6 +26,9 @@ importers:
       typescript:
         specifier: ^5.9.0
         version: 5.9.3
+      yaml:
+        specifier: 2.9.1
+        version: 2.9.1
 
   apps/api:
     dependencies:
@@ -68,6 +71,10 @@ importers:
       zod:
         specifier: 4.6.5
         version: 4.6.5
+    devDependencies:
+      '@fastify/swagger':
+        specifier: 9.8.1
+        version: 9.8.1
 
   apps/bot:
     dependencies:

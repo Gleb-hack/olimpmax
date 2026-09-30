@@ -48,6 +48,30 @@ after(async () => {
   await app?.close(); await connection.pool.end();
   try { await admin.pool.query(`DROP DATABASE IF EXISTS "${databaseName}" WITH (FORCE)`); } finally { await admin.pool.end(); }
 });
+test('test accounts sign in outside MAX only when configured and stay separate users', async t => {
+  assert.equal((await app.inject({ method: 'POST', url: '/auth/test', payload: { login: 'student', password: 'checker-pass-1' } })).statusCode, 404);
+  assert.deepEqual((await app.inject('/auth/options')).json(), { max: true, test: false });
+  const testApp = await buildApp({ db: connection.db, jwtSecret: 'test'.repeat(16), now: () => now,
+    testAccounts: new Map([['student', 'checker-pass-1'], ['student2', 'checker-pass-2']]) });
+  t.after(() => testApp.close());
+  assert.deepEqual((await testApp.inject('/auth/options')).json(), { max: false, test: true });
+  const wrong = await testApp.inject({ method: 'POST', url: '/auth/test', payload: { login: 'student', password: 'checker-pass-2' } });
+  assert.equal(wrong.statusCode, 401); assert.equal(wrong.json().error, 'INVALID_CREDENTIALS');
+  const signIn = async (login: string, password: string) => {
+    const response = await testApp.inject({ method: 'POST', url: '/auth/test', payload: { login, password } });
+    assert.equal(response.statusCode, 200, response.body);
+    return contracts.AuthResponse.parse(response.json());
+  };
+  const first = await signIn('student', 'checker-pass-1');
+  assert.equal(first.user.maxUserId, 'test:student');
+  assert.equal((await signIn('Student', 'checker-pass-1')).user.id, first.user.id);
+  const other = await signIn('student2', 'checker-pass-2');
+  assert.notEqual(other.user.id, first.user.id);
+  assert.equal((await testApp.inject({ method: 'PUT', url: '/me/plan/88', headers: auth(first.accessToken) })).statusCode, 204);
+  assert.equal((await testApp.inject({ url: '/me/plan', headers: auth(other.accessToken) })).json().total, 0);
+  assert.equal((await testApp.inject({ method: 'DELETE', url: '/me', headers: auth(first.accessToken) })).statusCode, 204);
+  assert.equal((await testApp.inject({ method: 'DELETE', url: '/me', headers: auth(other.accessToken) })).statusCode, 204);
+});
 test('catalog filters every source level before pagination and rejects invalid levels', async () => {
   for (const level of contracts.OlympiadLevel.options) {
     const expected = rows.filter(row => (row.olympiad.rawSource['Уровень олимпиады'] === '—' ? 'unknown' : row.olympiad.rawSource['Уровень олимпиады']) === level);

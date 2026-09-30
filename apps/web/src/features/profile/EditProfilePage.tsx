@@ -12,8 +12,8 @@ import { canonicalRegion, regionGroups, searchRegions } from '../../lib/regions'
 import { goalLimits } from './goal-format';
 
 export function EditProfilePage() {
-  const { profile, update, storageError, saving, legacyAvatar } = useProfile();
-  const [draft, setDraft] = useState<LocalProfile>(() => ({ ...profile, avatar: profile.avatar ?? legacyAvatar, name: profile.name || max.displayName }));
+  const { profile, update, storageError, saving } = useProfile();
+  const [draft, setDraft] = useState<LocalProfile>(() => ({ ...profile, name: profile.name || max.displayName }));
   const [photoChanged, setPhotoChanged] = useState(false);
   const [subjectsOpen, setSubjectsOpen] = useState(false);
   const [goalOpen, setGoalOpen] = useState<'universities' | 'directions' | null>(null);
@@ -45,7 +45,7 @@ export function EditProfilePage() {
       if (region === null) { setRegionError(true); document.getElementById('profile-region')?.focus(); return; }
       if (overLimit) return;
       const { avatar, ...preferences } = draft;
-      if (await update({ ...preferences, ...(photoChanged || (profile.avatar === null && legacyAvatar !== null) ? { avatar } : {}), name: draft.name.trim(), region })) navigate('/profile');
+      if (await update({ ...preferences, ...(photoChanged ? { avatar } : {}), name: draft.name.trim(), region })) navigate('/profile');
     }}>
       <fieldset className="profile-controls" disabled={saving}><div className="avatar-editor"><ProfileAvatar image={draft.avatar} large /><button type="button" className="avatar-editor__button" aria-label="Изменить фото профиля" onClick={() => photoInput.current?.click()}><Icon name="edit" size={12} /></button><input ref={photoInput} type="file" className="sr-only" tabIndex={-1} accept="image/png,image/jpeg,image/webp" aria-label="Фото профиля" onChange={event => { selectPhoto(event.target.files?.[0]); event.target.value = ''; }} /></div>
       {photoError && <Notice tone="error">{photoError}</Notice>}

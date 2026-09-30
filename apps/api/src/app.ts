@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
-import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from 'fastify-type-provider-zod';
+import { jsonSchemaTransform, serializerCompiler, validatorCompiler, type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import ipaddr from 'ipaddr.js';
 import { eq, sql } from 'drizzle-orm';
@@ -15,7 +15,7 @@ import { seriesDetail, universityDetail, universityList } from './features/refer
 import { directionDetail, directionList, olympiadPrograms } from './features/directions.js';
 import { readPlan, planEvents, planKey, patchPlanItem } from './features/plan.js';
 import { calendarFeed, calendarFeedLink } from './features/calendar-feed.js';
-import { validateMaxInitData } from './features/auth.js';
+import { validateMaxInitData, checkTestAccount } from './features/auth.js';
 import { readProfile, saveProfile, deleteAccount, ProfileError } from './features/profile.js';
 import { moscowToday } from './features/calendar.js';
 import { answerAssistant, databaseAssistantData } from './features/assistant/assistant.js';
@@ -34,6 +34,10 @@ type AppOptions = {
   db: Database; jwtSecret: string; botToken?: string; allowDevAuth?: boolean;
   corsOrigin?: string; trustProxyHops?: number; logger?: boolean; now?: () => Date;
   deepseekApiKey?: string; deepseekModel?: string; assistantCompletion?: CompleteJson;
+  /** Reviewer accounts (login → password) for signing in outside MAX; empty or absent switches POST /auth/test off. */
+  testAccounts?: Map<string, string>;
+  /** Collect route schemas for the OpenAPI description (pnpm openapi); the running API does not need it. */
+  openapi?: boolean;
   /** Test seams: page reader and the list of links Olimp may open (default: data/assistant/*.csv). */
   readPublicPage?: ReadPublicPage; researchLinks?: LinkEntry[];
   /** MAX bot client (bot name and link for the notification settings); default: built from botToken. Tests pass a fake. */
@@ -50,6 +54,10 @@ export async function buildApp(options: AppOptions) {
   const app = Fastify({ trustProxy, logger: options.logger ? { redact: ['req.headers.authorization', 'req.body.initData'] } : false, bodyLimit: 32768 });
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+  if (options.openapi) {
+    const { default: swagger } = await import('@fastify/swagger');
+    await app.register(swagger, { openapi: { openapi: '3.1.0', info: { title: 'Olimp API', version: '1.0.0' } }, transform: jsonSchemaTransform });
+  }
   await app.register(cors, { origin: options.corsOrigin ?? 'http://localhost:5173', methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] });
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   await app.register(jwt, { secret: options.jwtSecret, sign: { expiresIn: '1h', iss: 'olimp-api', aud: 'olimp-mini-app' },
@@ -82,6 +90,16 @@ export async function buildApp(options: AppOptions) {
     try { identity = validateMaxInitData(request.body.initData, options.botToken, now().getTime()); }
     catch { return reply.code(401).send({ error: 'INVALID_INIT_DATA', message: 'Недействительные или устаревшие данные MAX' }); }
     return issueToken(identity);
+  });
+  const testAccounts = options.testAccounts ?? new Map<string, string>();
+  api.get('/auth/options', { schema: { response: { 200: c.AuthOptions } } }, () => ({ max: Boolean(options.botToken), test: testAccounts.size > 0 }));
+  if (testAccounts.size > 0) api.post('/auth/test', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+    schema: { body: c.TestAuthBody, response: { 200: c.AuthResponse, 401: c.ErrorResponse } } }, async (request, reply) => {
+    reply.header('Cache-Control', 'no-store');
+    const login = checkTestAccount(testAccounts, request.body.login, request.body.password);
+    if (!login) return reply.code(401).send({ error: 'INVALID_CREDENTIALS', message: 'Неверный логин или пароль тестового аккаунта' });
+    // A prefix that no MAX ID can have: test accounts never receive bot messages and never meet real users.
+    return issueToken({ maxUserId: `test:${login}`, displayName: `Тестовый ученик ${login}` });
   });
   if (options.allowDevAuth) api.post('/auth/dev', { schema: { body: z.object({}).strict().nullish(), response: { 200: c.AuthResponse } } }, async (_request, reply) => {
     reply.header('Cache-Control', 'no-store');

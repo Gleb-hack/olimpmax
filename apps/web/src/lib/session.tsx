@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { ProfilePreferences, UserProfile } from '@olimp/contracts';
-import { api, canUseLocalAuth, clearSession, isMock, ApiError } from './api';
+import type { ProfilePreferences, TestAuthBody, UserProfile } from '@olimp/contracts';
+import { api, canUseLocalAuth, clearSession, hasTestSession, isMock, setTestAccount, ApiError } from './api';
 import { max } from './max';
 import { useUI } from './ui-store';
 import { clearLocalData } from './local-data';
@@ -12,7 +12,7 @@ const readResume = () => { try { return sessionStorage.getItem(resumeKey); } cat
 const remember = (value: string) => { try { sessionStorage.setItem(resumeKey, value); } catch { /* Session still works in memory. */ } };
 type Session = {
   user: UserProfile | null; deletingAccount: boolean; starting: boolean; error: string | null;
-  login: () => Promise<void>; register: (profile: ProfilePreferences) => Promise<void>;
+  login: (test?: TestAuthBody) => Promise<void>; register: (profile: ProfilePreferences, test?: TestAuthBody) => Promise<void>;
   logout: () => void; deleteAccount: () => Promise<void>; setUser: (user: UserProfile) => void;
 };
 const Context = createContext<Session | null>(null);
@@ -25,7 +25,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient();
   useEffect(() => {
     let active = true;
-    const shouldResume = readResume() !== 'signed-out' && (max.isEmbedded || ((isMock || canUseLocalAuth) && readResume() === 'signed-in'));
+    const shouldResume = readResume() !== 'signed-out' && (max.isEmbedded || ((isMock || canUseLocalAuth || hasTestSession()) && readResume() === 'signed-in'));
     if (!shouldResume) { setStarting(false); return; }
     api.startSession().then(profile => { if (active && profile.registeredAt) setUser(profile); })
       .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : 'Не удалось восстановить вход.'); })
@@ -42,14 +42,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('olimp:session-expired', expired);
   });
   function enter(profile: UserProfile) { client.clear(); setError(null); setUser(profile); remember('signed-in'); }
-  async function login() {
+  async function login(test?: TestAuthBody) {
     const attempt = version.current;
+    if (test) setTestAccount(test);
     const profile = await api.startSession();
     if (!profile.registeredAt) throw new ApiError('Профиль ещё не создан. Перейдите на вкладку «Регистрация».', 409);
     if (attempt === version.current) enter(profile);
   }
-  async function register(preferences: ProfilePreferences) {
+  async function register(preferences: ProfilePreferences, test?: TestAuthBody) {
     const attempt = version.current;
+    if (test) setTestAccount(test);
     const current = await api.startSession();
     if (current.registeredAt) throw new ApiError('Профиль уже существует. Перейдите на вкладку «Вход».', 409);
     const profile = await api.register(preferences);
