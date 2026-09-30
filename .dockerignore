@@ -14,7 +14,7 @@ data/*-report.json
 **/*.log
 **/.DS_Store
 coverage
-# Not used by the build: tests, documentation, compose files and API descriptions.
+# Not used by the build: tests, documentation, compose files and the OpenAPI file.
 tests
 apps/web/test
 docs
@@ -24,5 +24,4 @@ compose*.yaml
 Dockerfile
 .dockerignore
 openapi.yaml
-DATA-API.yaml
 scripts/university-logos.py
