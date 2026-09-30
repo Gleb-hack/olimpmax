@@ -7,6 +7,7 @@ export function useCatalogNavigation() {
   const [catalogTo, setCatalogTo] = useState('/catalog');
   const positions = useRef(new Map<string, number>());
   const previousPath = useRef<string | null>(null);
+  const previousMode = useRef<string | null>(null);
 
   useLayoutEffect(() => {
     const previous = window.history.scrollRestoration;
@@ -17,13 +18,18 @@ export function useCatalogNavigation() {
   useLayoutEffect(() => {
     const pathnameChanged = previousPath.current !== pathname;
     previousPath.current = pathname;
+    const mode = new URLSearchParams(search).get('mode') ?? '';
+    const modeChanged = previousMode.current !== null && previousMode.current !== mode;
+    previousMode.current = pathname === '/catalog' ? mode : null;
     if (pathname !== '/catalog') {
       if (pathnameChanged) window.scrollTo(0, 0);
       return;
     }
     const key = pathname + search;
     setCatalogTo(key);
-    const target = positions.current.get(key) ?? 0;
+    // «Олимпиады | Вузы» switched right on the page: stay where the page is, so «Каталог» and the switch do not move.
+    // A saved position is restored only when the catalog is opened again (back from a card, the bottom tab).
+    const target = !pathnameChanged && modeChanged ? window.scrollY : positions.current.get(key) ?? 0;
     let restoring = true;
     const restore = () => {
       if (!restoring) return;
