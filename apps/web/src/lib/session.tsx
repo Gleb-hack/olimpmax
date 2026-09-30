@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ProfilePreferences, TestAuthBody, UserProfile } from '@olimp/contracts';
-import { api, canUseLocalAuth, clearSession, isMock, setTestAccount, ApiError } from './api';
+import { api, canUseLocalAuth, clearSession, hasTestSession, isMock, setTestAccount, ApiError } from './api';
 import { max } from './max';
 import { useUI } from './ui-store';
 import { clearLocalData } from './local-data';
@@ -25,7 +25,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient();
   useEffect(() => {
     let active = true;
-    const shouldResume = readResume() !== 'signed-out' && (max.isEmbedded || ((isMock || canUseLocalAuth) && readResume() === 'signed-in'));
+    const shouldResume = readResume() !== 'signed-out' && (max.isEmbedded || ((isMock || canUseLocalAuth || hasTestSession()) && readResume() === 'signed-in'));
     if (!shouldResume) { setStarting(false); return; }
     api.startSession().then(profile => { if (active && profile.registeredAt) setUser(profile); })
       .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : 'Не удалось восстановить вход.'); })

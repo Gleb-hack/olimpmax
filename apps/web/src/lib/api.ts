@@ -13,10 +13,25 @@ let authPromise: Promise<string> | null = null;
 let authGeneration = 0;
 let sessionAllowed = false;
 export const canUseLocalAuth = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH !== 'false' && !max.isEmbedded;
-// Test account outside MAX: kept only in the memory of this page, so a reload asks for the password again.
+// Test account outside MAX: the password stays in the memory of this page; the issued token (one hour) is kept
+// in sessionStorage of this tab only, so a reload or a direct link does not sign the reviewer out.
 let testCredentials: c.TestAuthBody | null = null;
+const testSessionKey = 'olimp.test-session.v1';
+const TestSession = z.object({ token: z.string().min(1), expiresAt: z.number() });
+function restoreTestSession() {
+  if (max.isEmbedded) return false;
+  try {
+    const saved = TestSession.parse(JSON.parse(sessionStorage.getItem(testSessionKey) ?? 'null'));
+    if (saved.expiresAt <= Date.now()) { sessionStorage.removeItem(testSessionKey); return false; }
+    accessToken = saved.token; expiresAt = saved.expiresAt; return true;
+  } catch { return false; }
+}
+/** A test-account session of this tab is still valid and can be resumed after a reload. */
+export const hasTestSession = () => accessToken !== null && restoredTest;
+let restoredTest = restoreTestSession();
 export function clearSession() {
-  authGeneration++; sessionAllowed = false; accessToken = null; expiresAt = 0; authPromise = null; testCredentials = null;
+  authGeneration++; sessionAllowed = false; accessToken = null; expiresAt = 0; authPromise = null; testCredentials = null; restoredTest = false;
+  try { sessionStorage.removeItem(testSessionKey); } catch { /* Nothing was kept. */ }
 }
 export function setTestAccount(credentials: c.TestAuthBody) { clearSession(); testCredentials = c.TestAuthBody.parse(credentials); }
 
@@ -51,6 +66,7 @@ async function authenticate() {
       }));
       if (generation !== authGeneration) throw new ApiError('Вход отменён.', 401);
       accessToken = data.accessToken; expiresAt = Date.now() + (data.expiresIn - 30) * 1000;
+      if (credentials) try { sessionStorage.setItem(testSessionKey, JSON.stringify({ token: accessToken, expiresAt })); } catch { /* Memory only. */ }
       return data.accessToken;
     } catch (error) {
       if (credentials && error instanceof ApiError && (error.status === 401 || error.status === 404)) {
