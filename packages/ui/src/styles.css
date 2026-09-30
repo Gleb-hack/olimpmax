@@ -1383,6 +1383,9 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 /* Catalog: «Олимпиады | Вузы» and the university list. «Мой план»: «Список | Календарь» — the same full-width switch. */
 .catalog-mode-switch, .plan-view-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 4px 0 14px; }
 .catalog-mode-switch button, .plan-view-switch button { padding-inline: 8px; }
+/* While a catalog list loads, keep the page at least a screen tall below the controls: otherwise the page gets shorter
+   than the scroll position, the browser pulls it back to the top and «Каталог» and the switch jump on «Олимпиады | Вузы». */
+.catalog-controls ~ .loading { align-items: flex-start; min-height: 100vh; min-height: 100dvh; }
 .university-search { flex: none; margin-bottom: 12px; }
 .university-chips { margin-bottom: 12px; }
 .university-card__head { display: flex; align-items: center; gap: 12px; }
