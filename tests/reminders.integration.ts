@@ -6,7 +6,7 @@ import { connectDatabase } from '../apps/api/src/db/client.js';
 import { buildApp } from '../apps/api/src/app.js';
 import { importCsv } from '../apps/api/src/import/importer.js';
 import { DeliveryError, type Messenger } from '../apps/api/src/features/reminders/max.js';
-import { recordBotStarted, runReminders, previewReminders } from '../apps/api/src/features/reminders/delivery.js';
+import { recordBotStarted, recordBotStopped, runReminders, previewReminders } from '../apps/api/src/features/reminders/delivery.js';
 import { createBot } from '../apps/bot/src/bot.js';
 import { signedInitData, testBotToken } from './fixtures.js';
 import * as c from '../packages/contracts/src/index.js';
@@ -87,12 +87,10 @@ test('reminders: due today, once per threshold, retries and refusals, settings A
   assert.deepEqual(allowed.sent.map(s => s.userId).sort(), [901, 904, 905]);
   assert.match(allowed.sent[0]!.text, /закрывается завтра/);
 
-  // «Прислать тестовое напоминание» sends the nearest real deadline of the plan.
-  const tested = await app.inject({ method: 'POST', url: '/me/notifications/test', headers: a.headers });
-  assert.equal(tested.statusCode, 200, tested.body);
-  assert.match(messenger.sent.at(-1)!.text, /Тестовое напоминание[\s\S]*Регистрация закрывается/);
-  const refused = await app.inject({ method: 'POST', url: '/me/notifications/test', headers: (await signIn(904)).headers });
-  assert.equal(refused.statusCode, 409);
+  // The test-reminder endpoint is gone: reminders reach pupils only through the scheduled mailing.
+  assert.equal((await app.inject({ method: 'POST', url: '/me/notifications/test', headers: a.headers })).statusCode, 404);
+  // 904 stops the bot again: the mailing leaves them alone until the next «Начать».
+  await recordBotStopped(db, '904', later);
 
   // The bot: «Начать», /plan, mute and unmute buttons, turning reminders off, stopping the bot.
   const calls: { path: string; body: any }[] = [];
@@ -169,7 +167,7 @@ test('reminders: due today, once per threshold, retries and refusals, settings A
   await pool.query(`update olympiad_stages set ends_on = '2026-10-12' where source_key = 'test-registration'`);
   const flaky = new Set<number>([905]);
   const moving = fakeMessenger(userId => flaky.delete(userId) ? new DeliveryError('MAX 502 bad gateway', false) : null);
-  // 904 is blocked here (its test message was refused above), so only 905 is written to — and the first try fails.
+  // 904 stopped the bot above, so only 905 is written to — and the first try fails.
   const moved = await runReminders(db, moving, { ...options, now: later });
   assert.deepEqual(moved, { users: 1, messages: 0, reminders: 0, changes: 0, failed: 1, unreachable: 0 });
   assert.deepEqual((await runReminders(db, moving, { ...options, now: later })).changes, 1, 'the failed notice goes out on the next pass');

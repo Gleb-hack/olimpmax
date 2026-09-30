@@ -73,7 +73,7 @@ function changedLine(event: ChangedEvent) {
  * HTML text of one daily message: all olympiads due today and, below them, dates that changed since the last
  * message — one message per day, not one per deadline.
  */
-export function reminderText(list: DueReminder[], options: { test?: boolean; changes?: ScheduleChange[] } = {}) {
+export function reminderText(list: DueReminder[], options: { changes?: ScheduleChange[] } = {}) {
   // A moved date that is also due today is said once: in the reminder, with the old date next to it.
   const key = (due: DueReminder) => `${due.olympiadId}|${due.eventKey}`;
   const dueKeys = new Set(list.map(key));
@@ -86,8 +86,8 @@ export function reminderText(list: DueReminder[], options: { test?: boolean; cha
   const mark = (due: DueReminder) => mixed && due.estimated ? '*' : '';
   const lines: string[] = [];
   let left = MAX_OLYMPIADS, hidden = 0;
-  if (list.length || options.test) {
-    lines.push(options.test ? '🔔 <b>Тестовое напоминание</b>' : '🔔 <b>Сроки олимпиад из вашего плана</b>', '');
+  if (list.length) {
+    lines.push('🔔 <b>Сроки олимпиад из вашего плана</b>', '');
     for (const group of groupByOlympiad(list)) {
       if (left-- <= 0) { hidden++; continue; }
       lines.push(`<b>${escapeHtml(clip(group.title, 150))}</b>`);
@@ -106,7 +106,6 @@ export function reminderText(list: DueReminder[], options: { test?: boolean; cha
   }
   if (hidden) lines.push(`И ещё ${hidden} — смотрите в разделе «План».`, '');
   if (all.some(d => d.estimated)) lines.push(`<i>${mixed ? '* ' : ''}${ESTIMATE_NOTE}</i>`);
-  if (options.test) lines.push('', 'Так будут приходить напоминания: за неделю до конца регистрации, за 3 дня, накануне и в день события.');
   return lines.join('\n').trim();
 }
 

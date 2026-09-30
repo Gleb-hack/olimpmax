@@ -25,7 +25,7 @@ import { researchOnWeb } from './features/assistant/web-research.js';
 import type { ReadPublicPage } from './features/assistant/public-page.js';
 import type { LinkEntry } from './features/assistant/knowledge.js';
 import { maxMessenger, type Messenger } from './features/reminders/max.js';
-import { NotificationError, readNotificationSettings, sendTestReminder, setNotificationsEnabled } from './features/reminders/delivery.js';
+import { NotificationError, readNotificationSettings, setNotificationsEnabled } from './features/reminders/delivery.js';
 
 declare module '@fastify/jwt' {
   interface FastifyJWT { payload: { sub: string }; user: { sub: string } }
@@ -36,8 +36,8 @@ type AppOptions = {
   deepseekApiKey?: string; deepseekModel?: string; assistantCompletion?: CompleteJson;
   /** Test seams: page reader and the list of links Olimp may open (default: data/assistant/*.csv). */
   readPublicPage?: ReadPublicPage; researchLinks?: LinkEntry[];
-  /** MAX bot client for the test reminder; default: built from botToken. Tests pass a fake. */
-  messenger?: Messenger | null; remindEstimated?: boolean;
+  /** MAX bot client (bot name and link for the notification settings); default: built from botToken. Tests pass a fake. */
+  messenger?: Messenger | null;
 };
 export async function buildApp(options: AppOptions) {
   const { db } = options;
@@ -68,7 +68,6 @@ export async function buildApp(options: AppOptions) {
   const activeChats = new Set<string>();
   const tickets = webResearchTickets(options.jwtSecret, () => now().getTime());
   const messenger = options.messenger !== undefined ? options.messenger : options.botToken ? maxMessenger(options.botToken) : null;
-  const remindEstimated = options.remindEstimated ?? true;
   api.get('/health', { schema: { response: { 200: z.object({ status: z.literal('ok') }) } } }, async () => {
     await db.execute(sql`select 1`); return { status: 'ok' as const };
   });
@@ -200,13 +199,6 @@ export async function buildApp(options: AppOptions) {
     routes.patch('/me/notifications', { schema: { body: c.NotificationSettingsPatch, response: { 200: c.NotificationSettings } } }, async request => {
       await setNotificationsEnabled(db, request.user.sub, request.body.enabled, now());
       return readNotificationSettings(db, request.user.sub, messenger);
-    });
-    routes.post('/me/notifications/test', {
-      config: { rateLimit: { max: 3, timeWindow: '1 minute', hook: 'preHandler', keyGenerator: request => request.user.sub } },
-      schema: { body: z.object({}).strict().nullish(), response: { 200: c.NotificationTestResponse, 409: c.ErrorResponse, 502: c.ErrorResponse, 503: c.ErrorResponse } },
-    }, async (request, reply) => {
-      if (!messenger) return reply.code(503).send({ error: 'BOT_NOT_CONFIGURED', message: 'Бот MAX на сервере не подключён: нужен MAX_BOT_TOKEN.' });
-      return sendTestReminder(db, messenger, request.user.sub, { includeEstimated: remindEstimated, now: now() });
     });
     routes.get('/me/plan', { schema: { response: { 200: c.PlanResponse } } }, request => readPlan(db, request.user.sub, today()));
     routes.post('/me/calendar-feed', { schema: { body: c.CalendarFeedRequest.nullish(), response: { 200: c.CalendarFeedResponse } } }, request =>
