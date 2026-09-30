@@ -22,9 +22,10 @@ services:
       timeout: 3s
       retries: 20
 
-  migrate:
+  # Migrations, catalog and reference import, verified dates. Idempotent: saved plans are kept.
+  setup:
     <<: *api-image
-    command: [pnpm, db:migrate]
+    command: [pnpm, db:setup]
     environment:
       DATABASE_URL: postgresql://olimp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/olimp
     depends_on:
@@ -45,12 +46,13 @@ services:
       ALLOW_DEV_AUTH: 'false'
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
       MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:?Set MAX_BOT_TOKEN}
+      TEST_ACCOUNTS: ${TEST_ACCOUNTS:-}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
     depends_on:
       postgres:
         condition: service_healthy
-      migrate:
+      setup:
         condition: service_completed_successfully
     healthcheck:
       test: [CMD, node, -e, "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -72,11 +74,12 @@ services:
       MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:?Set MAX_BOT_TOKEN}
       BOT_REMINDER_HOUR: ${BOT_REMINDER_HOUR:-16}
       BOT_REMINDER_UNTIL_HOUR: ${BOT_REMINDER_UNTIL_HOUR:-21}
+      BOT_CHECK_MINUTES: ${BOT_CHECK_MINUTES:-15}
       BOT_REMIND_ESTIMATED: ${BOT_REMIND_ESTIMATED:-true}
     depends_on:
       postgres:
         condition: service_healthy
-      migrate:
+      setup:
         condition: service_completed_successfully
 
   web:
@@ -86,7 +89,7 @@ services:
       target: web
     restart: unless-stopped
     environment:
-      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN}
+      SITE_ADDRESS: ${APP_DOMAIN:?Set APP_DOMAIN}
     ports:
       - '80:80'
       - '443:443'

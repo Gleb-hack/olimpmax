@@ -7,6 +7,11 @@ import { startReminderLoop } from './scheduler.js';
 const log = (message: string, extra?: Record<string, unknown>) =>
   console.log(JSON.stringify({ time: new Date().toISOString(), message, ...extra }));
 
+// Without a token the local Docker stack still starts: the Mini App and the API work, the bot simply stays off.
+if (!process.env.MAX_BOT_TOKEN?.trim()) {
+  log('MAX_BOT_TOKEN не задан: бот MAX не запущен. Задайте токен бота, чтобы включить команды и напоминания.');
+  process.exit(0);
+}
 const config = readBotConfig();
 const { db, pool } = connectDatabase(config.databaseUrl);
 const { bot, messenger } = createBot({ db, token: config.token, includeEstimated: config.includeEstimated, reminderHour: config.reminderHour, log });
