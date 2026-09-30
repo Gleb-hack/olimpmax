@@ -1380,9 +1380,9 @@ a.university-benefit__head:hover .university-benefit__chevron, button.university
 .field > label { font-size: 12px; font-weight: 550; }
 .field__error { color: var(--olimp-field-error-text); font-size: 11px; }
 
-/* Catalog: «Олимпиады | Вузы» and the university list. */
-.catalog-mode-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 4px 0 14px; }
-.catalog-mode-switch button { padding-inline: 8px; }
+/* Catalog: «Олимпиады | Вузы» and the university list. «Мой план»: «Список | Календарь» — the same full-width switch. */
+.catalog-mode-switch, .plan-view-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; margin: 4px 0 14px; }
+.catalog-mode-switch button, .plan-view-switch button { padding-inline: 8px; }
 .university-search { flex: none; margin-bottom: 12px; }
 .university-chips { margin-bottom: 12px; }
 .university-card__head { display: flex; align-items: center; gap: 12px; }
