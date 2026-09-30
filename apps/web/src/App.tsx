@@ -25,6 +25,7 @@ import { ProfileProvider } from './lib/profile';
 import { AuthPage, WelcomePage } from './features/auth/AuthPages';
 import { useCatalogNavigation } from './lib/catalog-navigation';
 import { startRoute } from './lib/start-param';
+import { AppTour } from './features/tour/AppTour';
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -81,7 +82,7 @@ function ProtectedApp() {
   const location = useLocation();
   useStartParam(Boolean(user));
   if (!user) return <Navigate to="/welcome" replace state={{ from: location.pathname + location.search }} />;
-  return <ProfileProvider key={user.id}><AssistantProvider><Outlet /></AssistantProvider></ProfileProvider>;
+  return <ProfileProvider key={user.id}><AssistantProvider><Outlet /><AppTour /></AssistantProvider></ProfileProvider>;
 }
 function AppRoutes() {
   return <Routes><Route path="welcome" element={<WelcomePage />} /><Route path="login" element={<AuthPage key="login" mode="login" />} /><Route path="register" element={<AuthPage key="register" mode="register" />} /><Route element={<ProtectedApp />}><Route element={<Layout />}><Route index element={<Navigate to="/olimp" replace />} /><Route path="catalog" element={<CatalogPage />} /><Route path="search" element={<SearchPage />} /><Route path="profile/edit" element={<EditProfilePage />} /><Route path="olympiads/:id" element={<DetailPage />} /><Route path="universities/:slug" element={<UniversityPage />} /><Route path="plan" element={<PlanPage />} /><Route path="profile" element={<ProfilePage />} /><Route path="profile/privacy" element={<PrivacyPage />} /><Route path="profile/help" element={<HelpPage />} /><Route path="profile/olympiad-faq" element={<OlympiadFaqPage />} /><Route path="olimp" element={<OlimpPage />} /><Route path="bot" element={<Navigate to={olimpChatPath} replace />} /><Route path="*" element={<EmptyState title="Страница не найдена" action={<Link className="button-link" to="/catalog">Перейти в каталог</Link>}>Такой страницы нет, но в каталоге есть много интересного.</EmptyState>} /></Route></Route></Routes>;

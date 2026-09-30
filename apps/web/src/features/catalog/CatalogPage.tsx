@@ -34,7 +34,7 @@ export function CatalogPage() {
   const header = <Header title="Каталог" action={<button className="icon-button icon-button--blue" aria-label={universities ? 'Поиск вузов' : 'Поиск олимпиад'}
     onClick={search}><Icon name="search" size={18} /></button>} />;
   const modeSwitch = <CatalogModeSwitch universities={universities} onChange={switchMode} />;
-  if (universities) return <>{header}<div className="catalog-controls">{modeSwitch}</div><UniversityCatalog params={params} setParams={setParams} /></>;
+  if (universities) return <>{header}<div className="catalog-controls" data-tour="catalog-controls">{modeSwitch}</div><UniversityCatalog params={params} setParams={setParams} /></>;
   return <OlympiadCatalog params={params} setParams={setParams} header={header} modeSwitch={modeSwitch} />;
 }
 
@@ -90,7 +90,7 @@ function OlympiadCatalog({ params, setParams, header, modeSwitch }: { params: UR
 
   return <>
     {header}
-    <div className="catalog-controls">
+    <div className="catalog-controls" data-tour="catalog-controls">
       {modeSwitch}
       <PersonalBanner available={available} applied={applied} summary={presetSummary(profile, subjects)} onApply={applyPreset} onUndo={reset} />
       <div className="filter-chips" role="group" aria-label="Фильтры">

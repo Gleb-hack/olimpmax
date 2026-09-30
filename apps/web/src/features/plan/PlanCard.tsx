@@ -33,7 +33,7 @@ export function PlanCard({ entry, event, onOpen }: { entry: PlanEntry; event?: P
   const subtitle = event?.name || item.organizers?.join(', ');
   const noDate = scheduleLabel({ ...item, calendarRaw: entry.calendarRaw });
   const result = entry.results.at(-1);
-  return <article className={`plan-card ${entry.tracking ? '' : 'plan-card--paused'}`}>
+  return <article className={`plan-card ${entry.tracking ? '' : 'plan-card--paused'}`} data-tour="plan-card">
     <div className="plan-card__header">
       <span className={`date-tile plan-card__date ${entry.tracking ? '' : 'plan-card__date--paused'}`} aria-hidden="true">{parts ? <><small>{parts.month}</small><strong>{parts.day}</strong></> : entry.tracking ? <Icon name="calendar" size={22} /> : <Icon name="pause" size={20} />}</span>
       <div className="plan-card__heading"><h3><button type="button" className="plan-card__open" onClick={onOpen}>{item.title}</button></h3><p className="plan-card__subtitle" title={[subtitle, formats[item.format]].filter(Boolean).join(' · ')}>{subtitle && <><span>{subtitle}</span><span aria-hidden="true">·</span></>}<span>{formats[item.format].toLocaleLowerCase('ru')}</span></p></div>

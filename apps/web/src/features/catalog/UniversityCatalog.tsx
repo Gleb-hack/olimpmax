@@ -18,7 +18,7 @@ function UniversityCard({ item, backTo, target, canAdd, busy, onTarget }: {
   item: University; backTo: string; target: boolean; canAdd: boolean; busy: boolean; onTarget: () => void;
 }) {
   const facts = universityFacts(item);
-  return <article className={`olympiad-card university-card ${target ? 'is-target' : ''}`}>
+  return <article className={`olympiad-card university-card ${target ? 'is-target' : ''}`} data-tour="university-card">
     <div className="university-card__head">
       <UniversityLogo className="university-hero__avatar university-card__logo" slug={item.slug} initials={universityInitials(item.name)} />
       <div className="university-card__title">

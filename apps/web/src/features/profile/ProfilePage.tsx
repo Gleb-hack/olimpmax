@@ -35,7 +35,7 @@ export function ProfilePage() {
   return <><Header title="Профиль" />
     <section className="profile-card panel"><ProfileAvatar image={profile.avatar} /><div><h2>{profile.name || max.displayName}</h2><p>{[grade ?? 'Класс не указан', profile.region].filter(Boolean).join(' · ')}</p></div></section>
     {legacy && <Notice tone="info">На этом устройстве остались настройки из предыдущей версии. <button className="text-button" disabled={saving} onClick={importLegacy}>Перенести их в аккаунт</button></Notice>}
-    <div className="panel profile-details">
+    <div className="panel profile-details" data-tour="profile-prefs">
       <section className="panel-section"><h2 className="section-caption">Класс обучения</h2>{grade ? <div className="chips-wrap"><Chip selected>{grade}</Chip></div> : empty}</section>
       <section className="panel-section"><h2 className="section-caption">Интересующие предметы</h2>{subjects}</section>
       <section className="panel-section"><h2 className="section-caption">Целевые вузы</h2>{goalChips(profile.universities, goal.universities.map(item => item.name), goal.universitiesState, 'вузов')}</section>

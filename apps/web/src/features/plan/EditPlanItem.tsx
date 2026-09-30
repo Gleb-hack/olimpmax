@@ -67,7 +67,7 @@ function StageSchedule({ stages, today }: { stages: ScheduleStage[]; today: stri
   const [expanded, setExpanded] = useState({ before: false, after: false });
   const shown = scheduleWindow(stages, expanded);
   const numbered = stages.length > 3;
-  return <section className="plan-schedule" aria-labelledby="plan-schedule-title">
+  return <section className="plan-schedule" aria-labelledby="plan-schedule-title" data-tour="plan-schedule">
     <h4 id="plan-schedule-title">Расписание этапов</h4>
     <p className="plan-dialog__hint">Расписание обновляется автоматически по датам.</p>
     {stages.length === 0 ? <p className="plan-schedule__empty">Даты этапов пока не объявлены — они появятся здесь, когда организаторы их опубликуют.</p> : <>

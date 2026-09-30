@@ -51,7 +51,7 @@ export function OlimpPage() {
       <img className={`greet-card__art greet-card__art--${theme}`} src={theme === 'dark' ? greetDark : greetLight} alt="" />
     </section>
 
-    <section className="overview-section" aria-labelledby="overview-due">
+    <section className="overview-section" aria-labelledby="overview-due" data-tour="olimp-due">
       <SectionHead id="overview-due" icon="bell" title="Не пропусти" />
       <p className="overview-section__lead">Дедлайны и важные точки в твоём плане</p>
       {plan.isPending ? <Loading label="Загружаем ваш план…" />
@@ -68,7 +68,7 @@ export function OlimpPage() {
       {plan.isSuccess && <Link className="overview-outline-button" to={entries.length ? '/plan' : '/catalog'}>{entries.length ? 'Весь план' : 'Найти олимпиаду'}</Link>}
     </section>
 
-    <section className="overview-section" aria-labelledby="overview-picks">
+    <section className="overview-section" aria-labelledby="overview-picks" data-tour="olimp-picks">
       <SectionHead id="overview-picks" icon="target" title="Подобрано для тебя" />
       <p className="overview-section__lead">{hasGoalIn(profile) ? 'По твоей цели: целевые вузы и направления' : personal ? 'На основании твоего профиля' : <>Популярное в каталоге. <Link className="text-link" to="/profile/edit">Укажи класс и предметы</Link> — подбор станет точнее</>}</p>
       {catalog.isPending ? <Loading label="Подбираем олимпиады…" />

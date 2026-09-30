@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Dialog, Header, Notice, Icon } from '@olimp/ui';
+import { Button, Dialog, Header, Notice, SettingsRow, Icon } from '@olimp/ui';
 import { mailtoUrl } from '../../lib/contacts';
 import { max } from '../../lib/max';
 import { copyText } from '../../lib/clipboard';
+import { requestTour } from '../tour/tour-state';
 
 const supportEmail = import.meta.env.VITE_SUPPORT_EMAIL || 'olimp.max.support@gmail.com';
 
@@ -44,6 +45,7 @@ export function HelpPage() {
   }
   function close() { setSupport(false); setCopied(null); setMailError(false); }
   return <><Header title="Помощь и FAQ" back="/profile" /><p className="page-intro faq-intro">Как пользоваться приложением и ботом Olimp. Вопросы об участии, льготах и дипломах — в разделе <Link className="text-link" to="/profile/olympiad-faq">«Вопросы по олимпиадам»</Link>.</p>
+    <div className="settings-list tour-restart"><SettingsRow icon="sparkle" title="Пройти обучение заново" subtitle="Олимп покажет главное в приложении — это займёт пару минут" onClick={requestTour} /></div>
     {sections.map(section => <section key={section.title} aria-label={section.title}><h2 className="section-caption faq-caption">{section.title}</h2><div className="faq-list">{section.questions.map(question => {
       const id = `${section.title}-${question.title}`;
       const index = faqIds.indexOf(id);

@@ -51,7 +51,7 @@ export function CompareButton({ visible }: { visible: boolean }) {
   const shown = visible && count >= 2;
   return <>
     <div className={`compare-fab ${shown ? 'is-visible' : ''}`} inert={!shown}>
-      <Button className="compare-fab__button" onClick={() => setOpen(true)}><Icon name="compare" size={18} />Сравнить ({count})</Button>
+      <Button className="compare-fab__button" data-tour={shown ? 'compare' : undefined} onClick={() => setOpen(true)}><Icon name="compare" size={18} />Сравнить ({count})</Button>
     </div>
     {open && <Comparison onClose={() => setOpen(false)} />}
   </>;

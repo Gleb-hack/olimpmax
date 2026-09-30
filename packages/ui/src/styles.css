@@ -242,8 +242,14 @@
   --olimp-faq-sources-caption: #8a91a0;
   --olimp-faq-sources-note: #9298a2;
   --olimp-schedule-note: #9aa2b1;
-  --olimp-welcome-bg: #edf1fc;
-  --olimp-welcome-fade: #edf1fce6;
+  --olimp-welcome-bg: #edf4ff;
+  --olimp-welcome-bg-mid: #f9f9fd;
+  --olimp-welcome-bg-end: #fff;
+  --olimp-welcome-text: #14161a;
+  --olimp-welcome-note: #6b7380;
+  --olimp-tour-dim: rgb(21 26 38 / 72%);
+  --olimp-tour-dim-soft: rgb(21 26 38 / 66%);
+  --olimp-tour-card-shadow: 0 14px 30px -4px rgb(14 23 56 / 26%);
   --olimp-segmented-bg: #eef0f5;
   --olimp-muted-alt: #6f7787;
   --olimp-segmented-active-bg: #fff;
@@ -360,6 +366,7 @@
   --olimp-shadow-menu: 0 0 0 1px var(--olimp-border);
   --olimp-shadow-fab: 0 10px 24px rgb(124 58 237 / 24%);
   --olimp-shadow-dialog: 0 0 0 1px var(--olimp-border);
+  --olimp-tour-card-shadow: 0 0 0 1px var(--olimp-border), 0 14px 30px -4px rgb(0 0 0 / 40%);
   --olimp-shadow-frame: 0 0 0 1px var(--olimp-border);
   --olimp-shadow-tab: none;
   --olimp-shadow-segment: none;
@@ -975,7 +982,8 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 .faq-item.is-open :is(h2, h3) button { color: var(--olimp-blue-text); }
 .faq-item p { font-size: 12px; line-height: 1.7; color: var(--olimp-faq-text); padding: 0 14px 16px; }
 .faq-intro { margin: 18px 0 0; }
-.faq-intro + section .faq-caption { margin-top: 22px; }
+.faq-intro + section .faq-caption, .tour-restart + section .faq-caption { margin-top: 22px; }
+.tour-restart { margin-top: 18px; }
 .faq-sources { margin: -4px 14px 16px; padding: 11px 12px; border-radius: 12px; background: var(--olimp-faq-sources-bg); display: grid; gap: 7px; }
 .faq-sources__caption { font-size: 10px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase; color: var(--olimp-faq-sources-caption); }
 .faq-sources ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
@@ -1161,17 +1169,29 @@ input[type='checkbox'], input[type='radio'] { accent-color: var(--olimp-blue); w
 @media (max-width: 359px) { .page { padding-inline: 12px; } .select__trigger { padding-inline: 9px; gap: 5px; } .reset-filter { font-size: 10px; } .subject-tabs { margin-inline: -12px; padding-inline: 12px; } .settings-row { gap: 9px; padding-inline: 10px; } .settings-row strong { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
-/* Figma 69:99, 71:99, 78:131. Identity is supplied by MAX instead of password fields. */
-.welcome-page { width: 100%; max-width: var(--app-width); min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: var(--olimp-welcome-bg); }
-.welcome-art { position: absolute; inset: 0; overflow: hidden; }
-/* Anchor the artwork above the actions so the mascot feet retain clearance on short screens. */
-.welcome-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center calc(100% - 48px); }
-.welcome-actions { position: relative; margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 28px max(20px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--olimp-welcome-fade) 45%, var(--olimp-welcome-bg)); }
+/* Figma «Загрузка» (1439:18896). Identity is supplied by MAX instead of password fields. */
+.welcome-page { --welcome-top: calc(env(safe-area-inset-top) + clamp(40px, 16svh, 132px)); position: relative; overflow: hidden; width: 100%; max-width: var(--app-width); min-height: 100svh; min-height: 100dvh; display: flex; flex-direction: column; background: linear-gradient(var(--olimp-welcome-bg), var(--olimp-welcome-bg-mid) 50%, var(--olimp-welcome-bg-end)); }
+.welcome-glow, .welcome-halo { position: absolute; left: 50%; max-width: none; pointer-events: none; transform: translateX(-50%); }
+.welcome-glow { top: calc(var(--welcome-top) - 79px); }
+.welcome-halo { top: calc(var(--welcome-top) + 2px); animation: welcome-halo 4s ease-in-out 1s infinite; }
+.welcome-hero { position: relative; z-index: 1; padding-top: var(--welcome-top); text-align: center; animation: welcome-rise .6s ease both; }
+.welcome-hero h1 { display: flex; justify-content: center; }
+.welcome-hero h1 img { display: block; width: min(292px, calc(100% - 48px)); height: auto; }
+.welcome-hero p { margin-top: 5px; color: var(--olimp-welcome-text); font-size: 13.9px; font-weight: 500; line-height: 1.35; letter-spacing: -.14px; }
+/* The mascot stands behind the buttons (its feet under «Войти») and shrinks on short screens so the title stays clear. */
+.welcome-stage { position: relative; flex: 1; min-height: 160px; margin-top: -20px; }
+.welcome-stage img { position: absolute; left: 0; bottom: -26px; width: auto; height: calc(100% + 26px); max-height: 440px; max-width: none; transform-origin: 30% 100%; animation: welcome-mascot .7s .1s cubic-bezier(.2, .8, .2, 1) both; }
+.welcome-actions { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 0 27.5px max(24px, env(safe-area-inset-bottom)); animation: welcome-rise .6s .15s ease both; }
 .welcome-actions > * { width: 100%; max-width: 420px; }
-@media (max-height: 640px) { .welcome-art img { object-position: center calc(100% - 32px); } .welcome-actions { padding-bottom: max(12px, env(safe-area-inset-bottom)); } }
 .auth-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 16px; background: var(--olimp-blue); color: var(--olimp-on-primary); font-size: 15px; font-weight: 600; text-align: center; }
 .auth-button--outline { background: var(--olimp-surface); color: var(--olimp-blue-text); border: 1.5px solid var(--olimp-blue-text); }
-.welcome-note { margin-top: 1px; min-height: 38px; padding: 1px 0; color: var(--olimp-muted); font-size: 11px; line-height: 1.4; }
+.welcome-actions .auth-button { min-height: 52px; padding-block: 14px; }
+.welcome-actions .auth-button:not(.auth-button--outline) { border: 2px solid var(--olimp-surface); }
+.welcome-actions > .welcome-note { max-width: 280px; margin-top: 1px; color: var(--olimp-welcome-note); opacity: .75; font-size: 11px; line-height: normal; text-align: center; }
+.welcome-note button { color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 2px; }
+@keyframes welcome-rise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes welcome-mascot { from { opacity: 0; transform: translateX(-24px) rotate(-4deg); } }
+@keyframes welcome-halo { 50% { opacity: .6; } }
 .auth-page { padding: max(16px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom)); }
 .auth-back { margin-bottom: 21px; }
 .auth-heading { margin-bottom: 22px; }
@@ -1571,3 +1591,61 @@ button.overview-outline-button { width: 100%; gap: 6px; cursor: pointer; }
 .sort-row:has(input:focus-visible) { outline: 2px solid var(--olimp-focus-alt); outline-offset: 1px; }
 @media (max-width: 359px) { .filter-chips { margin-inline: -12px; padding-inline: 12px; } .filter-chips--fill { margin-inline: 0; padding-inline: 0; } .personal-banner__action { padding-inline: 10px; } }
 .university-search:not(:focus-within) { border-color: var(--olimp-border-strong); }
+
+/* App tour (apps/web features/tour), Figma «Старт», «2»…«11»: the app dimmed around a cut-out highlight, a pointer,
+   the mascot and a hint card. The overlay is a modal <dialog>, so it stays above the app's own dialogs. */
+.tour { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); border: 0; overflow: hidden; background: transparent; color: var(--olimp-text); overscroll-behavior: contain; touch-action: none; animation: tour-fade .3s ease both; }
+.tour::backdrop { background: transparent; }
+.tour-spot { --tour-dim: var(--olimp-tour-dim); position: absolute; top: 50%; left: 50%; width: 0; height: 0; border: 3px solid var(--olimp-blue); border-radius: 20px; box-shadow: 0 0 6px rgb(45 95 255 / 40%), 0 0 0 max(100vw, 100vh) var(--tour-dim); pointer-events: none;
+  transition: top .4s cubic-bezier(.3, .7, .2, 1), left .4s cubic-bezier(.3, .7, .2, 1), width .4s cubic-bezier(.3, .7, .2, 1), height .4s cubic-bezier(.3, .7, .2, 1), border-width .2s ease, box-shadow .3s ease; }
+.tour-spot::after { content: ''; position: absolute; inset: -3px; border-radius: inherit; box-shadow: 0 0 0 5px rgb(45 95 255 / 26%); opacity: 0; animation: tour-ring 2.2s ease-in-out .6s infinite; }
+.tour-spot.is-empty { border-width: 0; box-shadow: 0 0 0 max(100vw, 100vh) var(--tour-dim); }
+.tour-spot.is-empty::after { display: none; }
+.tour--soft .tour-spot { --tour-dim: var(--olimp-tour-dim-soft); }
+.tour-pointer { position: absolute; width: 2px; border-radius: 1px; background: var(--olimp-blue); transform-origin: top; animation: tour-grow .35s .2s ease-out both; }
+.tour-pointer img { position: absolute; left: -3px; max-width: none; }
+.tour-card-wrap { position: absolute; visibility: hidden; }
+.tour-card-wrap.is-ready { visibility: visible; transition: top .35s cubic-bezier(.3, .7, .2, 1); }
+.tour-card-wrap.is-ready .tour-card { animation: tour-rise .4s cubic-bezier(.2, .8, .2, 1) both; }
+.tour-card-wrap.is-ready .tour-buddy { animation: tour-pop .55s .12s cubic-bezier(.2, 1.25, .4, 1) both; }
+.tour-buddy { position: absolute; pointer-events: none; transform-origin: 50% 100%; }
+.tour-buddy__glow { position: absolute; max-width: none; animation: tour-glow 3.2s ease-in-out infinite; }
+.tour-buddy__mascot { position: relative; display: block; width: 100%; height: 100%; animation: tour-float 3.2s ease-in-out .7s infinite; }
+.tour-card { position: relative; padding: 17px 18px 16px; border-radius: 22px; background: var(--olimp-surface); box-shadow: var(--olimp-tour-card-shadow); }
+.tour-card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 24px; margin-bottom: 10px; }
+.tour-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 999px; background: var(--olimp-blue-soft); color: var(--olimp-blue-text); font-size: 11.5px; font-weight: 700; line-height: 14px; letter-spacing: -.1px; white-space: nowrap; }
+.tour-skip { padding: 4px 0; color: var(--olimp-muted); font-size: 12.5px; font-weight: 600; }
+.tour-card h2 { margin-bottom: 5px; color: var(--olimp-text); font-size: 18px; font-weight: 700; line-height: 1.15; letter-spacing: -.36px; }
+.tour-card p { color: var(--olimp-muted); font-size: 12.5px; line-height: 1.32; letter-spacing: -.125px; }
+.tour-card--intro .tour-card__top, .tour-card--finale .tour-card__top { margin-bottom: 8px; }
+.tour-card--intro h2 { font-size: 21px; letter-spacing: -.42px; }
+.tour-card--finale h2 { font-size: 22px; letter-spacing: -.44px; }
+.tour-card--intro p, .tour-card--finale p { line-height: 1.34; }
+.tour-card__footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.tour-card__actions { display: flex; gap: 10px; margin-top: 10px; }
+.tour-dots { display: flex; align-items: center; gap: 5px; }
+.tour-dots span { width: 6px; height: 6px; border-radius: 999px; background: var(--olimp-border-strong); transition: width .3s ease, background-color .3s ease; }
+.tour-dots span.is-active, .tour-dots--done span { background: var(--olimp-blue); }
+.tour-dots span.is-active { width: 18px; }
+.tour-card--finale .tour-dots { margin-top: 10px; }
+.button.button.tour-next { min-height: 40px; padding: 0 20px; border-radius: 14px; font-size: 13.5px; font-weight: 600; }
+.button.button.tour-pill { flex: 1 1 auto; min-height: 40px; padding: 10px 20px; border-radius: 22px; font-size: 14px; font-weight: 600; }
+.button.button.tour-pill--outline { flex: 0 0 auto; min-width: 96px; background: var(--olimp-surface); color: var(--olimp-blue-text); border: 1.5px solid var(--olimp-blue-text); }
+.tour-confetti { position: absolute; inset: 0; pointer-events: none; }
+.tour-confetti > * { position: absolute; max-width: none; transform: rotate(var(--turn, 0deg)); animation: tour-confetti .8s cubic-bezier(.2, .8, .2, 1) .2s both; }
+.tour-confetti > :nth-child(2n) { animation-delay: .3s; }
+.tour-confetti > :nth-child(3n) { animation-delay: .4s; }
+.tour-confetti__strip { width: 9.5px; height: 21.8px; border-radius: 3px; }
+.tour-confetti__strip--violet { --turn: 24deg; background: #a98bff; }
+.tour-confetti__strip--yellow { --turn: -28deg; background: #ffd76a; }
+.tour-confetti > .tour-confetti__star, .tour-confetti > .tour-confetti__sparkles { animation: tour-confetti .8s cubic-bezier(.2, .8, .2, 1) .3s both, tour-twinkle 2.4s ease-in-out 1.2s infinite; }
+@keyframes tour-fade { from { opacity: 0; } }
+@keyframes tour-rise { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+@keyframes tour-pop { from { opacity: 0; transform: translateY(24px) scale(.85); } }
+@keyframes tour-float { 50% { transform: translateY(-5px); } }
+@keyframes tour-glow { 50% { opacity: .72; } }
+@keyframes tour-grow { from { transform: scaleY(0); } }
+@keyframes tour-ring { 50% { opacity: 1; } }
+@keyframes tour-confetti { from { opacity: 0; transform: translateY(28px) rotate(calc(var(--turn, 0deg) - 120deg)) scale(.4); } }
+@keyframes tour-twinkle { 50% { opacity: .7; transform: scale(1.2) rotate(12deg); } }
+@media (prefers-reduced-motion: reduce) { .tour, .tour *, .welcome-page, .welcome-page * { animation: none !important; } }

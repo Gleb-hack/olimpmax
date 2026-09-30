@@ -8,6 +8,11 @@ import { useSession } from '../../lib/session';
 import { useFilters } from '../../lib/queries';
 import { SubjectsDialog } from '../profile/SubjectsDialog';
 import { DirectionsDialog, UniversitiesDialog, goalLabel, useGoal } from '../profile/GoalDialogs';
+import { requestTour } from '../tour/tour-state';
+import welcomeTitle from '../../assets/onboarding/welcome-title.svg';
+import welcomeGlow from '../../assets/onboarding/welcome-glow.svg';
+import welcomeHalo from '../../assets/onboarding/welcome-halo.svg';
+import welcomeMascot from '../../assets/onboarding/welcome-mascot.webp';
 
 function useAuthNavigation(title: string, back: string | null) {
   const navigate = useNavigate();
@@ -26,13 +31,18 @@ export function WelcomePage() {
   useAuthNavigation('Добро пожаловать', null);
   if (user) return <Navigate to="/olimp" replace />;
   return <main className="app-shell welcome-page">
-    <h1 className="sr-only">Добро пожаловать в Олимп</h1>
-    <div className="welcome-art"><img src="/main_logo_photo.jpg" width={1354} height={1798} alt="Олимп — твой проводник в мир олимпиад" /></div>
+    <img className="welcome-glow" src={welcomeGlow} width={464} height={486} alt="" />
+    <img className="welcome-halo" src={welcomeHalo} width={320} height={320} alt="" />
+    <header className="welcome-hero">
+      <h1><img src={welcomeTitle} width={292} height={41} alt="Олимп" /></h1>
+      <p>твой проводник в мир олимпиад</p>
+    </header>
+    <div className="welcome-stage"><img src={welcomeMascot} width={375} height={440} alt="" /></div>
     <div className="welcome-actions">
       {error && <Notice tone="error">{error}</Notice>}
       <Link className="auth-button" to="/login" state={state}>Войти</Link>
       <Link className="auth-button auth-button--outline" to="/register" state={state}>Зарегистрироваться</Link>
-      <button className="welcome-note" onClick={() => setInfo(true)}>Ваш профиль и план связаны<br />с аккаунтом MAX</button>
+      <p className="welcome-note">Продолжая, вы принимаете <button type="button" onClick={() => setInfo(true)}>условия использования</button></p>
     </div>
     {info && <Dialog title="Вход через MAX" onClose={() => setInfo(false)}><DataNote /><Button className="full-width" onClick={() => setInfo(false)}>Понятно</Button></Dialog>}
   </main>;
@@ -65,7 +75,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     if (registering && !parsed.success) { setError('Укажите имя длиной от 1 до 80 символов.'); return; }
     setPending(true);
     try {
-      if (registering && parsed.success) await session.register(parsed.data); else await session.login();
+      // A new account starts with the app tour; it opens once the protected app mounts.
+      if (registering && parsed.success) { await session.register(parsed.data); requestTour(); } else await session.login();
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Не удалось войти. Попробуйте ещё раз.'); }
     finally { setPending(false); }
   }
